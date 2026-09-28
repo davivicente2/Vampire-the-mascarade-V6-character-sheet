@@ -44,7 +44,12 @@
 
             <div class="form-grid identity-grid">
                 <label><span>Nome</span><input id="character-name" type="text"></label>
-                <label><span>Clã</span><input id="clan" type="text"></label>
+                <label>
+                    <span>Clã</span>
+                    <select id="clan">
+                        <option value="">Selecione um clã</option>
+                    </select>
+                </label>
                 <label><span>Idade aparente</span><input id="age-apparent" type="text"></label>
                 <label><span>Idade real</span><input id="age-actual" type="text"></label>
                 <label><span>Data do Abraço</span><input id="embrace-date" type="text"></label>
@@ -61,8 +66,36 @@
                     </select>
                 </label>
                 <label><span>Arquétipo</span><input id="archetype" type="text"></label>
-                <label><span>Sire</span><input id="sire" type="text"></label>
-                <label><span>Maldição do Clã</span><input id="curse" type="text"></label>
+                <label>
+                    <span>Sire</span>
+                    <select id="sire">
+                        <option value="">Selecione um Sire</option>
+                    </select>
+                </label>
+                <label id="sire-discipline-field">
+                    <span>Disciplina do Sire (+1)</span>
+                    <select id="sire-discipline">
+                        <option value="">Selecione a Disciplina</option>
+                    </select>
+                </label>
+                <label id="clan-special-discipline-field" hidden>
+                    <span>Disciplina variável do Clã</span>
+                    <select id="clan-special-discipline"></select>
+                </label>
+                <label><span>Maldição do Clã</span><input id="curse" type="text" readonly></label>
+            </div>
+
+            <div id="clan-info" class="auto-info-panel">
+                <div>
+                    <span>Maldição</span>
+                    <strong id="clan-curse-name">—</strong>
+                    <p id="clan-curse-description">Selecione um clã.</p>
+                </div>
+                <div>
+                    <span>Frenesi do Clã</span>
+                    <strong id="clan-frenzy-name">—</strong>
+                    <p id="clan-frenzy-description">Selecione um clã.</p>
+                </div>
             </div>
         </section>
 
@@ -243,8 +276,16 @@
             </div>
 
             <div class="two-column-fields">
-                <label><span>Traço de Clã 1</span><textarea id="clan-trait-1" rows="4"></textarea></label>
-                <label><span>Traço de Clã 2</span><textarea id="clan-trait-2" rows="4"></textarea></label>
+                <label>
+                    <span>Traço de Clã 1</span>
+                    <select id="clan-trait-1"></select>
+                    <small id="clan-trait-1-description" class="field-help"></small>
+                </label>
+                <label>
+                    <span>Traço de Clã 2</span>
+                    <select id="clan-trait-2"></select>
+                    <small id="clan-trait-2-description" class="field-help"></small>
+                </label>
                 <label><span>Mérito</span><textarea id="merit" rows="4"></textarea></label>
                 <label><span>Falha</span><textarea id="flaw" rows="4"></textarea></label>
             </div>
