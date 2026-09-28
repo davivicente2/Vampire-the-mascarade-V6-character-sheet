@@ -17,7 +17,7 @@ Base: `027207b0fe0db397cea7bf91bfcb6c59bc1b70e1`.
 
 ## Arquitetura e compatibilidade
 
-`js/disclosure.js` apenas formata dados existentes; não contém novas regras. Trechos com reticências são recortes de apresentação, não novas interpretações. As descrições continuam em `data/`, sem duplicar uma base de regras na interface.
+`js/ui/disclosure.js` apenas formata dados existentes; não contém novas regras. Trechos com reticências são recortes de apresentação, não novas interpretações. As descrições continuam em `data/`, sem duplicar uma base de regras na interface.
 
 Não foram criados campos de personagem nem alterados o formato de exportação, a versão ou `assertCharacter`. Campos antigos, inclusive `identity.curse` e lembretes gerados, permanecem aceitos. Os módulos continuam relativos e sem build ou dependências novas, compatíveis com hospedagem em subdiretórios como GitHub Pages.
 

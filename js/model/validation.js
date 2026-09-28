@@ -1,7 +1,8 @@
-import { getLifepath, lifepathRequirement } from "../data/lifepaths.js";
-import { getClanByName } from "../data/clans.js";
-import { getSireByName } from "../data/sires.js";
-import { getPower } from "../data/disciplines.js";
+import { tierRules } from "../../data/tiers.js";
+import { getLifepath, lifepathRequirement } from "../../data/lifepaths.js";
+import { getClanByName } from "../../data/clans.js";
+import { getSireByName } from "../../data/sires.js";
+import { getPower } from "../../data/disciplines.js";
 
 export function validateCharacter(character) {
     const warnings = [];
@@ -37,11 +38,6 @@ export function validateCharacter(character) {
         }
     }
 
-    const tierRules = {
-        neonate: { label: "Neonate", minGeneration: 11, maxGeneration: 13, generationModifier: 1 },
-        ancilla: { label: "Ancilla", minGeneration: 9, maxGeneration: 10, generationModifier: 2 },
-        elder: { label: "Elder", minGeneration: 6, maxGeneration: 8, generationModifier: 3 }
-    };
     const tierRule = tierRules[character.identity.playLevel];
     if (tierRule) {
         const generation = Number(character.identity.generation || 0);

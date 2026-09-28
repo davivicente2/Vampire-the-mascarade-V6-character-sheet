@@ -1,5 +1,5 @@
 import { getPower } from '../data/disciplines.js';
-import { legacyPowerReminder } from '../js/disclosure.js';
+import { legacyPowerReminder } from '../js/ui/disclosure.js';
 
 // Run with a temporary browser profile: exercises real reload and file input events.
 export async function runTests() {

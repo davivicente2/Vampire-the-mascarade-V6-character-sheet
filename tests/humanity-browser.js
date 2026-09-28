@@ -1,5 +1,5 @@
-import { shiftHumanity, resistancePool } from '../data/humanity.js';
-import { skillFocusCount, normalizeSkillFocuses } from '../data/skills.js';
+import { shiftHumanity, resistancePool } from '../js/model/humanity.js';
+import { skillFocusCount, normalizeSkillFocuses } from '../js/model/skills.js';
 import { assertCharacter } from '../js/storage.js';
 import { getPower } from '../data/disciplines.js';
 import { natures, getNature } from '../data/natures.js';

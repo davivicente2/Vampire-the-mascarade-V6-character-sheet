@@ -1,0 +1,81 @@
+.lifepath-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0.8rem;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.lifepath-help {
+    min-height: 0;
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.35;
+}
+
+.lifepath-allocations {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 0.65rem;
+}
+
+.lifepath-point-group {
+    min-width: 0;
+    margin: 0;
+    padding: 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.lifepath-point-group legend {
+    padding: 0 0.3rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.lifepath-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.4rem;
+}
+
+.lifepath-choice-grid label {
+    gap: 0.2rem;
+}
+
+.lifepath-choice-grid label > span {
+    color: var(--muted);
+    font-size: 0.68rem;
+}
+
+.lifepath-choice-grid select {
+    min-width: 0;
+    font-size: 0.82rem;
+}
+
+.lifepath-details,
+.lifepath-rules {
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.lifepath-details summary,
+.lifepath-rules summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.lifepath-details p,
+.lifepath-rules p {
+    margin: 0.5rem 0;
+}
+
+@media (max-width: 680px) {
+    .lifepath-allocations {
+        grid-template-columns: 1fr;
+    }
+}

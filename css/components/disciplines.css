@@ -1,0 +1,101 @@
+.discipline-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.75rem;
+    background: #101014;
+    display: grid;
+    gap: 0.7rem;
+}
+
+.discipline-head {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.discipline-head {
+    grid-template-columns: minmax(140px, 1fr) auto 38px;
+}
+
+.power-list {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.power-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) minmax(80px, 0.35fr) minmax(150px, 1fr) 38px;
+    gap: 0.45rem;
+}
+
+@media (max-width: 680px) {
+    .power-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.power-row select {
+    min-width: 0;
+}
+
+.power-description {
+    grid-column: 1 / -1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.power-description p {
+    margin: 0.25rem 0;
+}
+
+.power-description .field-help {
+    min-height: 0;
+}
+
+.power-description summary {
+    cursor: pointer;
+    color: var(--muted);
+}
+
+.power-description summary:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+}
+
+.power-row {
+    grid-template-columns: minmax(140px, 1fr) minmax(70px, 0.4fr) minmax(95px, 0.6fr) 34px;
+}
+
+.power-activation,
+.power-cost {
+    align-self: center;
+    overflow-wrap: anywhere;
+}
+
+.power-description {
+    min-width: 0;
+}
+
+.power-description input {
+    width: 100%;
+    margin-top: 0.4rem;
+}
+
+@media (max-width: 600px) {
+    .power-row {
+        grid-template-columns: minmax(0, 1fr) 70px 34px;
+    }
+
+    .power-activation {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .power-row > .icon-button {
+        grid-column: 3;
+        grid-row: 1;
+    }
+}

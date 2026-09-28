@@ -49,3 +49,18 @@ console.table(await ux.runTests());
 ```
 
 Essa suíte usa uma ficha de teste em um iframe, recarrega a página e restaura o armazenamento anterior ao terminar. Consulte [a auditoria de UX](docs/ux-review.md) para as mudanças de apresentação e as limitações de regras preservadas.
+
+## Organização do código
+
+- `data/`: catálogos e fichas iniciais; poderes separados por Disciplina em `data/powers/`.
+- `js/model/`: normalização, cálculos, regras e validação, sem acesso à interface.
+- `js/ui/`: controles, ajuda e componentes de cada seção.
+- `js/storage.js`: persistência e importação/exportação JSON.
+- `js/sheet.js`: monta as seções e conecta suas atualizações; `js/app.js` inicializa a ficha.
+- `css/`: estilos compartilhados e componentes, com impressão separada.
+
+O [mapa da arquitetura](docs/architecture.md) indica onde editar cada funcionalidade. Para verificar imports, caminhos e dependências:
+
+```sh
+python3 tests/check_structure.py
+```

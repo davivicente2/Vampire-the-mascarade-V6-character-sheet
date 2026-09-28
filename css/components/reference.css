@@ -1,0 +1,66 @@
+.rules-card summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.rules-content {
+    margin-top: 1rem;
+}
+
+.rules-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rules-table th,
+.rules-table td {
+    border-bottom: 1px solid var(--line);
+    padding: 0.6rem;
+    text-align: left;
+    vertical-align: top;
+}
+
+.source-links {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.source-links a {
+    color: #dba0a7;
+}
+
+.rules-card {
+    margin-top: 1rem;
+}
+
+.rules-card summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+#rules-reference details {
+    margin-top: 1rem;
+}
+
+#rules-reference p {
+    line-height: 1.55;
+}
+
+.rule-details {
+    margin: 0.55rem 0;
+    font-size: 0.85rem;
+}
+
+.rule-details summary {
+    cursor: pointer;
+    color: var(--muted);
+}
+
+.rule-details summary:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+}
+
+.rule-details p {
+    line-height: 1.5;
+}

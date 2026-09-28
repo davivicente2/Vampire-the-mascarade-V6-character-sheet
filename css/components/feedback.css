@@ -1,0 +1,59 @@
+.validation-card {
+    border-left: 4px solid var(--warning);
+}
+
+.validation-list {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.validation-list li + li {
+    margin-top: 0.45rem;
+}
+
+.validation-ok {
+    color: var(--success);
+}
+
+.validation-warning {
+    color: #f0d19d;
+}
+
+.validation-count {
+    color: var(--warning);
+    font-weight: 700;
+}
+
+.help-trigger {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex: 0 0 auto;
+    width: 1.5rem;
+    height: 1.5rem;
+    min-height: 0;
+    padding: 0;
+    margin-left: 0.4rem;
+    border-radius: 50%;
+    font-size: 0.85rem;
+}
+
+.sheet-tooltip {
+    position: fixed;
+    z-index: 1000;
+    width: max-content;
+    max-width: min(340px, calc(100vw - 16px));
+    max-height: calc(100dvh - 16px);
+    overflow-y: auto;
+    padding: 0.75rem;
+    border: 1px solid #a995a4;
+    border-radius: 8px;
+    background: #25202a;
+    color: #fff;
+    box-shadow: 0 4px 18px #0008;
+    font-size: 0.85rem;
+    font-weight: normal;
+    line-height: 1.5;
+    text-align: left;
+    text-transform: none;
+}
