@@ -278,6 +278,7 @@ textarea {
 .dot.filled,
 .tracker-dot.filled {
     background: #d8d2cb;
+    color: #17141b;
     border-color: #d8d2cb;
 }
 
@@ -517,7 +518,7 @@ textarea {
 
 .humanity-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.55fr) minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
 }
 
@@ -527,6 +528,7 @@ textarea {
 }
 
 .humanity-center {
+    grid-column: 1 / -1;
     display: grid;
     align-content: center;
     gap: 0.75rem;
@@ -547,6 +549,7 @@ textarea {
 
 .humanity-dot.active {
     background: #d8d2cb;
+    color: #17141b;
     border-color: #d8d2cb;
 }
 
@@ -817,3 +820,36 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
     text-align: left;
     text-transform: none;
 }
+
+.humanity-intro { line-height: 1.6; }
+.humanity-side {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1rem;
+}
+.humanity-resolution { padding: 0.75rem 0; }
+.humanity-resolution[data-phase="full"],
+.humanity-resolution[data-phase="episode"] {
+    border-left: 3px solid #b898aa;
+    padding-left: 0.75rem;
+    margin: 0.75rem 0;
+}
+.humanity-guidance {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+.humanity-guidance p { color: var(--muted); }
+@media (max-width: 680px) {
+    .humanity-guidance { grid-template-columns: 1fr; gap: 0.4rem; }
+}
+
+.nature-guide { font-size: 0.85rem; line-height: 1.55; margin-bottom: 1rem; }
+.nature-guide p { margin: 0.5rem 0; }
+
+.lifepath-card { border: 1px solid var(--line); border-radius: 8px; padding: 0.8rem; }
+.lifepath-help { font-size: 0.85rem; line-height: 1.5; }
+.lifepath-help p { margin: 0.5rem 0; }

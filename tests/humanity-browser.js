@@ -2,6 +2,9 @@ import { shiftHumanity, resistancePool } from '../data/humanity.js';
 import { skillFocusCount, normalizeSkillFocuses } from '../data/skills.js';
 import { assertCharacter } from '../js/storage.js';
 import { getPower } from '../data/disciplines.js';
+import { natures, getNature } from '../data/natures.js';
+import { clans } from '../data/clans.js';
+import { lifepaths, getLifepath } from '../data/lifepaths.js';
 
 // Run only in an isolated browser profile: interaction tests replace its local sheet.
 export function runTests() {
@@ -49,6 +52,25 @@ export function runTests() {
     };
     check(byId('rules-reference').children.length === 9, 'Reference renders nine sections');
     check(byId('merit').options.length >= 17, 'Merits still render');
+    check(natures.length === 8 && byId('nature').options.length === 9, 'All eight Natures available');
+    check(byId('nature').value === 'Survivor' && getNature('Survivor — old description').name === 'Survivor', 'Legacy Nature recognized');
+    const oldPosition = stage();
+    for (const nature of natures) {
+        byId('nature').value = nature.name;
+        byId('nature').dispatchEvent(new Event('change', { bubbles: true }));
+        check(byId('nature-outburst-effect').textContent === nature.effect && saved().nature === nature.name,
+            nature.name + ' selection updates outburst and saves');
+    }
+    check(stage() === oldPosition, 'Selecting Nature never moves Humanity');
+    check(byId('beast-clan-name').textContent.includes('Enticer'), 'Beast comes from selected clan');
+    byId('play-level').value = 'ancilla';
+    byId('play-level').dispatchEvent(new Event('change', { bubbles: true }));
+    check(byId('humanity-start-help').textContent.includes('Monstruoso 1'), 'Ancilla starting guidance updates');
+    byId('play-level').value = 'elder';
+    byId('play-level').dispatchEvent(new Event('change', { bubbles: true }));
+    check(byId('humanity-start-help').textContent.includes('Monstruoso 2') && stage() === oldPosition, 'Elder guidance does not move existing character');
+    byId('play-level').value = 'neonate';
+    byId('play-level').dispatchEvent(new Event('change', { bubbles: true }));
     const powerRow = () => byId('disciplines').querySelector('.power-row');
     const powerSelect = powerRow().querySelector('select');
     check(powerRow().querySelector('.power-description').textContent.includes('Efeito:'), 'Power effect is visible outside input');
@@ -59,12 +81,15 @@ export function runTests() {
     check(powerRow().querySelector('.power-description').textContent.includes(source.summary), 'Power selection updates effect description');
     check(powerRow().querySelector('select').getAttribute('aria-describedby') === powerRow().querySelector('.power-description').id, 'Power description linked accessibly');
     clickDot('humanity-scale', 3);
+    check(byId('nature-success').hidden && byId('nature-resistance').textContent.includes('Faltam'), 'Tracking phase explains unavailable actions');
     clickDot('nature-points', 4);
+    check(!byId('nature-success').hidden && byId('nature-finish').hidden, 'Full tracker shows only resolution actions');
     check(stage() === 'Neutro', 'Nature marks do not shift humanity');
     byId('nature-success').click();
     check(saved().naturePoints === 4 && stage() === 'Neutro', 'Success removes one mark only');
     clickDot('nature-points', 4);
     byId('nature-failure').click();
+    check(byId('nature-success').hidden && !byId('nature-finish').hidden, 'Episode phase shows completion action');
     check(saved().naturePoints === 0 && saved().natureEpisode === 'failure' && stage() === 'Neutro', 'Failure starts persisted episode without shift');
     byId('nature-finish').click();
     check(stage() === 'Mortal 1' && !saved().natureEpisode, 'Finishing outburst shifts once');
@@ -76,11 +101,15 @@ export function runTests() {
     const before = saved().currentWillpower;
     byId('beast-finish').click();
     check(saved().currentWillpower === before + 2 && stage() === 'Neutro', 'Accepted episode restores Willpower only on completion');
-    clickDot('humanity-scale', 6);
+    clickDot('humanity-scale', 5);
     clickDot('nature-points', 4);
-    check(byId('nature-success').disabled, 'Mortal 3 blocks resistance success');
     byId('nature-painful').click();
     check(byId('nature-resistance').textContent.includes('Drama'), 'Painful failure displays consequence');
+    byId('nature-finish').click();
+    clickDot('nature-points', 4);
+    check(byId('nature-success').disabled && byId('nature-success').hidden, 'Mortal 3 blocks resistance success');
+    check(byId('nature-painful').hidden && !byId('nature-failure').hidden, 'Mortal 3 offers inevitable episode without a test');
+    byId('nature-failure').click();
     byId('nature-finish').click();
     check(saved().lostBeastCircles === 1 && byId('humanity-scale').querySelector('button').disabled, 'Overflow crosses and disables lost circle');
     setInput('quickening', 99);
@@ -133,5 +162,41 @@ export function runTests() {
     check(!tip.hidden && tip.textContent.includes('Foco 3'), 'Rerendered focus fields have tooltips');
     document.body.click();
     check(tip.hidden, 'Outside click dismisses tooltip');
+    const beastNotes = byId('beast').value;
+    for (const clan of clans) {
+        byId('clan').value = clan.id;
+        byId('clan').dispatchEvent(new Event('change', { bubbles: true }));
+        check(byId('beast-clan-name').textContent.includes(clan.beast.name) &&
+            byId('beast-clan-indulging').textContent === clan.beast.indulging &&
+            byId('beast-clan-frenzy').textContent.includes(clan.frenzy.description),
+            clan.name + ' updates Beast, indulgence and frenzy');
+    }
+    check(byId('beast').value === beastNotes, 'Changing clan preserves personal Beast notes');
+    check(lifepaths.length === 14 && byId('lifepath-0').options.length === 16, 'Fourteen lifepaths plus empty and custom options');
+    check(byId('lifepath-0').value === 'Criminal' && byId('lifepath-1').value === 'Military', 'Legacy lifepaths recognized');
+    const skillSnapshot = JSON.stringify(saved().skills);
+    for (const path of lifepaths) {
+        byId('lifepath-0').value = path.name;
+        byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
+        check(byId('lifepath-help-0').textContent.includes(path.skills[0]) &&
+            byId('lifepath-help-0').textContent.includes(path.resources[0]) && saved().lifepaths[0] === path.name,
+            path.name + ' lifepath displays benefits and saves');
+    }
+    check(JSON.stringify(saved().skills) === skillSnapshot, 'Selecting lifepath does not spend skill dots');
+    check(byId('lifepath-help-0').textContent.includes('não está disponível para Neonate'), 'Ancilla lifepath warns at Neonate tier');
+    byId('play-level').value = 'ancilla';
+    byId('play-level').dispatchEvent(new Event('change', { bubbles: true }));
+    check(!byId('lifepath-help-0').textContent.includes('não está disponível'), 'Lifepath tier guidance updates');
+    byId('lifepath-1').value = '';
+    byId('lifepath-1').dispatchEvent(new Event('change', { bubbles: true }));
+    check(saved().lifepaths[1] === '', 'One-lifepath character can leave second slot empty');
+    byId('lifepath-0').value = '__custom__';
+    byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
+    const customPath = byId('lifepaths').querySelector('textarea');
+    check(!customPath.hidden, 'Custom lifepath text field available');
+    customPath.value = 'Bibliotecário — História pessoal';
+    customPath.dispatchEvent(new Event('input', { bubbles: true }));
+    check(saved().lifepaths[0] === customPath.value && getLifepath(customPath.value) === null, 'Custom lifepath preserved as text');
+    assertCharacter(saved());
     return passed;
 }

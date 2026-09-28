@@ -174,44 +174,20 @@
             <div class="section-heading">
                 <div>
                     <p class="section-kicker">Conflito interno</p>
-                    <h2>Humanidade • Natureza ↔ Besta</h2>
+                    <h2>Humanidade • Besta ↔ Natureza</h2>
                 </div>
             </div>
 
+            <p class="humanity-intro">Besta e Natureza disputam o controle: os rastreadores medem a agitação de cada lado; a escala mostra qual lado predomina. Não é uma medida de bem e mal. <strong>Marcar caixas não move a escala.</strong></p>
             <div class="humanity-layout">
-                <article class="humanity-side">
-                    <label>
-                        <span>Besta — impulso / descrição</span>
-                        <textarea id="beast" rows="5"></textarea>
-                    </label>
-                    <div class="tracker-header compact">
-                        <span>Pontos de Besta</span>
-                        <strong id="beast-points-label"></strong>
-                    </div>
-                    <div id="beast-points" class="tracker" aria-label="Pontos de Besta"></div>
-                    <div class="humanity-resolution">
-                        <p id="beast-resistance" class="field-help" aria-live="polite"></p>
-                        <div class="humanity-actions no-print" role="group" aria-label="Resolver Frenesi da Besta">
-                            <button id="beast-success" type="button">Resisti</button>
-                            <button id="beast-failure" type="button">Falhei</button>
-                            <button id="beast-painful" type="button">Falha dolorosa</button>
-                            <button id="beast-accepted" type="button">Aceitar impulso</button>
-                            <button id="beast-finish" type="button">Concluir Frenesi da Besta</button>
-                        </div>
-                    </div>
-                    <label>
-                        <span>Frenesi da Besta — gatilho</span>
-                        <textarea id="frenzy-trigger" rows="3"></textarea>
-                    </label>
-                </article>
-
                 <article class="humanity-center">
                     <span class="field-label">Escala de Humanidade</span>
+                    <p id="humanity-start-help" class="field-help"></p>
                     <div id="humanity-scale" class="humanity-scale" role="group" aria-label="Escala de Humanidade"></div>
                     <div class="humanity-axis">
-                        <span>Besta</span>
+                        <span>Monstruoso · Besta</span>
                         <span>Neutro</span>
-                        <span>Natureza</span>
+                        <span>Mortal · Natureza</span>
                     </div>
                     <div class="state-readout">
                         <span>Rastreador de estado</span>
@@ -226,32 +202,84 @@
                     </div>
 
                 </article>
+                <article class="humanity-side">
+                    <div class="nature-guide" aria-live="polite">
+                        <h3 id="beast-clan-name"></h3>
+                        <p id="beast-clan-description"></p>
+                        <p><strong>Como satisfazer: </strong><span id="beast-clan-indulging"></span></p>
+                    </div>
+                    <label>
+                        <span>Besta — anotações pessoais</span>
+                        <textarea id="beast" rows="5"></textarea>
+                    </label>
+                    <div class="tracker-header compact">
+                        <span>Agitação da Besta</span>
+                        <strong id="beast-points-label"></strong>
+                    </div>
+                    <div id="beast-points" class="tracker" aria-label="Pontos de Besta"></div>
+                    <div class="humanity-resolution" id="beast-resolution">
+                        <strong id="beast-phase"></strong>
+                        <p id="beast-resistance" class="field-help" aria-live="polite"></p>
+                        <div class="humanity-actions no-print" role="group" aria-label="Resolver Frenesi da Besta">
+                            <button id="beast-success" type="button">Sucesso — apagar 1 marca</button>
+                            <button id="beast-failure" type="button">Falha — iniciar episódio</button>
+                            <button id="beast-painful" type="button">Falha dolorosa</button>
+                            <button id="beast-accepted" type="button">Ceder voluntariamente</button>
+                            <button id="beast-finish" type="button">Concluir Frenesi da Besta</button>
+                        </div>
+                    </div>
+                    <div class="nature-guide" aria-live="polite">
+                        <h3 id="beast-frenzy-name"></h3>
+                        <p><strong>Gatilho: </strong>preencher as 5 marcas de Besta. Resolva a resistência ou ceda voluntariamente usando os botões acima.</p>
+                        <p><strong>Durante o Frenesi: </strong><span id="beast-clan-frenzy"></span></p>
+                        <p><strong>Ao terminar: </strong>conclua o episódio para mover 1 passo para o lado Monstruoso. Se cedeu voluntariamente, também recupera 2 Vontade, até o máximo.</p>
+                        <p class="field-help">Se agir de acordo com este Frenesi piorar a situação de você ou da coterie, ganhe 1 Quickening, no máximo uma vez por cena. Registre esse ganho e os modificadores do Clã manualmente. Frenesis de fome, medo e fúria têm outros gatilhos.</p>
+                    </div>
+                    <label>
+                        <span>Frenesi — anotações e gatilhos pessoais</span>
+                        <textarea id="frenzy-trigger" rows="3" aria-describedby="beast-clan-frenzy"></textarea>
+                    </label>
+                </article>
+
+
 
                 <article class="humanity-side">
                     <label>
                         <span>Natureza — valores humanos</span>
-                        <textarea id="nature" rows="5"></textarea>
+                        <select id="nature" aria-describedby="nature-description"></select>
+                        <small id="nature-description" class="field-help"></small>
                     </label>
+                    <div class="nature-guide" aria-live="polite">
+                        <p><strong>Como satisfazer: </strong><span id="nature-indulging"></span></p>
+                        <p><strong id="nature-outburst-name"></strong></p>
+                        <p id="nature-outburst-effect"></p>
+                    </div>
                     <div class="tracker-header compact">
-                        <span>Pontos de Natureza</span>
+                        <span>Agitação da Natureza</span>
                         <strong id="nature-points-label"></strong>
                     </div>
                     <div id="nature-points" class="tracker" aria-label="Pontos de Natureza"></div>
-                    <div class="humanity-resolution">
+                    <div class="humanity-resolution" id="nature-resolution">
+                        <strong id="nature-phase"></strong>
                         <p id="nature-resistance" class="field-help" aria-live="polite"></p>
                         <div class="humanity-actions no-print" role="group" aria-label="Resolver Explosão da Natureza">
-                            <button id="nature-success" type="button">Resisti</button>
-                            <button id="nature-failure" type="button">Falhei</button>
+                            <button id="nature-success" type="button">Sucesso — apagar 1 marca</button>
+                            <button id="nature-failure" type="button">Falha — iniciar episódio</button>
                             <button id="nature-painful" type="button">Falha dolorosa</button>
-                            <button id="nature-accepted" type="button">Aceitar impulso</button>
+                            <button id="nature-accepted" type="button">Ceder voluntariamente</button>
                             <button id="nature-finish" type="button">Concluir Explosão da Natureza</button>
                         </div>
                     </div>
                     <label>
-                        <span>Explosão (Outburst) — gatilho</span>
+                        <span>Explosão — anotações e gatilhos pessoais</span>
                         <textarea id="outburst-trigger" rows="3"></textarea>
                     </label>
                 </article>
+            </div>
+            <div class="humanity-guidance">
+                <div><strong>Quando marcar</strong><p>Ao despertar, marque 1 em cada lado. Matar um mortal marca 1 Besta; alimentação perigosa pode marcar mais. Para recuperar 1 Vontade voluntariamente, marque 1 no lado escolhido e ajuste a Vontade. Outras marcas não recuperam Vontade por si só.</p></div>
+                <div><strong>Como aliviar</strong><p>Uma atividade alinhada com Besta ou Natureza, de pelo menos 10 minutos ou uma cena, apaga 1 marca desse lado. Ela deve complicar a situação, mesmo que apenas custando tempo. Conectar-se à Natureza ou alimentar a Besta em downtime apaga até 3 marcas.</p></div>
+                <div><strong>Quando mover a escala</strong><p>Concluir um Frenesi da Besta ou uma Explosão move 1 passo para esse lado. Com rastreador vazio, uma atividade alinhada pode mover 1 passo uma vez por sessão, sem alcançar o estágio 3. Nesse caso, registre o movimento diretamente na escala após resolver a atividade na mesa.</p></div>
             </div>
         </section>
 
@@ -332,7 +360,10 @@
                         <h2>Caminhos de Vida</h2>
                     </div>
                 </div>
+                <p class="field-help">Escolha dois Caminhos. Cada um concede 5 pontos de Habilidade e 3 de Recursos, distribuídos manualmente entre as opções indicadas. Na criação, nenhuma Habilidade pode ultrapassar 3; se um ponto exceder esse limite, aplique-o em outra Habilidade à sua escolha. Focos são recebidos em 1, 3 e 5 pontos.</p>
                 <div id="lifepaths" class="stack-list"></div>
+                <p class="field-help">Personagem jovem e inexperiente pode ter apenas um Caminho. Se estiver entre personagens com dois, o Narrador pode conceder mais 3 pontos nas Habilidades e 2 nos Recursos desse Caminho, mantendo o máximo inicial de 3 por Habilidade.</p>
+                <p class="field-help">Ghouls: apenas caminhos mortais. Duskborn: mortais ou de Neonate. Vampiros: caminhos do próprio tier ou inferiores. Quando nenhuma Habilidade se aplicar, o Narrador pode permitir +2 dados ou sucesso básico pela experiência do Caminho.</p>
             </section>
 
             <section class="sheet-card">

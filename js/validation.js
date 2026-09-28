@@ -1,3 +1,4 @@
+import { getLifepath, lifepathRequirement } from "../data/lifepaths.js";
 import { getClanByName } from "../data/clans.js";
 import { getSireByName } from "../data/sires.js";
 import { getPower } from "../data/disciplines.js";
@@ -24,6 +25,13 @@ export function validateCharacter(character) {
         );
     }
 
+    for (const value of character.lifepaths) {
+        const path = getLifepath(value);
+        const requirement = lifepathRequirement(path, character.identity.playLevel);
+        if (requirement) warnings.push(path.name + ": " + requirement);
+    }
+    const twoLifepaths = character.lifepaths.filter((value) => value.trim()).length === 2;
+
     if (character.identity.playLevel === "neonate") {
         const attributePools = [
             character.attributes.strength + character.attributes.dexterity + character.attributes.stamina - 3,
@@ -40,7 +48,7 @@ export function validateCharacter(character) {
         const skillDots = Object.values(character.skills)
             .reduce((total, skill) => total + Number(skill.dots || 0), 0);
 
-        if (skillDots !== 18) {
+        if (twoLifepaths && skillDots !== 18) {
             warnings.push(
                 "A ficha tem " + skillDots + " pontos de Habilidade. Com dois Caminhos de Vida, um Neonate normalmente totaliza 18."
             );
@@ -71,7 +79,7 @@ export function validateCharacter(character) {
         const resourceDots = character.resources
             .reduce((total, resource) => total + Number(resource.dots || 0), 0);
 
-        if (resourceDots !== 9) {
+        if (twoLifepaths && resourceDots !== 9) {
             warnings.push(
                 "A ficha tem " + resourceDots + " pontos de Recursos. Dois Caminhos de Vida + os 3 pontos de Neonate normalmente totalizam 9."
             );

@@ -22,12 +22,12 @@ const HELP = {
     'quickening-minus': 'Retira 1 Quickening. Use para registrar um gasto; não adiciona dados automaticamente à calculadora.',
     'quickening-plus': 'Adiciona 1 Quickening, até 5. Se já estiver no máximo, marque o ganho excedente em Besta ou Natureza, à sua escolha. Não pode ganhar em torpor.',
     beast: 'Impulsos do lado monstruoso, ligados ao Clã. A descrição orienta a interpretação e o Frenesi da Besta.',
-    nature: 'Convicções e valores aos quais o personagem se apega. Orientam a interpretação e a Explosão da Natureza.',
+    nature: 'Escolha uma das oito Naturezas. Abaixo aparecem sua descrição, formas de satisfazê-la e a Explosão específica. Escolher uma Natureza não marca caixas nem move a Humanidade.',
     'beast-points': 'Marca a agitação da Besta, de 0 a 5. Cinco marcas exigem Autocontrole, dificuldade 3 + modificador de geração. Marcar pontos não move a escala nem recupera Vontade automaticamente.',
     'nature-points': 'Marca a agitação da Natureza, de 0 a 5. Cinco marcas exigem resistência à Explosão. Marcar pontos não move a escala nem recupera Vontade automaticamente.',
     'humanity-scale': 'Clique em um círculo disponível para corrigir a posição manualmente. Isso não resolve episódios nem altera círculos perdidos. Concluir Frenesi/Explosão aplica o passo pelas regras.',
     'humanity-losses': 'Ultrapassar o estágio 3 remove um círculo do lado oposto. Para recuperar, alcance o último círculo restante desse lado e cumpra uma nova condição de avanço; o círculo volta sem mover a posição.',
-    'frenzy-trigger': 'Anote o que costuma provocar o Frenesi da Besta do seu personagem e como ele se manifesta.',
+    'frenzy-trigger': 'Anotações pessoais sobre seu Frenesi. O nome e os efeitos oficiais já aparecem acima, conforme o Clã; não é necessário copiá-los aqui.',
     'outburst-trigger': 'Anote os gatilhos e comportamentos da Explosão ligada à sua Natureza.',
     'clan-trait-1': 'Primeiro dos dois Traços de Clã. Confira os pré-requisitos na descrição abaixo.',
     'clan-trait-2': 'Escolha um Traço diferente do primeiro. Traços de Ancilla geram aviso se o tier for Neonate.',
@@ -75,7 +75,7 @@ function helpTarget(element) {
         : control.matches('input') ? 'Custo ou lembrete do poder. Pode editar para registrar condições ou detalhes da campanha.'
         : control.textContent === '+ Poder' ? 'Adiciona outro poder à Disciplina, para escolher entre os disponíveis no nível atual.'
         : 'Ajuste os pontos da Disciplina. Poderes já escolhidos são preservados; requisitos não atendidos aparecem nos avisos.') };
-    if (control.closest('#lifepaths')) return { element: control, text: 'Registre o Caminho de Vida e os benefícios escolhidos. Pontos de Habilidade, focos e Recursos devem ser preenchidos na ficha.' };
+    if (control.closest('#lifepaths')) return { element: control, text: 'Escolha um Caminho e confira abaixo suas Habilidades, focos e Recursos. Distribua manualmente 5 pontos de Habilidade e 3 de Recursos por Caminho. Personalizado preserva seu texto livre.' };
     return null;
 }
 
