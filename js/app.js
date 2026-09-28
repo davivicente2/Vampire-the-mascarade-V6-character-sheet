@@ -9,40 +9,61 @@ import { validateCharacter } from "./validation.js";
 
 const ATTRIBUTE_GROUPS = {
     physical: [
-        ["strength", "Strength"],
-        ["dexterity", "Dexterity"],
-        ["stamina", "Stamina"]
+        ["strength", "Força"],
+        ["dexterity", "Destreza"],
+        ["stamina", "Vigor"]
     ],
     social: [
-        ["charisma", "Charisma"],
-        ["manipulation", "Manipulation"],
-        ["composure", "Composure"]
+        ["charisma", "Carisma"],
+        ["manipulation", "Manipulação"],
+        ["composure", "Autocontrole"]
     ],
     mental: [
-        ["intelligence", "Intelligence"],
-        ["wits", "Wits"],
-        ["resolve", "Resolve"]
+        ["intelligence", "Inteligência"],
+        ["wits", "Raciocínio"],
+        ["resolve", "Determinação"]
     ]
 };
 
 const SKILL_LABELS = {
-    athletics: "Athletics",
-    awareness: "Awareness",
-    craft: "Craft",
-    expression: "Expression",
-    fighting: "Fighting",
-    investigation: "Investigation",
-    knowledge: "Knowledge",
-    medicine: "Medicine",
-    persuasion: "Persuasion",
-    shooting: "Shooting",
-    sabotage: "Sabotage",
-    subterfuge: "Subterfuge",
-    survival: "Survival"
+    athletics: "Atletismo",
+    awareness: "Percepção",
+    craft: "Ofício",
+    expression: "Expressão",
+    fighting: "Briga",
+    investigation: "Investigação",
+    knowledge: "Conhecimento",
+    medicine: "Medicina",
+    persuasion: "Persuasão",
+    shooting: "Tiro",
+    sabotage: "Sabotagem",
+    subterfuge: "Subterfúgio",
+    survival: "Sobrevivência"
+};
+
+const RESOURCE_PRESETS = [
+    ["Riqueza", "Dinheiro disponível / patrimônio"],
+    ["Aliado", "Quem é e como ajuda"],
+    ["Contatos", "Quem é e que informações consegue"],
+    ["Máscara", "Identidade falsa"],
+    ["Refúgio", "Onde fica, tamanho, segurança"],
+    ["Veículo", "Moto, carro, van etc."],
+    ["Repositório", "Arsenal, biblioteca, ferramentas etc."],
+    ["Propriedade", "Apartamento, clube, escritório etc."],
+    ["Fama", "Em qual meio é conhecido"],
+    ["Rebanho", "Mortais disponíveis para alimentação"],
+    ["Status", "Grupo onde possui respeito / autoridade"]
+];
+
+const HUNGER_EFFECTS = {
+    SATISFEITO: "+1 dado para resistir Frenesi/Explosão e +1 dado em testes de Poder das Disciplinas do Clã.",
+    SEDENTO: "+1 Quickening ao entrar na faixa e +1 no início de cada cena enquanto permanecer Sedento.",
+    FAMINTO: "+2 Quickening ao entrar na faixa e +2 por cena. Teste Autocontrole + Determinação ao perceber sangue ou vítima vulnerável.",
+    TORPOR: "Paralisado; sem Disciplinas; perde todo Quickening. Ao ser alimentado: teste Autocontrole + Determinação, Dificuldade 5."
 };
 
 const DEFAULT_CHARACTER = {
-    version: 1,
+    version: 2,
     identity: {
         name: "teste",
         clan: "Ministry",
@@ -58,15 +79,9 @@ const DEFAULT_CHARACTER = {
         curse: "Flagrante do Sol"
     },
     attributes: {
-        strength: 2,
-        dexterity: 3,
-        stamina: 3,
-        charisma: 1,
-        manipulation: 1,
-        composure: 4,
-        intelligence: 4,
-        wits: 3,
-        resolve: 3
+        strength: 2, dexterity: 3, stamina: 3,
+        charisma: 1, manipulation: 1, composure: 4,
+        intelligence: 4, wits: 3, resolve: 3
     },
     skills: {
         athletics: { dots: 2, focus: "throwing" },
@@ -84,28 +99,16 @@ const DEFAULT_CHARACTER = {
         survival: { dots: 1, focus: "tracking" }
     },
     resources: [
-        { name: "Contact", dots: 1 },
-        { name: "Mask", dots: 2 },
-        { name: "Repository", dots: 2 },
-        { name: "Contact", dots: 1 },
-        { name: "Ally", dots: 0 }
+        { name: "Contact", dots: 1, details: "" },
+        { name: "Mask", dots: 2, details: "" },
+        { name: "Repository", dots: 2, details: "" },
+        { name: "Contact", dots: 1, details: "" },
+        { name: "Ally", dots: 0, details: "" }
     ],
     disciplines: [
-        {
-            name: "Corruption",
-            dots: 2,
-            powers: ["Nightmare Glimpses", "Self Doubt"]
-        },
-        {
-            name: "Obfuscate",
-            dots: 0,
-            powers: [""]
-        },
-        {
-            name: "Presence",
-            dots: 1,
-            powers: ["Dread Gaze"]
-        }
+        { name: "Corruption", dots: 2, powers: [{name:"Nightmare Glimpses", cost:"", reminder:""}, {name:"Self Doubt", cost:"", reminder:""}] },
+        { name: "Obfuscate", dots: 0, powers: [{name:"", cost:"", reminder:""}] },
+        { name: "Presence", dots: 1, powers: [{name:"Dread Gaze", cost:"", reminder:""}] }
     ],
     lifepaths: [
         "Criminal — You made your living by breaking the law.",
@@ -119,77 +122,43 @@ const DEFAULT_CHARACTER = {
     flaw: "",
     nature: "Survivor — You always pull through, surviving whatever the world throws at you.",
     beast: "Enticer — Your Beast rejoices in corrupting others, in making them chase their repressed desires and darkest wishes.",
-    humanityScale: "neutral",
     items: "foto da esposa, pistola",
     currentVitae: 13,
-    currentWillpower: 12
+    currentWillpower: 12,
+    quickening: 0,
+    nefariousDamage: 0,
+    beastPoints: 0,
+    naturePoints: 0,
+    humanityPosition: 0,
+    frenzyTrigger: "",
+    outburstTrigger: ""
 };
 
-
 const EMPTY_CHARACTER = {
-    version: 1,
+    version: 2,
     identity: {
-        name: "",
-        clan: "",
-        apparentAge: "",
-        actualAge: "",
-        embraceDate: "",
-        nostalgicDecade: "",
-        generation: 0,
-        generationModifier: 0,
-        playLevel: "",
-        archetype: "",
-        sire: "",
-        curse: ""
+        name: "", clan: "", apparentAge: "", actualAge: "", embraceDate: "",
+        nostalgicDecade: "", generation: 0, generationModifier: 0,
+        playLevel: "", archetype: "", sire: "", curse: ""
     },
     attributes: {
-        strength: 0,
-        dexterity: 0,
-        stamina: 0,
-        charisma: 0,
-        manipulation: 0,
-        composure: 0,
-        intelligence: 0,
-        wits: 0,
-        resolve: 0
+        strength: 0, dexterity: 0, stamina: 0,
+        charisma: 0, manipulation: 0, composure: 0,
+        intelligence: 0, wits: 0, resolve: 0
     },
-    skills: {
-        athletics: { dots: 0, focus: "" },
-        awareness: { dots: 0, focus: "" },
-        craft: { dots: 0, focus: "" },
-        expression: { dots: 0, focus: "" },
-        fighting: { dots: 0, focus: "" },
-        investigation: { dots: 0, focus: "" },
-        knowledge: { dots: 0, focus: "" },
-        medicine: { dots: 0, focus: "" },
-        persuasion: { dots: 0, focus: "" },
-        shooting: { dots: 0, focus: "" },
-        sabotage: { dots: 0, focus: "" },
-        subterfuge: { dots: 0, focus: "" },
-        survival: { dots: 0, focus: "" }
-    },
-    resources: [
-        { name: "", dots: 0 },
-        { name: "", dots: 0 },
-        { name: "", dots: 0 },
-        { name: "", dots: 0 },
-        { name: "", dots: 0 }
-    ],
+    skills: Object.fromEntries(Object.keys(SKILL_LABELS).map((key) => [key, {dots:0, focus:""}])),
+    resources: RESOURCE_PRESETS.map(([name, details]) => ({name, dots:0, details})),
     disciplines: [
-        { name: "", dots: 0, powers: [""] },
-        { name: "", dots: 0, powers: [""] },
-        { name: "", dots: 0, powers: [""] }
+        {name:"", dots:0, powers:[{name:"", cost:"", reminder:""}]},
+        {name:"", dots:0, powers:[{name:"", cost:"", reminder:""}]},
+        {name:"", dots:0, powers:[{name:"", cost:"", reminder:""}]}
     ],
-    lifepaths: ["", ""],
-    clanTraits: ["", ""],
-    merit: "",
-    flaw: "",
-    nature: "",
-    beast: "",
-    humanityScale: "",
-    items: "",
-    currentVitae: 0,
-    currentWillpower: 0
+    lifepaths:["",""],
+    clanTraits:["",""],
+    merit:"", flaw:"", nature:"", beast:"", items:"",
+    currentVitae:0, currentWillpower:0, quickening:0, nefariousDamage:0,
+    beastPoints:0, naturePoints:0, humanityPosition:0,
+    frenzyTrigger:"", outburstTrigger:""
 };
 
 let character = normalizeCharacter(loadCharacter() || DEFAULT_CHARACTER);
@@ -198,36 +167,63 @@ function clone(value) {
     return JSON.parse(JSON.stringify(value));
 }
 
+function normalizePower(power) {
+    if (typeof power === "string") {
+        return {name: power, cost: "", reminder: ""};
+    }
+    return {
+        name: power?.name || "",
+        cost: power?.cost || "",
+        reminder: power?.reminder || ""
+    };
+}
+
 function normalizeCharacter(value) {
     const base = clone(DEFAULT_CHARACTER);
     const incoming = value && typeof value === "object" ? value : {};
 
-    base.version = Number(incoming.version || base.version);
-    base.identity = { ...base.identity, ...(incoming.identity || {}) };
-    base.attributes = { ...base.attributes, ...(incoming.attributes || {}) };
-    base.skills = { ...base.skills, ...(incoming.skills || {}) };
+    base.version = 2;
+    base.identity = {...base.identity, ...(incoming.identity || {})};
+    base.attributes = {...base.attributes, ...(incoming.attributes || {})};
+
+    for (const key of Object.keys(SKILL_LABELS)) {
+        base.skills[key] = {
+            ...base.skills[key],
+            ...(incoming.skills?.[key] || {})
+        };
+    }
 
     if (Array.isArray(incoming.resources)) {
-        base.resources = incoming.resources;
+        base.resources = incoming.resources.map((resource) => ({
+            name: resource?.name || "",
+            dots: Number(resource?.dots || 0),
+            details: resource?.details || ""
+        }));
     }
 
     if (Array.isArray(incoming.disciplines)) {
-        base.disciplines = incoming.disciplines;
+        base.disciplines = incoming.disciplines.map((discipline) => ({
+            name: discipline?.name || "",
+            dots: Number(discipline?.dots || 0),
+            powers: Array.isArray(discipline?.powers)
+                ? discipline.powers.map(normalizePower)
+                : [{name:"", cost:"", reminder:""}]
+        }));
     }
 
-    if (Array.isArray(incoming.lifepaths)) {
-        base.lifepaths = incoming.lifepaths;
-    }
+    if (Array.isArray(incoming.lifepaths)) base.lifepaths = incoming.lifepaths.slice(0, 2);
+    while (base.lifepaths.length < 2) base.lifepaths.push("");
 
-    if (Array.isArray(incoming.clanTraits)) {
-        base.clanTraits = incoming.clanTraits;
-    }
+    if (Array.isArray(incoming.clanTraits)) base.clanTraits = incoming.clanTraits.slice(0, 2);
+    while (base.clanTraits.length < 2) base.clanTraits.push("");
 
-    ["merit", "flaw", "nature", "beast", "humanityScale", "items", "currentVitae", "currentWillpower"].forEach((key) => {
-        if (incoming[key] !== undefined) {
-            base[key] = incoming[key];
-        }
-    });
+    for (const key of [
+        "merit","flaw","nature","beast","items",
+        "currentVitae","currentWillpower","quickening","nefariousDamage",
+        "beastPoints","naturePoints","humanityPosition","frenzyTrigger","outburstTrigger"
+    ]) {
+        if (incoming[key] !== undefined) base[key] = incoming[key];
+    }
 
     return base;
 }
@@ -236,22 +232,34 @@ function maxVitae() {
     return 10 + Number(character.attributes.stamina || 0);
 }
 
+function effectiveMaxVitae() {
+    return Math.max(0, maxVitae() - Number(character.nefariousDamage || 0));
+}
+
 function maxWillpower() {
-    return 5
-        + Number(character.attributes.composure || 0)
-        + Number(character.attributes.resolve || 0);
+    return 5 + Number(character.attributes.composure || 0) + Number(character.attributes.resolve || 0);
 }
 
-function clampTrackers() {
-    character.currentVitae = Math.max(0, Math.min(Number(character.currentVitae || 0), maxVitae()));
-    character.currentWillpower = Math.max(0, Math.min(Number(character.currentWillpower || 0), maxWillpower()));
+function hungerState() {
+    const value = Number(character.currentVitae || 0);
+    if (value <= 0) return "TORPOR";
+    if (value >= 11) return "SATISFEITO";
+    if (value >= 6) return "SEDENTO";
+    return "FAMINTO";
 }
 
-function setDirty(message) {
+function humanityState() {
+    if (character.beastPoints >= 5) return "⚠ TESTE DE FRENESI";
+    if (character.naturePoints >= 5) return "⚠ TESTE DE OUTBURST";
+    if (character.beastPoints >= 3) return "BESTA AGITADA";
+    if (character.naturePoints >= 3) return "NATUREZA AGITADA";
+    return "ESTÁVEL";
+}
+
+function saveNow(message = "Alteração salva automaticamente.") {
     saveCharacter(character);
     document.getElementById("save-status").textContent = "Salvo automaticamente.";
-    document.getElementById("save-detail").textContent =
-        message || "A alteração foi armazenada neste navegador.";
+    document.getElementById("save-detail").textContent = message;
     renderValidation();
 }
 
@@ -259,20 +267,16 @@ function bindInput(id, getter, setter, options = {}) {
     const element = document.getElementById(id);
     element.value = getter();
 
-    element.addEventListener("input", () => {
-        const value = options.number ? Number(element.value) : element.value;
+    const eventName = element.tagName === "SELECT" ? "change" : "input";
+    element.addEventListener(eventName, () => {
+        const value = options.number ? Number(element.value || 0) : element.value;
         setter(value);
-
-        if (options.recalculate) {
-            clampTrackers();
-            renderTrackers();
-        }
-
-        setDirty();
+        if (options.after) options.after();
+        saveNow();
     });
 }
 
-function createDots(value, max, onChange, label) {
+function createDots(value, max, onChange, label, className = "dot") {
     const wrapper = document.createElement("div");
     wrapper.className = "dots";
     wrapper.setAttribute("role", "group");
@@ -281,14 +285,9 @@ function createDots(value, max, onChange, label) {
     for (let index = 1; index <= max; index += 1) {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = "dot" + (index <= value ? " filled" : "");
-        button.setAttribute("aria-label", label + ": " + index + " pontos");
-        button.title = index + " pontos";
-
-        button.addEventListener("click", () => {
-            onChange(index === value ? index - 1 : index);
-        });
-
+        button.className = className + (index <= value ? " filled" : "");
+        button.setAttribute("aria-label", label + ": " + index);
+        button.addEventListener("click", () => onChange(index === value ? index - 1 : index));
         wrapper.appendChild(button);
     }
 
@@ -299,79 +298,66 @@ function renderAttributes() {
     const root = document.getElementById("attributes");
     root.replaceChildren();
 
-    const titles = {
-        physical: "Physical",
-        social: "Social",
-        mental: "Mental"
-    };
-
-    Object.entries(ATTRIBUTE_GROUPS).forEach(([groupKey, attributes]) => {
+    for (const [groupKey, attributes] of Object.entries(ATTRIBUTE_GROUPS)) {
         const group = document.createElement("div");
         group.className = "attribute-group";
 
-        const heading = document.createElement("h3");
-        heading.textContent = titles[groupKey];
-        group.appendChild(heading);
+        const title = document.createElement("h3");
+        title.textContent = groupKey === "physical" ? "Físicos" : groupKey === "social" ? "Sociais" : "Mentais";
+        group.appendChild(title);
 
-        attributes.forEach(([key, label]) => {
+        for (const [key, label] of attributes) {
             const row = document.createElement("div");
             row.className = "dot-row";
-
             const name = document.createElement("span");
             name.className = "dot-label";
             name.textContent = label;
-
-            row.appendChild(name);
-            row.appendChild(
-                createDots(character.attributes[key], 5, (nextValue) => {
-                    character.attributes[key] = nextValue;
-                    clampTrackers();
-                    renderAttributes();
-                    renderTrackers();
-                    setDirty("Atributo atualizado.");
-                }, label)
-            );
-
+            row.append(name, createDots(character.attributes[key], 5, (next) => {
+                character.attributes[key] = next;
+                clampCoreResources();
+                renderAttributes();
+                renderCoreResources();
+                renderCalculator();
+                saveNow("Atributo salvo.");
+            }, label));
             group.appendChild(row);
-        });
+        }
 
         root.appendChild(group);
-    });
+    }
 }
 
 function renderSkills() {
     const root = document.getElementById("skills");
     root.replaceChildren();
 
-    Object.entries(SKILL_LABELS).forEach(([key, label]) => {
+    for (const [key, label] of Object.entries(SKILL_LABELS)) {
         const skill = character.skills[key];
-
         const row = document.createElement("div");
         row.className = "skill-row";
 
         const name = document.createElement("span");
         name.textContent = label;
 
-        const dots = createDots(skill.dots, 5, (nextValue) => {
-            skill.dots = nextValue;
-            renderSkills();
-            setDirty("Habilidade atualizada.");
-        }, label);
-
         const focus = document.createElement("input");
-        focus.className = "skill-focus";
         focus.type = "text";
-        focus.value = skill.focus;
+        focus.className = "skill-focus";
         focus.placeholder = "Foco(s)";
-        focus.setAttribute("aria-label", "Focos de " + label);
+        focus.value = skill.focus || "";
         focus.addEventListener("input", () => {
             skill.focus = focus.value;
-            setDirty("Foco atualizado.");
+            saveNow("Foco salvo.");
         });
 
-        row.append(name, dots, focus);
+        row.append(name, createDots(skill.dots, 5, (next) => {
+            skill.dots = next;
+            renderSkills();
+            renderCalculator();
+            saveNow("Habilidade salva.");
+        }, label), focus);
+
         root.appendChild(row);
-    });
+    }
 }
 
 function renderResources() {
@@ -380,33 +366,57 @@ function renderResources() {
 
     character.resources.forEach((resource, index) => {
         const row = document.createElement("div");
-        row.className = "resource-row";
+        row.className = "resource-row resource-row-detailed";
 
         const name = document.createElement("input");
-        name.type = "text";
         name.value = resource.name;
-        name.setAttribute("aria-label", "Nome do Recurso " + (index + 1));
+        name.placeholder = "Recurso";
         name.addEventListener("input", () => {
             resource.name = name.value;
-            setDirty("Recurso atualizado.");
+            saveNow("Recurso salvo.");
         });
 
-        const dots = createDots(resource.dots, 5, (nextValue) => {
-            resource.dots = nextValue;
-            renderResources();
-            setDirty("Pontos de Recurso atualizados.");
-        }, "Recurso " + (index + 1));
+        const details = document.createElement("input");
+        details.value = resource.details || "";
+        details.placeholder = "Detalhes";
+        details.addEventListener("input", () => {
+            resource.details = details.value;
+            saveNow("Detalhes do recurso salvos.");
+        });
 
-        row.append(name, dots);
+        const dots = createDots(resource.dots, 5, (next) => {
+            resource.dots = next;
+            renderResources();
+            saveNow("Nível do recurso salvo.");
+        }, "Nível de " + (resource.name || "recurso"));
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "icon-button no-print";
+        remove.textContent = "×";
+        remove.title = "Remover recurso";
+        remove.addEventListener("click", () => {
+            character.resources.splice(index, 1);
+            renderResources();
+            saveNow("Recurso removido.");
+        });
+
+        row.append(name, dots, details, remove);
         root.appendChild(row);
     });
+}
+
+function addResource() {
+    character.resources.push({name:"", dots:0, details:""});
+    renderResources();
+    saveNow("Novo recurso criado.");
 }
 
 function renderDisciplines() {
     const root = document.getElementById("disciplines");
     root.replaceChildren();
 
-    character.disciplines.forEach((discipline, index) => {
+    character.disciplines.forEach((discipline, disciplineIndex) => {
         const card = document.createElement("div");
         card.className = "discipline-card";
 
@@ -414,282 +424,346 @@ function renderDisciplines() {
         head.className = "discipline-head";
 
         const name = document.createElement("input");
-        name.type = "text";
         name.value = discipline.name;
-        name.setAttribute("aria-label", "Disciplina " + (index + 1));
+        name.placeholder = "Disciplina";
         name.addEventListener("input", () => {
             discipline.name = name.value;
-            setDirty("Disciplina atualizada.");
+            saveNow("Disciplina salva.");
         });
 
-        const dots = createDots(discipline.dots, 5, (nextValue) => {
-            discipline.dots = nextValue;
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "icon-button no-print";
+        remove.textContent = "×";
+        remove.title = "Remover disciplina";
+        remove.addEventListener("click", () => {
+            character.disciplines.splice(disciplineIndex, 1);
             renderDisciplines();
-            setDirty("Pontos de Disciplina atualizados.");
+            saveNow("Disciplina removida.");
+        });
+
+        const dots = createDots(discipline.dots, 5, (next) => {
+            discipline.dots = next;
+            renderDisciplines();
+            saveNow("Nível da disciplina salvo.");
         }, discipline.name || "Disciplina");
 
-        head.append(name, dots);
+        head.append(name, dots, remove);
+        card.appendChild(head);
 
-        const powersLabel = document.createElement("label");
-        const labelText = document.createElement("span");
-        labelText.textContent = "Poderes — um por linha";
+        const powers = document.createElement("div");
+        powers.className = "power-list";
 
-        const powers = document.createElement("textarea");
-        powers.rows = 3;
-        powers.value = discipline.powers.join("\n");
-        powers.addEventListener("input", () => {
-            discipline.powers = powers.value.split("\n");
-            setDirty("Poderes atualizados.");
+        discipline.powers.forEach((power, powerIndex) => {
+            const row = document.createElement("div");
+            row.className = "power-row";
+
+            const powerName = document.createElement("input");
+            powerName.value = power.name;
+            powerName.placeholder = "Poder";
+            powerName.addEventListener("input", () => {
+                power.name = powerName.value;
+                saveNow("Poder salvo.");
+            });
+
+            const cost = document.createElement("input");
+            cost.value = power.cost;
+            cost.placeholder = "Custo";
+            cost.addEventListener("input", () => {
+                power.cost = cost.value;
+                saveNow("Custo salvo.");
+            });
+
+            const reminder = document.createElement("input");
+            reminder.value = power.reminder;
+            reminder.placeholder = "Lembrete";
+            reminder.addEventListener("input", () => {
+                power.reminder = reminder.value;
+                saveNow("Lembrete salvo.");
+            });
+
+            const removePower = document.createElement("button");
+            removePower.type = "button";
+            removePower.className = "icon-button no-print";
+            removePower.textContent = "×";
+            removePower.title = "Remover poder";
+            removePower.addEventListener("click", () => {
+                discipline.powers.splice(powerIndex, 1);
+                renderDisciplines();
+                saveNow("Poder removido.");
+            });
+
+            row.append(powerName, cost, reminder, removePower);
+            powers.appendChild(row);
         });
 
-        powersLabel.append(labelText, powers);
-        card.append(head, powersLabel);
+        const addPower = document.createElement("button");
+        addPower.type = "button";
+        addPower.className = "small-button no-print";
+        addPower.textContent = "+ Poder";
+        addPower.addEventListener("click", () => {
+            discipline.powers.push({name:"", cost:"", reminder:""});
+            renderDisciplines();
+            saveNow("Novo poder criado.");
+        });
+
+        card.append(powers, addPower);
         root.appendChild(card);
     });
+}
+
+function addDiscipline() {
+    character.disciplines.push({name:"", dots:0, powers:[{name:"",cost:"",reminder:""}]});
+    renderDisciplines();
+    saveNow("Nova disciplina criada.");
 }
 
 function renderLifepaths() {
     const root = document.getElementById("lifepaths");
     root.replaceChildren();
 
-    while (character.lifepaths.length < 2) {
-        character.lifepaths.push("");
-    }
+    while (character.lifepaths.length < 2) character.lifepaths.push("");
 
-    character.lifepaths.slice(0, 2).forEach((lifepath, index) => {
+    character.lifepaths.slice(0,2).forEach((value, index) => {
         const label = document.createElement("label");
         const span = document.createElement("span");
         span.textContent = "Caminho de Vida " + (index + 1);
-
         const textarea = document.createElement("textarea");
-        textarea.rows = 3;
-        textarea.value = lifepath;
+        textarea.rows = 5;
+        textarea.value = value;
         textarea.addEventListener("input", () => {
             character.lifepaths[index] = textarea.value;
-            setDirty("Caminho de Vida atualizado.");
+            saveNow("Caminho de Vida salvo.");
         });
-
         label.append(span, textarea);
         root.appendChild(label);
     });
 }
 
-function createTracker(rootId, current, maximum, setter, label) {
-    const root = document.getElementById(rootId);
-    root.replaceChildren();
+function clampCoreResources() {
+    character.currentVitae = Math.max(0, Math.min(Number(character.currentVitae || 0), effectiveMaxVitae()));
+    character.currentWillpower = Math.max(0, Math.min(Number(character.currentWillpower || 0), maxWillpower()));
+    character.quickening = Math.max(0, Number(character.quickening || 0));
+    character.nefariousDamage = Math.max(0, Number(character.nefariousDamage || 0));
+}
 
-    for (let index = 1; index <= maximum; index += 1) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "tracker-dot" + (index <= current ? " filled" : "");
-        button.title = index + " / " + maximum;
-        button.setAttribute("aria-label", label + " " + index + " de " + maximum);
+function renderCoreResources() {
+    clampCoreResources();
 
+    const vitaeMax = maxVitae();
+    const effective = effectiveMaxVitae();
+    const wpMax = maxWillpower();
+    const state = hungerState();
+
+    document.getElementById("vitae-label").textContent = character.currentVitae + " / " + vitaeMax;
+    document.getElementById("willpower-label").textContent = character.currentWillpower + " / " + wpMax;
+    document.getElementById("effective-vitae").textContent = effective;
+    document.getElementById("hunger-state").textContent = state;
+    document.getElementById("hunger-effect").textContent = HUNGER_EFFECTS[state];
+    document.getElementById("quickening-label").textContent = String(character.quickening);
+    document.getElementById("quickening").value = character.quickening;
+    document.getElementById("nefarious-damage").value = character.nefariousDamage;
+
+    const vitaeRoot = document.getElementById("vitae-tracker");
+    vitaeRoot.replaceChildren(createDots(character.currentVitae, vitaeMax, (next) => {
+        character.currentVitae = Math.min(next, effectiveMaxVitae());
+        renderCoreResources();
+        saveNow("Vitae salvo.");
+    }, "Vitae", "tracker-dot"));
+
+    const wpRoot = document.getElementById("willpower-tracker");
+    wpRoot.replaceChildren(createDots(character.currentWillpower, wpMax, (next) => {
+        character.currentWillpower = next;
+        renderCoreResources();
+        saveNow("Força de Vontade salva.");
+    }, "Força de Vontade", "tracker-dot"));
+}
+
+function renderHumanity() {
+    document.getElementById("beast-points-label").textContent = character.beastPoints + " / 5";
+    document.getElementById("nature-points-label").textContent = character.naturePoints + " / 5";
+    document.getElementById("humanity-state").textContent = humanityState();
+
+    const beastRoot = document.getElementById("beast-points");
+    beastRoot.replaceChildren(createDots(character.beastPoints, 5, (next) => {
+        character.beastPoints = next;
+        character.humanityPosition = Math.max(-3, Math.min(3, character.naturePoints - character.beastPoints));
+        renderHumanity();
+        saveNow("Pontos de Besta salvos.");
+    }, "Pontos de Besta", "tracker-dot"));
+
+    const natureRoot = document.getElementById("nature-points");
+    natureRoot.replaceChildren(createDots(character.naturePoints, 5, (next) => {
+        character.naturePoints = next;
+        character.humanityPosition = Math.max(-3, Math.min(3, character.naturePoints - character.beastPoints));
+        renderHumanity();
+        saveNow("Pontos de Natureza salvos.");
+    }, "Pontos de Natureza", "tracker-dot"));
+
+    const scale = document.getElementById("humanity-scale");
+    scale.replaceChildren();
+
+    for (let pos=-3; pos<=3; pos+=1) {
+        const button=document.createElement("button");
+        button.type="button";
+        button.className="humanity-dot" + (pos===Number(character.humanityPosition) ? " active" : "");
+        button.title = pos < 0 ? "Mais próximo da Besta" : pos > 0 ? "Mais próximo da Natureza" : "Neutro";
         button.addEventListener("click", () => {
-            setter(index === current ? index - 1 : index);
-            renderTrackers();
-            setDirty(label + " atualizado.");
+            character.humanityPosition = pos;
+            renderHumanity();
+            saveNow("Escala de Humanidade salva.");
         });
-
-        root.appendChild(button);
+        scale.appendChild(button);
     }
 }
 
-function renderTrackers() {
-    clampTrackers();
+function renderCalculator() {
+    const attributeSelect = document.getElementById("calculator-attribute");
+    const skillSelect = document.getElementById("calculator-skill");
 
-    const vitaeMax = maxVitae();
-    const willpowerMax = maxWillpower();
+    if (!attributeSelect.dataset.ready) {
+        attributeSelect.innerHTML = '<option value="">—</option>';
+        for (const attributes of Object.values(ATTRIBUTE_GROUPS)) {
+            for (const [key,label] of attributes) {
+                const option=document.createElement("option");
+                option.value=key; option.textContent=label;
+                attributeSelect.appendChild(option);
+            }
+        }
 
-    document.getElementById("vitae-label").textContent =
-        character.currentVitae + " / " + vitaeMax;
+        skillSelect.innerHTML = '<option value="">—</option>';
+        for (const [key,label] of Object.entries(SKILL_LABELS)) {
+            const option=document.createElement("option");
+            option.value=key; option.textContent=label;
+            skillSelect.appendChild(option);
+        }
 
-    document.getElementById("willpower-label").textContent =
-        character.currentWillpower + " / " + willpowerMax;
+        attributeSelect.dataset.ready="1";
+        skillSelect.dataset.ready="1";
+    }
 
-    createTracker(
-        "vitae-tracker",
-        character.currentVitae,
-        vitaeMax,
-        (value) => { character.currentVitae = value; },
-        "Vitae"
-    );
+    const attrKey=attributeSelect.value;
+    const skillKey=skillSelect.value;
+    const difficulty=Math.max(0, Number(document.getElementById("calculator-difficulty").value || 0));
+    const attr=attrKey ? Number(character.attributes[attrKey] || 0) : 0;
+    const skill=skillKey ? Number(character.skills[skillKey]?.dots || 0) : 0;
+    const result=Math.max(0, attr + skill - difficulty);
 
-    createTracker(
-        "willpower-tracker",
-        character.currentWillpower,
-        willpowerMax,
-        (value) => { character.currentWillpower = value; },
-        "Força de Vontade"
-    );
+    document.getElementById("calculator-result").textContent = result + (result===1 ? " dado" : " dados");
+    document.getElementById("calculator-breakdown").textContent = attr + " + " + skill + " − " + difficulty;
 }
 
 function renderValidation() {
     const warnings = validateCharacter(character);
     const summary = document.getElementById("validation-summary");
     const root = document.getElementById("validation-list");
-
     root.replaceChildren();
 
-    if (warnings.length === 0) {
-        summary.innerHTML = '<span class="validation-ok">Sem avisos de criação.</span>';
-        const ok = document.createElement("p");
-        ok.className = "validation-ok";
-        ok.textContent = "A validação automática não encontrou pendências nas regras que esta versão verifica.";
-        root.appendChild(ok);
+    if (!warnings.length) {
+        summary.innerHTML='<span class="validation-ok">Sem avisos de criação.</span>';
+        const p=document.createElement("p");
+        p.className="validation-ok";
+        p.textContent="A validação automática não encontrou pendências nas regras atualmente verificadas.";
+        root.appendChild(p);
         return;
     }
 
-    summary.innerHTML =
-        '<span class="validation-count">' + warnings.length + ' aviso(s)</span>';
-
-    const list = document.createElement("ul");
-    list.className = "validation-list";
-
-    warnings.forEach((warning) => {
-        const item = document.createElement("li");
-        item.className = "validation-warning";
-        item.textContent = warning;
-        list.appendChild(item);
-    });
-
-    root.appendChild(list);
+    summary.innerHTML='<span class="validation-count">' + warnings.length + ' aviso(s)</span>';
+    const ul=document.createElement("ul");
+    ul.className="validation-list";
+    for (const warning of warnings) {
+        const li=document.createElement("li");
+        li.className="validation-warning";
+        li.textContent=warning;
+        ul.appendChild(li);
+    }
+    root.appendChild(ul);
 }
 
 function bindStaticFields() {
-    bindInput("character-name", () => character.identity.name, (value) => {
-        character.identity.name = value;
+    const identityBindings = [
+        ["character-name","name"],["clan","clan"],["age-apparent","apparentAge"],["age-actual","actualAge"],
+        ["embrace-date","embraceDate"],["nostalgic-decade","nostalgicDecade"],["generation","generation"],
+        ["generation-modifier","generationModifier"],["play-level","playLevel"],["archetype","archetype"],
+        ["sire","sire"],["curse","curse"]
+    ];
+
+    for (const [id,key] of identityBindings) {
+        bindInput(id, () => character.identity[key], (value) => { character.identity[key]=value; }, {
+            number:["generation","generationModifier"].includes(key)
+        });
+    }
+
+    bindInput("clan-trait-1",()=>character.clanTraits[0] || "",(v)=>character.clanTraits[0]=v);
+    bindInput("clan-trait-2",()=>character.clanTraits[1] || "",(v)=>character.clanTraits[1]=v);
+    bindInput("merit",()=>character.merit,(v)=>character.merit=v);
+    bindInput("flaw",()=>character.flaw,(v)=>character.flaw=v);
+    bindInput("nature",()=>character.nature,(v)=>character.nature=v);
+    bindInput("beast",()=>character.beast,(v)=>character.beast=v);
+    bindInput("items",()=>character.items,(v)=>character.items=v);
+    bindInput("frenzy-trigger",()=>character.frenzyTrigger,(v)=>character.frenzyTrigger=v);
+    bindInput("outburst-trigger",()=>character.outburstTrigger,(v)=>character.outburstTrigger=v);
+
+    bindInput("quickening",()=>character.quickening,(v)=>character.quickening=Math.max(0,v),{
+        number:true, after:renderCoreResources
     });
 
-    bindInput("clan", () => character.identity.clan, (value) => {
-        character.identity.clan = value;
-    });
-
-    bindInput("age-apparent", () => character.identity.apparentAge, (value) => {
-        character.identity.apparentAge = value;
-    });
-
-    bindInput("age-actual", () => character.identity.actualAge, (value) => {
-        character.identity.actualAge = value;
-    });
-
-    bindInput("embrace-date", () => character.identity.embraceDate, (value) => {
-        character.identity.embraceDate = value;
-    });
-
-    bindInput("nostalgic-decade", () => character.identity.nostalgicDecade, (value) => {
-        character.identity.nostalgicDecade = value;
-    });
-
-    bindInput("generation", () => character.identity.generation, (value) => {
-        character.identity.generation = value;
-    }, { number: true });
-
-    bindInput("generation-modifier", () => character.identity.generationModifier, (value) => {
-        character.identity.generationModifier = value;
-    }, { number: true });
-
-    bindInput("play-level", () => character.identity.playLevel, (value) => {
-        character.identity.playLevel = value;
-    });
-
-    bindInput("archetype", () => character.identity.archetype, (value) => {
-        character.identity.archetype = value;
-    });
-
-    bindInput("sire", () => character.identity.sire, (value) => {
-        character.identity.sire = value;
-    });
-
-    bindInput("curse", () => character.identity.curse, (value) => {
-        character.identity.curse = value;
-    });
-
-    bindInput("humanity-scale", () => character.humanityScale, (value) => {
-        character.humanityScale = value;
-    });
-
-    bindInput("clan-trait-1", () => character.clanTraits[0] || "", (value) => {
-        character.clanTraits[0] = value;
-    });
-
-    bindInput("clan-trait-2", () => character.clanTraits[1] || "", (value) => {
-        character.clanTraits[1] = value;
-    });
-
-    bindInput("merit", () => character.merit, (value) => {
-        character.merit = value;
-    });
-
-    bindInput("flaw", () => character.flaw, (value) => {
-        character.flaw = value;
-    });
-
-    bindInput("nature", () => character.nature, (value) => {
-        character.nature = value;
-    });
-
-    bindInput("beast", () => character.beast, (value) => {
-        character.beast = value;
-    });
-
-    bindInput("items", () => character.items, (value) => {
-        character.items = value;
-    });
-}
-
-function refreshAll() {
-    renderAttributes();
-    renderSkills();
-    renderResources();
-    renderDisciplines();
-    renderLifepaths();
-    renderTrackers();
-    renderValidation();
+    bindInput("nefarious-damage",()=>character.nefariousDamage,(v)=>{
+        character.nefariousDamage=Math.max(0,v);
+        clampCoreResources();
+    },{number:true, after:renderCoreResources});
 }
 
 function installActions() {
-    document.getElementById("export-button").addEventListener("click", () => {
-        exportCharacter(character);
+    document.getElementById("add-resource").addEventListener("click", addResource);
+    document.getElementById("add-discipline").addEventListener("click", addDiscipline);
+
+    document.getElementById("quickening-minus").addEventListener("click", () => {
+        character.quickening=Math.max(0, Number(character.quickening || 0)-1);
+        renderCoreResources(); saveNow("Quickening salvo.");
+    });
+    document.getElementById("quickening-plus").addEventListener("click", () => {
+        character.quickening=Number(character.quickening || 0)+1;
+        renderCoreResources(); saveNow("Quickening salvo.");
     });
 
-    document.getElementById("print-button").addEventListener("click", () => {
-        window.print();
-    });
+    for (const id of ["calculator-attribute","calculator-skill","calculator-difficulty"]) {
+        document.getElementById(id).addEventListener("input", renderCalculator);
+        document.getElementById(id).addEventListener("change", renderCalculator);
+    }
+
+    document.getElementById("export-button").addEventListener("click",()=>exportCharacter(character));
+    document.getElementById("print-button").addEventListener("click",()=>window.print());
 
     document.getElementById("import-file").addEventListener("change", async (event) => {
-        const file = event.target.files && event.target.files[0];
-
-        if (!file) {
-            return;
-        }
-
+        const file=event.target.files?.[0];
+        if (!file) return;
         try {
-            character = normalizeCharacter(await importCharacter(file));
+            character=normalizeCharacter(await importCharacter(file));
             saveCharacter(character);
             location.reload();
         } catch (error) {
             alert(error.message);
         } finally {
-            event.target.value = "";
+            event.target.value="";
         }
     });
 
-    document.getElementById("reset-button").addEventListener("click", () => {
-        const confirmed = confirm(
-            "Limpar toda a ficha e começar um personagem novo? Os dados salvos neste navegador serão substituídos por uma ficha vazia."
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
+    document.getElementById("reset-button").addEventListener("click",()=>{
+        if (!confirm("Limpar toda a ficha e começar um personagem novo? A ficha atual será substituída no salvamento local.")) return;
         saveCharacter(clone(EMPTY_CHARACTER));
         location.reload();
     });
-
 }
 
 bindStaticFields();
-refreshAll();
+renderAttributes();
+renderSkills();
+renderResources();
+renderDisciplines();
+renderLifepaths();
+renderCoreResources();
+renderHumanity();
+renderCalculator();
+renderValidation();
 installActions();
