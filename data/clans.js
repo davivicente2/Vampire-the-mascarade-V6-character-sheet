@@ -3,7 +3,7 @@ export const clans = [
         id: "brujah",
         name: "Brujah",
         disciplineSlots: [["Celerity"], ["Potence"], ["Presence"]],
-        curse: { name: "Boiling Passion", description: "Emotions burn hotter; frenzy resistance becomes harder by the generation modifier." },
+        curse: { name: "Boiling Passion", description: "Ao tentar resistir a qualquer frenesi, a Dificuldade aumenta em um valor igual ao seu modificador de geração." },
         frenzy: {"name": "Rebellion", "description": "Aja contra quem ou o que considera autoridade na cena: recuse a tarefa recebida ou sabote a figura de poder. Todas as outras ações sofrem uma penalidade de dados igual ao modificador de geração."},
         beast: {"name": "Anti-Authority", "description": "Sua Besta exige desafiar autoridades e romper as regras que prendem você.", "indulging": "Desafie líderes, desobedeça ordens, destrua símbolos de autoridade ou sabote estruturas de poder e hierarquia."},
         traits: [
@@ -18,7 +18,7 @@ export const clans = [
         id: "gangrel",
         name: "Gangrel",
         disciplineSlots: [["Animalism"], ["Celerity"], ["Fortitude"]],
-        curse: { name: "Embraced Beast", description: "After frenzy or a Nature outburst, animalistic traits can manifest and reduce Attributes." },
+        curse: { name: "Embraced Beast", description: "Quando um frenesi ou Explosão da Natureza termina, ganhe características animalescas em quantidade igual ao modificador de geração até o fim da noite seguinte. Cada característica reduz um Atributo em 1, mínimo 1; aceitar o impulso (Ride the Wave) reduz a quantidade em 1." },
         frenzy: {"name": "Feral Impulses", "description": "Aja por impulso, como um animal, resolvendo obstáculos da forma mais direta possível. Testes em que não age como um animal sofrem uma penalidade igual ao modificador de geração. A penalidade é dobrada em testes de Inteligência ou Manipulação, exceto quando feitos contra animais."},
         beast: {"name": "Animalistic", "description": "Sua Besta quer viver por instinto e sentir a emoção da caça.", "indulging": "Comporte-se como um animal, corra com lobos, persiga presas como um predador e reaja instintivamente a ameaças e oportunidades."},
         traits: [
@@ -33,7 +33,7 @@ export const clans = [
         id: "lasombra",
         name: "Lasombra",
         disciplineSlots: [["Dominate"], ["Potence"], ["Corruption", "Oblivion"]],
-        curse: { name: "Shadow Presence", description: "Reflections and recordings distort, and complex technology can be disrupted by the clan's connection to the Abyss." },
+        curse: { name: "Shadow Presence", description: "Reflexos e gravações de você aparecem distorcidos. Na primeira tentativa da noite de usar um dispositivo mais complexo que uma roldana ou cadeado, você falha a menos que passe em Inteligência ou Carisma contra Dificuldade igual ao dobro do modificador de geração; depois disso, não pode repetir esse teste para o mesmo dispositivo até a noite seguinte." },
         frenzy: {"name": "Ruthlessness", "description": "Não tolera erros ou incompetência. Ao falhar em um teste, sofre uma penalidade igual ao modificador de geração em todos os testes até obter sucesso em um teste posterior ou terminar o frenesi. Uma falha dolorosa de um aliado em distância Curta também pode impor essa penalidade; nesse caso, ela dura até você ou o aliado ter sucesso em outra tentativa da mesma ação, ou até o frenesi terminar."},
         beast: {"name": "Punisher", "description": "Sua Besta despreza o fracasso e exige punir e humilhar quem falha com você.", "indulging": "Puna quem falha nas tarefas recebidas, humilhe quem considera inferior ou castigue a si mesmo quando o erro for seu."},
         traits: [
@@ -48,7 +48,7 @@ export const clans = [
         id: "ministry",
         name: "Ministry",
         disciplineSlots: [["Corruption"], ["Obfuscate"], ["Presence"]],
-        curse: { name: "Sunlight Bane", description: "Bright light imposes a penalty equal to the generation modifier; sunlight is especially dangerous." },
+        curse: { name: "Sunlight Bane", description: "Sob exposição direta a luz intensa, inclusive artificial, sofra uma penalidade de dados igual ao modificador de geração em todos os testes. Dano Nefasto causado por luz solar aumenta em valor igual ao modificador de geração." },
         frenzy: {"name": "Transgression", "description": "Sinta a necessidade incontrolável de levar outros a desejos degradantes, vícios, egoísmo ou prazeres hedonistas. Todos os testes que não busquem corromper alguém dessa forma sofrem uma penalidade igual ao modificador de geração."},
         beast: {"name": "Enticer", "description": "Sua Besta se satisfaz corrompendo outros e despertando desejos reprimidos.", "indulging": "Entregue-se a prazeres hedonistas, incentive outras pessoas a fazer o mesmo e ajude-as a descobrir seus desejos secretos."},
         traits: [
@@ -63,7 +63,7 @@ export const clans = [
         id: "nosferatu",
         name: "Nosferatu",
         disciplineSlots: [["Animalism"], ["Obfuscate"], ["Potence"]],
-        curse: { name: "External Beast", description: "The clan's monstrous nature is visibly written on the body and interferes with many social interactions." },
+        curse: { name: "External Beast", description: "Contra mortais, testes sociais que não busquem assustar, coagir ou afirmar domínio sofrem penalidade igual ao modificador de geração. Contra vampiros, a penalidade só se aplica quando sua aparência prejudica a interação." },
         frenzy: {"name": "Cryptophilia", "description": "Busque desesperadamente segredos e conhecimento, por menores que sejam. Todas as outras ações sofrem uma penalidade igual ao dobro do modificador de geração. O frenesi pode terminar antes se descobrir um segredo importante para a cena, como uma informação que dê vantagem sobre alguém presente."},
         beast: {"name": "Secretive", "description": "Sua Besta deseja acumular segredos e conhecimento para usá-los quando precisar.", "indulging": "Descubra segredos alheios, esconda informações e use o que sabe contra os outros."},
         traits: [
@@ -78,7 +78,7 @@ export const clans = [
         id: "toreador",
         name: "Toreador",
         disciplineSlots: [["Auspex"], ["Celerity"], ["Presence"]],
-        curse: { name: "Starved for Beauty", description: "In surroundings devoid of beauty, Power tests are penalized by the generation modifier." },
+        curse: { name: "Starved for Beauty", description: "Em ambientes que o Narrador considere desprovidos de beleza, todos os testes de Poder sofrem penalidade de dados igual ao modificador de geração." },
         frenzy: {"name": "Obsession", "description": "Escolha algo belo da cena, como uma pessoa, música, obra de arte ou um padrão de sangue. Quase não consegue desviar o olhar e só fala desse assunto. Testes que não envolvam apreciar, elogiar ou proteger o objeto sofrem uma penalidade igual ao modificador de geração. O frenesi pode terminar antes se o objeto for destruído ou sair da cena e da sua percepção."},
         beast: {"name": "Idol", "description": "Sua Besta exige adoração e quer que os outros se encantem com sua presença.", "indulging": "Seduza outras pessoas, faça-as implorar por sua atenção e deleite-se com sua bajulação."},
         traits: [
@@ -93,7 +93,7 @@ export const clans = [
         id: "ventrue",
         name: "Ventrue",
         disciplineSlots: [["Dominate"], ["Fortitude"], ["Presence"]],
-        curse: { name: "Rarefied Palate", description: "Only a specific type of mortal blood is truly palatable." },
+        curse: { name: "Rarefied Palate", description: "Escolha um tipo específico de mortal cujo sangue seja palatável. Pelo odor natural ou sangue, você reconhece se pertence ao tipo. Ao beber sangue incompatível, faça Autocontrole contra Dificuldade igual ao dobro do modificador de geração: sucesso recupera apenas 1 Vitae a cada 3 ingeridas; falha faz você vomitar e não obter benefício." },
         frenzy: {"name": "Arrogance", "description": "Busque assumir o comando e fazer alguém obedecer a uma ordem sua, sem imposição sobrenatural como Dominate. Todas as outras ações sofrem uma penalidade igual ao dobro do modificador de geração. O frenesi pode terminar antes se alguém que não seja seu aliado obedecer sem influência sobrenatural."},
         beast: {"name": "Superior", "description": "Sua Besta considera seu sangue superior e exige lealdade e submissão.", "indulging": "Aja com superioridade, faça os outros obedecerem e estabeleça uma hierarquia em que sua voz comanda."},
         traits: [

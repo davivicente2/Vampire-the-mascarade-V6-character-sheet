@@ -8,7 +8,7 @@ const HELP = {
     generation: 'Posição na linhagem vampírica. Neonatos: 11ª–13ª; Ancillae: 9ª–10ª; Elders: 6ª–8ª. O modificador é preenchido separadamente.',
     'generation-modifier': 'Neonato: 1; Ancilla: 2; Elder: 3. Reduz dano comum em Vitae (mínimo de 1 dano) e entra em várias dificuldades e efeitos. Não reduz Dano Nefasto.',
     'play-level': 'Tier da campanha. A ficha usa esse valor nos avisos de criação e requisitos de Traços. Não distribui pontos automaticamente.',
-    archetype: 'Conceito geral do personagem, como investigador, artista ou sobrevivente.',
+    archetype: 'Campo narrativo opcional para resumir o conceito do personagem. Não é uma escolha mecânica da criação de personagem no material V6 fornecido.',
     sire: 'Quem criou ou ensinou seu personagem. A seleção define as opções de Disciplina do Sire.',
     'sire-discipline': 'Disciplina concedida pelo tipo de Sire. Escolhê-la inclui a Disciplina na ficha; distribua seu ponto manualmente.',
     'clan-special-discipline': 'Escolha entre as alternativas de Disciplina oferecidas pelo seu Clã.',

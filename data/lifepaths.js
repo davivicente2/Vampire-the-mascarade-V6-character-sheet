@@ -24,6 +24,9 @@ export function getLifepath(value) {
 export function lifepathRequirement(path, tier) {
     if (!path || path.tier === 'mortal') return '';
     const levels = { neonate: 1, ancilla: 2, elder: 3 };
+    const labels = { neonate: 'Neonate', ancilla: 'Ancilla', elder: 'Elder' };
     if (!levels[tier]) return 'Defina o tier e confirme a elegibilidade com o Narrador.';
-    return levels[tier] < levels[path.tier] ? 'Requer Ancilla ou Elder; não está disponível para Neonate.' : '';
+    return levels[tier] < levels[path.tier]
+        ? 'Requer ' + labels[path.tier] + ' ou superior; não está disponível para ' + labels[tier] + '.'
+        : '';
 }

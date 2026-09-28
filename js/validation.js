@@ -25,6 +25,41 @@ export function validateCharacter(character) {
         );
     }
 
+    if (sire && character.identity.sireDiscipline) {
+        const sireDiscipline = character.disciplines.find(
+            (discipline) => discipline.name === character.identity.sireDiscipline
+        );
+        if (!sireDiscipline || Number(sireDiscipline.dots || 0) < 1) {
+            warnings.push(
+                "A Disciplina do Sire (" + character.identity.sireDiscipline +
+                ") está sem o ponto adicional concedido pelo Sire."
+            );
+        }
+    }
+
+    const tierRules = {
+        neonate: { label: "Neonate", minGeneration: 11, maxGeneration: 13, generationModifier: 1 },
+        ancilla: { label: "Ancilla", minGeneration: 9, maxGeneration: 10, generationModifier: 2 },
+        elder: { label: "Elder", minGeneration: 6, maxGeneration: 8, generationModifier: 3 }
+    };
+    const tierRule = tierRules[character.identity.playLevel];
+    if (tierRule) {
+        const generation = Number(character.identity.generation || 0);
+        const generationModifier = Number(character.identity.generationModifier || 0);
+        if (generation < tierRule.minGeneration || generation > tierRule.maxGeneration) {
+            warnings.push(
+                tierRule.label + " normalmente pertence às gerações " +
+                tierRule.minGeneration + "ª–" + tierRule.maxGeneration + "ª."
+            );
+        }
+        if (generationModifier !== tierRule.generationModifier) {
+            warnings.push(
+                tierRule.label + " usa modificador de geração " +
+                tierRule.generationModifier + " nas categorias do playtest."
+            );
+        }
+    }
+
     for (const value of character.lifepaths) {
         const path = getLifepath(value);
         const requirement = lifepathRequirement(path, character.identity.playLevel);
