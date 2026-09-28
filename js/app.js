@@ -13,6 +13,7 @@ import {
     getAvailableTraits
 } from "../data/clans.js";
 import { sires, getSireByName } from "../data/sires.js";
+import { merits, getMerit, meritHelp } from "../data/merits.js";
 import {
     disciplines,
     getDiscipline,
@@ -176,7 +177,8 @@ const EMPTY_CHARACTER = {
     frenzyTrigger:"", outburstTrigger:""
 };
 
-let character = normalizeCharacter(loadCharacter() || DEFAULT_CHARACTER);
+let loadError = null;
+let character = normalizeCharacter(loadCharacter((error) => { loadError = error; }) || DEFAULT_CHARACTER);
 
 function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -208,7 +210,7 @@ function powerReminder(power) {
 }
 
 function normalizeCharacter(value) {
-    const base = clone(DEFAULT_CHARACTER);
+    const base = clone(EMPTY_CHARACTER);
     const incoming = value && typeof value === "object" ? value : {};
 
     base.version = 2;
@@ -263,6 +265,15 @@ function normalizeCharacter(value) {
         if (incoming[key] !== undefined) base[key] = incoming[key];
     }
 
+    const bounded = (value, max, min = 0) => Math.max(min, Math.min(max, Math.trunc(Number(value) || 0)));
+    for (const key of Object.keys(base.attributes)) base.attributes[key] = bounded(base.attributes[key], 5);
+    for (const skill of Object.values(base.skills)) skill.dots = bounded(skill.dots, 5);
+    for (const item of [...base.resources, ...base.disciplines]) item.dots = bounded(item.dots, 5);
+    for (const key of ["currentVitae", "currentWillpower", "quickening", "nefariousDamage"]) {
+        base[key] = bounded(base[key], Number.MAX_SAFE_INTEGER);
+    }
+    for (const key of ["beastPoints", "naturePoints"]) base[key] = bounded(base[key], 5);
+    base.humanityPosition = bounded(base.humanityPosition, 3, -3);
     return base;
 }
 
@@ -295,7 +306,14 @@ function humanityState() {
 }
 
 function saveNow(message = "Alteração salva automaticamente.") {
-    saveCharacter(character);
+    try {
+        saveCharacter(character);
+    } catch (error) {
+        document.getElementById("save-status").textContent = "Alterações não salvas.";
+        document.getElementById("save-detail").textContent = error.message;
+        renderValidation();
+        return;
+    }
     document.getElementById("save-status").textContent = "Salvo automaticamente.";
     document.getElementById("save-detail").textContent = message;
     renderValidation();
@@ -507,7 +525,7 @@ function installIdentityAutomation() {
         character.identity.clanDisciplineChoice = variableSlot?.[0] || "";
 
         character.clanTraits = ["", ""];
-        syncDisciplinesToIdentity({resetExtras:true});
+        syncDisciplinesToIdentity({resetExtras:false});
         renderIdentityAutomation();
         renderDisciplines();
         saveNow("Clã e opções relacionadas atualizados.");
@@ -517,7 +535,7 @@ function installIdentityAutomation() {
         const sire = sires.find((item) => item.id === event.target.value) || null;
         character.identity.sire = sire?.name || "";
         character.identity.sireDiscipline = sire?.disciplines?.[0] || "";
-        syncDisciplinesToIdentity({resetExtras:true});
+        syncDisciplinesToIdentity({resetExtras:false});
         renderIdentityAutomation();
         renderDisciplines();
         saveNow("Sire e opções relacionadas atualizados.");
@@ -525,14 +543,14 @@ function installIdentityAutomation() {
 
     document.getElementById("sire-discipline").addEventListener("change", (event) => {
         character.identity.sireDiscipline = event.target.value;
-        syncDisciplinesToIdentity({resetExtras:true});
+        syncDisciplinesToIdentity({resetExtras:false});
         renderDisciplines();
         saveNow("Disciplina do Sire atualizada.");
     });
 
     document.getElementById("clan-special-discipline").addEventListener("change", (event) => {
         character.identity.clanDisciplineChoice = event.target.value;
-        syncDisciplinesToIdentity({resetExtras:true});
+        syncDisciplinesToIdentity({resetExtras:false});
         renderDisciplines();
         saveNow("Disciplina variável do Clã atualizada.");
     });
@@ -977,6 +995,35 @@ function renderValidation() {
     root.appendChild(ul);
 }
 
+function installMeritSelection() {
+    const select = document.getElementById("merit");
+    const description = document.getElementById("merit-description");
+    const saved = character.merit;
+    const selected = getMerit(saved);
+    const options = merits.map((merit) => ({ value: merit.name, label: merit.name }));
+
+    // Keep older free-text merits available without changing their stored text.
+    if (saved && !selected) {
+        options.push({ value: saved, label: saved.split(" — ")[0] + " (salvo)" });
+    }
+    populateSelect(select, options, selected?.name || saved, "Selecione um Mérito");
+
+    const renderDescription = () => {
+        const merit = getMerit(select.value);
+        const separator = select.value.indexOf(" — ");
+        description.textContent = meritHelp(merit) || (select.value
+            ? (separator >= 0 ? select.value.slice(separator + 3) : select.value)
+            : "Selecione um Mérito para ver sua descrição.");
+    };
+
+    renderDescription();
+    select.addEventListener("change", () => {
+        character.merit = select.value;
+        renderDescription();
+        saveNow("Mérito salvo.");
+    });
+}
+
 function bindStaticFields() {
     const identityBindings = [
         ["character-name","name"],["age-apparent","apparentAge"],["age-actual","actualAge"],
@@ -994,7 +1041,6 @@ function bindStaticFields() {
         });
     }
 
-    bindInput("merit",()=>character.merit,(v)=>character.merit=v);
     bindInput("flaw",()=>character.flaw,(v)=>character.flaw=v);
     bindInput("nature",()=>character.nature,(v)=>character.nature=v);
     bindInput("beast",()=>character.beast,(v)=>character.beast=v);
@@ -1037,8 +1083,8 @@ function installActions() {
         const file=event.target.files?.[0];
         if (!file) return;
         try {
-            character=normalizeCharacter(await importCharacter(file));
-            saveCharacter(character);
+            const imported = normalizeCharacter(await importCharacter(file));
+            saveCharacter(imported);
             location.reload();
         } catch (error) {
             alert(error.message);
@@ -1049,12 +1095,17 @@ function installActions() {
 
     document.getElementById("reset-button").addEventListener("click",()=>{
         if (!confirm("Limpar toda a ficha e começar um personagem novo? A ficha atual será substituída no salvamento local.")) return;
-        saveCharacter(clone(EMPTY_CHARACTER));
-        location.reload();
+        try {
+            saveCharacter(clone(EMPTY_CHARACTER));
+            location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
     });
 }
 
 bindStaticFields();
+installMeritSelection();
 renderIdentityAutomation();
 installIdentityAutomation();
 renderAttributes();
@@ -1067,3 +1118,8 @@ renderHumanity();
 renderCalculator();
 renderValidation();
 installActions();
+
+if (loadError) {
+    document.getElementById("save-status").textContent = "Não foi possível carregar a ficha salva.";
+    document.getElementById("save-detail").textContent = "A ficha de exemplo está sendo exibida. Importar um backup permite recuperar seus dados; editar esta ficha substituirá o salvamento anterior.";
+}

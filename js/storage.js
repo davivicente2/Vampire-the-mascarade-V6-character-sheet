@@ -1,21 +1,68 @@
 const STORAGE_KEY = "vtm-v6-character-sheet";
 
 export function saveCharacter(character) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(character));
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(character));
+    } catch {
+        throw new Error("Não foi possível salvar neste navegador. Exporte a ficha em JSON para guardar suas alterações.");
+    }
 }
 
-export function loadCharacter() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-
-    if (!raw) {
-        return null;
-    }
-
+export function loadCharacter(onError = () => {}) {
     try {
-        return JSON.parse(raw);
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const character = JSON.parse(raw);
+        assertCharacter(character);
+        return character;
     } catch (error) {
         console.error("Não foi possível ler a ficha salva.", error);
+        onError(error);
         return null;
+    }
+}
+
+// Accept partial/older sheets, but reject incompatible structures before saving.
+export function assertCharacter(value) {
+    const object = (item) => item !== null && typeof item === "object" && !Array.isArray(item);
+    const fail = () => { throw new Error("O arquivo não contém uma ficha VTM válida."); };
+    const text = (item) => typeof item === "string";
+    const number = (item) => (typeof item === "number" || typeof item === "string") &&
+        String(item).trim() !== "" && Number.isFinite(Number(item));
+    const fields = (item, numeric = []) => {
+        if (!object(item)) fail();
+        for (const [key, entry] of Object.entries(item)) {
+            if (!(numeric.includes(key) ? number(entry) : text(entry))) fail();
+        }
+    };
+    if (!object(value) || !object(value.identity)) fail();
+    fields(value.identity, ["generation", "generationModifier"]);
+    if (value.attributes !== undefined) {
+        if (!object(value.attributes) || !Object.values(value.attributes).every(number)) fail();
+    }
+    if (value.skills !== undefined) {
+        if (!object(value.skills)) fail();
+        Object.values(value.skills).forEach((skill) => fields(skill, ["dots"]));
+    }
+    for (const key of ["resources", "disciplines", "lifepaths", "clanTraits"]) {
+        if (value[key] !== undefined && !Array.isArray(value[key])) fail();
+    }
+    value.resources?.forEach((resource) => fields(resource, ["dots"]));
+    value.disciplines?.forEach((discipline) => {
+        if (!object(discipline)) fail();
+        const { powers, ...rest } = discipline;
+        fields(rest, ["dots"]);
+        if (powers !== undefined && !Array.isArray(powers)) fail();
+        powers?.forEach((power) => { if (!text(power)) fields(power); });
+    });
+    for (const key of ["lifepaths", "clanTraits"]) {
+        if (value[key] && !value[key].every(text)) fail();
+    }
+    for (const key of ["merit", "flaw", "nature", "beast", "items", "frenzyTrigger", "outburstTrigger"]) {
+        if (value[key] !== undefined && !text(value[key])) fail();
+    }
+    for (const key of ["currentVitae", "currentWillpower", "quickening", "nefariousDamage", "beastPoints", "naturePoints", "humanityPosition"]) {
+        if (value[key] !== undefined && !number(value[key])) fail();
     }
 }
 
@@ -48,9 +95,13 @@ export function importCharacter(file) {
 
         reader.addEventListener("load", () => {
             try {
-                resolve(JSON.parse(reader.result));
+                const character = JSON.parse(reader.result);
+                assertCharacter(character);
+                resolve(character);
             } catch (error) {
-                reject(new Error("O arquivo selecionado não contém JSON válido."));
+                reject(error instanceof SyntaxError
+                    ? new Error("O arquivo selecionado não contém JSON válido.")
+                    : error);
             }
         });
 

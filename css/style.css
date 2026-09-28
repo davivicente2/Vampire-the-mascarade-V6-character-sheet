@@ -727,6 +727,10 @@ textarea {
     min-height: 2.2em;
 }
 
+#merit-description {
+    white-space: pre-line;
+}
+
 input[readonly] {
     color: var(--muted);
     background: #111116;
@@ -741,4 +745,9 @@ input[readonly] {
     .auto-info-panel {
         grid-template-columns: 1fr;
     }
+}
+
+/* Keep conditional fields hidden even when labels use display: flex. */
+[hidden] {
+    display: none !important;
 }

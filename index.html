@@ -286,7 +286,11 @@
                     <select id="clan-trait-2"></select>
                     <small id="clan-trait-2-description" class="field-help"></small>
                 </label>
-                <label><span>Mérito</span><textarea id="merit" rows="4"></textarea></label>
+                <label>
+                    <span>Mérito</span>
+                    <select id="merit" aria-describedby="merit-description"></select>
+                    <small id="merit-description" class="field-help" aria-live="polite"></small>
+                </label>
                 <label><span>Falha</span><textarea id="flaw" rows="4"></textarea></label>
             </div>
         </section>
@@ -381,6 +385,13 @@
         </details>
     </main>
 
+    <noscript>Ative o JavaScript no navegador para editar a ficha.</noscript>
+    <script>
+        if (location.protocol === "file:") {
+            document.getElementById("save-status").textContent = "Abra a ficha por um servidor local.";
+            document.getElementById("save-detail").textContent = "Na pasta do projeto, execute python3 -m http.server 8000 e acesse http://localhost:8000. Módulos JavaScript não carregam corretamente ao abrir o HTML diretamente.";
+        }
+    </script>
     <script type="module" src="js/app.js"></script>
 </body>
 </html>

@@ -1198,7 +1198,8 @@ export const disciplines = {
 };
 
 export function getDiscipline(name) {
-    return disciplines[String(name || "").trim()] || null;
+    const key = String(name || "").trim();
+    return Object.hasOwn(disciplines, key) ? disciplines[key] : null;
 }
 
 export function getAvailablePowers(name, dots) {
