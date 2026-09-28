@@ -1,3 +1,4 @@
+import { frenzyDifficulty } from "../../model/frenzy.js";
 import { HUNGER_EFFECTS } from "../../../data/hunger.js";
 import { maxVitae, effectiveMaxVitae, maxWillpower, hungerState, clampCoreResources } from "../../model/resources.js";
 import { createDots, bindInput as bindControl } from "../controls.js";
@@ -18,7 +19,7 @@ export function createCoreResources({ character, saveNow, renderHumanity }) {
         document.getElementById("hunger-effect").textContent = state === "MORTE FINAL"
             ? "Todas as caixas de Vitae estão marcadas com Dano Nefasto: o personagem foi destruído."
             : HUNGER_EFFECTS[state] + (state === "FAMINTO"
-                ? " Dificuldade para resistir ao frenesi de fome: " + (6 - character.currentVitae) + "."
+                ? " Dificuldade para resistir ao frenesi de fome: " + frenzyDifficulty(character, 6 - character.currentVitae) + "."
                 : "");
         document.getElementById("quickening-label").textContent = character.quickening + " / 5";
         document.getElementById("quickening").value = character.quickening;
@@ -50,7 +51,7 @@ export function createCoreResources({ character, saveNow, renderHumanity }) {
         renderHumanity();
         wpRoot.nextElementSibling.textContent = "Máximo: 5 + Autocontrole + Determinação." +
             (character.currentWillpower === 0
-                ? " Sem Vontade: resista ao frenesi de fúria (dificuldade base 2, ajustada pela situação) ou aceite-o."
+                ? " Sem Vontade: resista ao frenesi de fúria (dificuldade " + frenzyDifficulty(character, 2) + ", antes de ajustes da situação) ou aceite-o."
                 : character.currentWillpower <= 3
                     ? " Com 3 ou menos: uma falha dolorosa pode provocar frenesi de fúria."
                     : "");

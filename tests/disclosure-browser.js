@@ -72,9 +72,8 @@ export async function runTests() {
         change('play-level', 'ancilla');
         check(!byId('clan-trait-1-description').textContent.includes('Requer ancilla'), 'Tier change refreshes trait eligibility');
         change('nature', 'Scientist');
-        const skillChoice = byId('lifepath-allocation-0').querySelector('.lifepath-skill-choice');
-        skillChoice.value = 'Subterfúgio';
-        skillChoice.dispatchEvent(new frame.contentWindow.Event('change', {bubbles:true}));
+        const skillRow = [...byId('lifepath-allocation-0').querySelectorAll('[data-kind=skills] .allocation-row')].find((row) => row.dataset.choice === 'Subterfúgio');
+        skillRow.querySelector('[data-action=plus]').click();
         change('lifepath-0', 'Technician');
         check(saved().lifepathAllocations[0].skills[0] === 'Subterfúgio', 'Lifepath change preserves an allocation shared by both paths');
         change('lifepath-0', 'Military');

@@ -1,4 +1,6 @@
-import { createDots } from "../controls.js";
+import { RESOURCE_PRESETS } from "../../../data/resources.js";
+import { ratingTrackMaximum } from "../../model/creation.js";
+import { createDots, populateSelect } from "../controls.js";
 
 export function createResources({ character, saveNow }) {
     function renderResources() {
@@ -9,23 +11,39 @@ export function createResources({ character, saveNow }) {
             const row = document.createElement("div");
             row.className = "resource-row resource-row-detailed";
 
+            const nameField = document.createElement("div");
+            const preset = document.createElement("select");
+            preset.setAttribute("aria-label", "Tipo de Recurso " + (index + 1));
+            const known = RESOURCE_PRESETS.some(([name]) => name === resource.name);
+            populateSelect(preset, [...RESOURCE_PRESETS.map(([name]) => ({value:name, label:name})),
+                {value:"__custom__", label:"Outro / personalizado"}], known ? resource.name : resource.name ? "__custom__" : "", "Selecione um Recurso");
             const name = document.createElement("input");
             name.value = resource.name;
-            name.placeholder = "Recurso";
+            name.placeholder = "Nome do Recurso";
+            name.setAttribute("aria-label", "Nome personalizado do Recurso " + (index + 1));
+            name.hidden = preset.value !== "__custom__";
             name.addEventListener("input", () => {
                 resource.name = name.value;
                 saveNow("Recurso salvo.");
             });
+            preset.addEventListener("change", () => {
+                resource.name = preset.value === "__custom__" ? name.value : preset.value;
+                name.hidden = preset.value !== "__custom__";
+                details.placeholder = RESOURCE_PRESETS.find(([name]) => name === resource.name)?.[1] || "Detalhes";
+                saveNow("Tipo de Recurso salvo; detalhes preservados.");
+            });
+            nameField.append(preset, name);
 
             const details = document.createElement("input");
             details.value = resource.details || "";
-            details.placeholder = "Detalhes";
+            details.placeholder = RESOURCE_PRESETS.find(([name]) => name === resource.name)?.[1] || "Detalhes";
+            details.setAttribute("aria-label", "Detalhes do Recurso " + (index + 1));
             details.addEventListener("input", () => {
                 resource.details = details.value;
                 saveNow("Detalhes do recurso salvos.");
             });
 
-            const dots = createDots(resource.dots, 5, (next) => {
+            const dots = createDots(resource.dots, ratingTrackMaximum(character, resource.dots), (next) => {
                 resource.dots = next;
                 renderResources();
                 saveNow("Nível do recurso salvo.");
@@ -42,7 +60,7 @@ export function createResources({ character, saveNow }) {
                 saveNow("Recurso removido.");
             });
 
-            row.append(name, dots, details, remove);
+            row.append(nameField, dots, details, remove);
             root.appendChild(row);
         });
     }

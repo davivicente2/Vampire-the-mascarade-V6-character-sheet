@@ -1,4 +1,7 @@
-import { tierRules } from "../../data/tiers.js";
+import { ATTRIBUTE_GROUPS } from "../../data/attributes.js";
+import { getMerit } from "../../data/merits.js";
+import { normalizeTraitSelection } from "./identity.js";
+import { tierRules, tierLevels, creationRules } from "../../data/tiers.js";
 import { getLifepath, lifepathRequirement } from "../../data/lifepaths.js";
 import { getClanByName } from "../../data/clans.js";
 import { getSireByName } from "../../data/sires.js";
@@ -61,71 +64,55 @@ export function validateCharacter(character) {
         const requirement = lifepathRequirement(path, character.identity.playLevel);
         if (requirement) warnings.push(path.name + ": " + requirement);
     }
-    const twoLifepaths = character.lifepaths.filter((value) => value.trim()).length === 2;
-
-    if (character.identity.playLevel === "neonate") {
-        const attributePools = [
-            character.attributes.strength + character.attributes.dexterity + character.attributes.stamina - 3,
-            character.attributes.charisma + character.attributes.manipulation + character.attributes.composure - 3,
-            character.attributes.intelligence + character.attributes.wits + character.attributes.resolve - 3
-        ].sort((a, b) => a - b);
-
-        if (attributePools.join(",") !== "3,5,7") {
-            warnings.push(
-                "A distribuição atual de Atributos não corresponde aos grupos 7 / 5 / 3 de um Neonate."
-            );
+    const filled = (values) => values.filter((value) => value?.trim());
+    const count = (values) => filled(values).length;
+    if (tierRule) {
+        const rules = tierRule.creation;
+        const paths = count(character.lifepaths);
+        const totals = (items) => items.reduce((sum, item) => sum + Number(item.dots || 0), 0);
+        const checkTotal = (actual, expected, label) => {
+            if (actual !== expected) warnings.push(label + ": " + actual + "; criação " + tierRule.label + ": " + expected + ".");
+        };
+        if (paths !== rules.lifepaths) {
+            warnings.push("Caminhos de Vida: " + paths + "; " + tierRule.label + " normalmente usa " + rules.lifepaths +
+                (paths === 1 ? ". A exceção de personagem jovem depende do Narrador; bônus opcionais não são aplicados." : ". Escolhas existentes foram preservadas."));
         }
-
-        const skillDots = Object.values(character.skills)
-            .reduce((total, skill) => total + Number(skill.dots || 0), 0);
-
-        if (twoLifepaths && skillDots !== 18) {
-            warnings.push(
-                "A ficha tem " + skillDots + " pontos de Habilidade. Com dois Caminhos de Vida, um Neonate normalmente totaliza 18."
-            );
+        const pools = Object.values(ATTRIBUTE_GROUPS).map((group) => group.reduce((sum, [key]) => sum + Number(character.attributes[key]) - 1, 0)).sort((a,b) => a-b);
+        if (pools.join(",") !== [...rules.attributePools].sort((a,b) => a-b).join(",")) {
+            warnings.push("A distribuição de Atributos não corresponde aos grupos " + rules.attributePools.join(" / ") + " de " + tierRule.label + ".");
         }
-
-        const disciplineDots = character.disciplines
-            .reduce((total, discipline) => total + Number(discipline.dots || 0), 0);
-
-        if (disciplineDots !== 4) {
-            warnings.push(
-                "A ficha tem " + disciplineDots + " pontos de Disciplina. Um Neonate recebe 3 pontos de clã + 1 ponto do Sire."
-            );
+        checkTotal(totals(character.disciplines), rules.disciplineDots + rules.sireDots, "Pontos de Disciplina (incluindo Sire)");
+        checkTotal(character.disciplines.flatMap((discipline) => discipline.powers).filter((power) => power.name?.trim()).length, rules.powers, "Poderes de Disciplina");
+        checkTotal(count(character.merits), rules.merits, "Méritos");
+        checkTotal(count(character.clanTraits), rules.clanTraits, "Traços de Clã");
+        // Young-character compensation is optional and requires an explicit table decision.
+        if (paths === rules.lifepaths) {
+            checkTotal(totals(Object.values(character.skills)), paths * creationRules.lifepathSkillDots + rules.extraSkillDots, "Pontos de Habilidade");
+            checkTotal(totals(character.resources), paths * creationRules.lifepathResourceDots + rules.extraResourceDots, "Pontos de Recursos");
+        } else {
+            warnings.push("Totais de Habilidades e Recursos aguardam a definição dos Caminhos de Vida ou da exceção autorizada pelo Narrador.");
         }
-
-        const powers = character.disciplines
-            .flatMap((discipline) => discipline.powers || [])
-            .filter((power) => {
-                const name = typeof power === "string" ? power : power?.name;
-                return Boolean(name && name.trim().length > 0);
-            });
-
-        if (powers.length !== 4) {
-            warnings.push(
-                "A ficha tem " + powers.length + " Poderes de Disciplina preenchidos. Um Neonate escolhe 4."
-            );
+        for (const key of ["lifepaths", "merits", "clanTraits"]) {
+            if (character[key].slice(rules[key]).some((value) => value?.trim())) warnings.push("Escolhas em " + key + " acima dos slots de " + tierRule.label + " foram preservadas.");
         }
-
-        const resourceDots = character.resources
-            .reduce((total, resource) => total + Number(resource.dots || 0), 0);
-
-        if (twoLifepaths && resourceDots !== 9) {
-            warnings.push(
-                "A ficha tem " + resourceDots + " pontos de Recursos. Dois Caminhos de Vida + os 3 pontos de Neonate normalmente totalizam 9."
-            );
+        for (const [key, value] of Object.entries(character.attributes)) {
+            if (value > rules.maxDots) warnings.push("Atributo " + key + ": " + value + " pontos excedem o limite de criação " + rules.maxDots + "; valor preservado.");
+        }
+        for (const item of [...character.resources, ...character.disciplines]) {
+            if (item.dots > rules.maxDots) warnings.push(item.name + ": " + item.dots + " pontos excedem o limite de criação " + rules.maxDots + "; valor preservado.");
+        }
+        for (const [key, skill] of Object.entries(character.skills)) {
+            if (skill.dots > creationRules.maxSkillDots) warnings.push("Habilidade " + key + ": criação limitada a " + creationRules.maxSkillDots + "; pontos de jogo preservados.");
         }
     }
+    const chosenMerits = filled(character.merits).map((value) => getMerit(value)?.name || value);
+    if (new Set(chosenMerits).size !== chosenMerits.length) warnings.push("Méritos repetidos: confirme a escolha com o Narrador.");
 
     if (clan) {
-        const selectedTraits = character.clanTraits.filter(Boolean);
-
-        if (selectedTraits.length !== 2) {
-            warnings.push("Selecione 2 Traços de Clã.");
-        }
+        const selectedTraits = character.clanTraits.filter(Boolean).map((value) => normalizeTraitSelection(value, clan) || value);
 
         if (new Set(selectedTraits).size !== selectedTraits.length) {
-            warnings.push("Os dois Traços de Clã devem ser escolhas diferentes.");
+            warnings.push("Os Traços de Clã devem ser escolhas diferentes.");
         }
 
         selectedTraits.forEach((traitName) => {
@@ -135,9 +122,9 @@ export function validateCharacter(character) {
                 return;
             }
 
-            if (character.identity.playLevel === "neonate" && trait.tier === "ancilla") {
+            if (tierLevels[trait.tier] > (tierRule?.level || 0)) {
                 warnings.push(
-                    trait.name + " requer Ancilla ou mais forte. Mantenha apenas se o Narrador autorizou uma exceção."
+                    trait.name + " requer " + (tierRules[trait.tier]?.label || trait.tier) + " ou mais forte. Mantenha apenas se o Narrador autorizou uma exceção."
                 );
             }
         });

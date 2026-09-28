@@ -12,7 +12,7 @@ python3 -m http.server 8000
 
 Abra http://localhost:8000 no navegador. Também é possível usar a extensão Live Server do VS Code. Abrir `index.html` diretamente pelo gerenciador de arquivos impede o carregamento dos módulos JavaScript em navegadores comuns.
 
-Não há etapa de compilação nem dependências de npm. Na primeira abertura, a ficha de exemplo é exibida; use **Nova ficha** para começar em branco.
+Não há etapa de compilação nem dependências de npm. Na primeira abertura, a ficha começa vazia, com Atributos em 1 e sem linhas de Recursos. **Nova ficha** reinicia a criação após confirmação.
 
 ## Dados da ficha
 
@@ -26,13 +26,21 @@ A ficha mostra os efeitos dos sete estágios de Humanidade. Marcar Besta/Naturez
 
 Concluir um episódio aplica o passo determinado pelas regras, inclusive perda/recuperação de círculos. Para corrigir a posição manualmente, clique em um círculo disponível da escala. A atividade alinhada continua dependendo das condições narrativas e do limite de uma vez por sessão, conferidos pelo jogador. Os efeitos exibidos são lembretes: não alteram automaticamente a calculadora de testes. Episódios em curso, círculos perdidos e encerramento da jornada acompanham o JSON da ficha.
 
-A seção **Consulta — Regras da Noite** reúne resumos de testes, ações, dano, alimentação, Laço de Sangue, Blood Surge, condições e downtime. Custos, passagem de cenas/noites e excesso de Quickening continuam sob controle manual. Há uma divergência nos textos fornecidos sobre o limite de Disciplinas de Ancilla, indicada na consulta.
+A seção **Consulta — Regras da Noite** reúne resumos de testes, ações, dano, alimentação, Laço de Sangue, Blood Surge, condições e downtime. Custos, passagem de cenas/noites e excesso de Quickening continuam sob controle manual. A consulta distingue os limites de criação dos limites de Disciplinas durante o jogo.
 
 ## Verificação no navegador
 
 O arquivo `tests/humanity-browser.js` testa regras e interações da página, incluindo perda/recuperação de círculos, resolução de episódios, torpor e limites. Use um perfil temporário de navegador: o teste modifica a ficha local desse perfil.
 
-Com o servidor local ativo, abra a ficha nesse perfil, limpe seu armazenamento local e recarregue a página. No console do navegador, execute:
+Com o servidor local ativo, abra a ficha nesse perfil e prepare o exemplo de desenvolvimento no console:
+
+```js
+const { DEFAULT_CHARACTER } = await import('./data/characters/example.js');
+localStorage.setItem('vtm-v6-character-sheet', JSON.stringify(DEFAULT_CHARACTER));
+location.reload();
+```
+
+Após recarregar, execute:
 
 ```js
 const { runTests } = await import('./tests/humanity-browser.js');
@@ -64,3 +72,12 @@ O [mapa da arquitetura](docs/architecture.md) indica onde editar cada funcionali
 ```sh
 python3 tests/check_structure.py
 ```
+
+Para testar tiers, migrações, importação de 6/8 dots e Brujah:
+
+```js
+const creation = await import('./tests/creation-browser.js');
+console.table(await creation.runTests());
+```
+
+As quantidades por tier, preservação de excedentes e compatibilidade do schema 3 estão em [Criação e migrações](docs/creation-and-migrations.md).

@@ -9,7 +9,11 @@ A ficha continua em HTML, CSS e módulos JavaScript nativos, sem build ou framew
 | Estrutura e campos da página | `index.html` |
 | Entrada da aplicação: carregar, normalizar e montar | `js/app.js` |
 | Composição das seções, salvamento e atualizações entre seções | `js/sheet.js` |
-| Modelo inicial e migração de fichas antigas | `js/model/character.js` |
+| Normalização de fichas | `js/model/character.js` |
+| Migrações sequenciais e versão do schema | `js/model/migrations.js`, `data/schema.js` |
+| Configuração de criação e limites em jogo | `data/tiers.js` |
+| Slots e controles por tier | `js/model/creation.js` |
+| Dificuldade de Frenesi, incluindo Boiling Passion | `js/model/frenzy.js` |
 | Limites de Vitae, Vontade, Quickening e estado de fome | `js/model/resources.js` |
 | Escala, episódios e resistência de Humanidade | `js/model/humanity.js` |
 | Sincronização das Disciplinas com Clã/Sire | `js/model/identity.js` |
@@ -37,7 +41,7 @@ A ficha continua em HTML, CSS e módulos JavaScript nativos, sem build ou framew
 
 O modelo recebe o personagem explicitamente. Ele não acessa DOM, localStorage ou controles da página. Os catálogos em `data/` dependem apenas de outros catálogos; funções de consulta podem permanecer junto dos dados, enquanto alterações na ficha ficam no modelo.
 
-Os valores finais continuam no mesmo objeto de personagem. Esta reorganização não cria campos, não muda a chave do armazenamento nem o formato JSON. Normalização e validação estrutural continuam aceitando as fichas antigas. Selecionar um Lifepath continua registrando a origem dos pontos sem distribuí-los automaticamente.
+Os valores finais continuam no mesmo objeto de personagem. A chave de armazenamento continua igual. O schema 3 adiciona `merits[]` por migração explícita, mantendo o campo singular antigo e aceitando fichas anteriores; consulte [Criação e migrações](creation-and-migrations.md). Selecionar um Lifepath continua registrando a origem dos pontos sem distribuí-los automaticamente.
 
 Os métodos de instalação de eventos são chamados uma vez na montagem. Métodos de renderização podem ser chamados novamente e substituem apenas os controles dinâmicos. Isso evita instalar vários listeners no mesmo controle estático.
 

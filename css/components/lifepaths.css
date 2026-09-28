@@ -79,3 +79,18 @@
         grid-template-columns: 1fr;
     }
 }
+
+.lifepath-distribution {
+    display: grid;
+    gap: 0.35rem;
+}
+.allocation-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 30px 22px 30px;
+    gap: 0.3rem;
+    align-items: center;
+    font-size: 0.8rem;
+}
+.allocation-row > span { overflow-wrap: anywhere; }
+.allocation-row button { min-height: 30px; padding: 0.15rem; }
+.allocation-row output { text-align: center; }

@@ -1,3 +1,5 @@
+import { migrateCharacter } from "./migrations.js";
+import { ensureCreationSlots, emptyLifepathAllocation } from "./creation.js";
 import { EMPTY_CHARACTER } from "../../data/characters/empty.js";
 import { SKILL_LABELS } from "../../data/skills.js";
 import { getPower } from "../../data/disciplines.js";
@@ -21,9 +23,9 @@ export function normalizePower(power) {
 
 export function normalizeCharacter(value) {
     const base = clone(EMPTY_CHARACTER);
-    const incoming = value && typeof value === "object" ? value : {};
+    const incoming = migrateCharacter(value);
 
-    base.version = 2;
+    base.version = incoming.version;
     base.identity = {...base.identity, ...(incoming.identity || {})};
     base.attributes = {...base.attributes, ...(incoming.attributes || {})};
 
@@ -61,23 +63,22 @@ export function normalizeCharacter(value) {
         });
     });
 
-    if (Array.isArray(incoming.lifepaths)) base.lifepaths = incoming.lifepaths.slice(0, 2);
-    while (base.lifepaths.length < 2) base.lifepaths.push("");
-
+    if (Array.isArray(incoming.lifepaths)) base.lifepaths = [...incoming.lifepaths];
+    if (Array.isArray(incoming.clanTraits)) base.clanTraits = [...incoming.clanTraits];
+    if (Array.isArray(incoming.merits)) base.merits = [...incoming.merits];
     if (Array.isArray(incoming.lifepathAllocations)) {
-        base.lifepathAllocations = incoming.lifepathAllocations.slice(0, 2).map((allocation) => ({
-            skills: Array.isArray(allocation?.skills) ? allocation.skills.slice(0, 5).map((value) => String(value || "")) : [],
-            resources: Array.isArray(allocation?.resources) ? allocation.resources.slice(0, 3).map((value) => String(value || "")) : []
-        }));
+        base.lifepathAllocations = incoming.lifepathAllocations.map((allocation) => {
+            const normalized = emptyLifepathAllocation();
+            for (const key of ["skills", "resources"]) {
+                if (Array.isArray(allocation?.[key])) {
+                    normalized[key] = allocation[key].map((choice) => String(choice || ""));
+                    while (normalized[key].length < emptyLifepathAllocation()[key].length) normalized[key].push("");
+                }
+            }
+            return normalized;
+        });
     }
-    while (base.lifepathAllocations.length < 2) base.lifepathAllocations.push({skills:[], resources:[]});
-    base.lifepathAllocations = base.lifepathAllocations.map((allocation) => ({
-        skills: [...allocation.skills, "", "", "", "", ""].slice(0, 5),
-        resources: [...allocation.resources, "", "", ""].slice(0, 3)
-    }));
-
-    if (Array.isArray(incoming.clanTraits)) base.clanTraits = incoming.clanTraits.slice(0, 2);
-    while (base.clanTraits.length < 2) base.clanTraits.push("");
+    ensureCreationSlots(base);
 
     for (const key of [
         "merit","flaw","nature","beast","items",
@@ -88,10 +89,12 @@ export function normalizeCharacter(value) {
         if (incoming[key] !== undefined) base[key] = incoming[key];
     }
 
+    // Sanitize numeric shape only. Tier limits belong to controls and validation;
+    // reloading a downgraded character must never lower previously saved dots.
     const bounded = (value, max, min = 0) => Math.max(min, Math.min(max, Math.trunc(Number(value) || 0)));
-    for (const key of Object.keys(base.attributes)) base.attributes[key] = bounded(base.attributes[key], 5, 1);
-    for (const skill of Object.values(base.skills)) skill.dots = bounded(skill.dots, 5);
-    for (const item of [...base.resources, ...base.disciplines]) item.dots = bounded(item.dots, 5);
+    for (const key of Object.keys(base.attributes)) base.attributes[key] = bounded(base.attributes[key], Number.MAX_SAFE_INTEGER, 1);
+    for (const skill of Object.values(base.skills)) skill.dots = bounded(skill.dots, Number.MAX_SAFE_INTEGER);
+    for (const item of [...base.resources, ...base.disciplines]) item.dots = bounded(item.dots, Number.MAX_SAFE_INTEGER);
     for (const key of ["currentVitae", "currentWillpower", "quickening", "nefariousDamage"]) {
         base[key] = bounded(base[key], Number.MAX_SAFE_INTEGER);
     }

@@ -1,6 +1,6 @@
 # Revisão de UX — ficha V6
 
-Base: `027207b0fe0db397cea7bf91bfcb6c59bc1b70e1`.
+Base: `027207b0fe0db397cea7bf91bfcb6c59bc1b70e1`. Este documento registra a rodada de UX; mudanças posteriores de schema e criação estão em [Criação e migrações](creation-and-migrations.md).
 
 ## Auditoria e alterações
 
@@ -25,9 +25,9 @@ Não foram criados campos de personagem nem alterados o formato de exportação,
 
 Os textos disponíveis na base são resumos, não uma transcrição integral nem tradução oficial. Tooltips que explicam botões são instruções da interface. Anotações editáveis são do jogador.
 
-- TODO: conferir e corrigir separadamente a inclusão da Maldição Brujah no cálculo de resistência ao Frenesi. A implementação anterior não aplica esse modificador; esta revisão de apresentação não muda esse cálculo.
+- Resolvido na rodada de criação por tier: Boiling Passion é aplicado pelo modelo de Frenesi; Explosão da Natureza não recebe o modificador.
 - O Chapter 5 completo não foi fornecido. Nenhum poder foi completado ou reinterpretado. Os detalhes mostram apenas os dados já catalogados; poderes personalizados indicam a ausência de catálogo.
-- A divergência sobre limites de Disciplinas de Ancilla continua registrada na consulta existente.
+- Esclarecido na rodada de criação por tier: os limites gerais de criação e os limites de Disciplinas durante o jogo são tratados separadamente.
 
 ## Verificação
 

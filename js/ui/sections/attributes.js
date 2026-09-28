@@ -1,3 +1,4 @@
+import { ratingTrackMaximum } from "../../model/creation.js";
 import { ATTRIBUTE_GROUPS } from "../../../data/attributes.js";
 import { clampCoreResources } from "../../model/resources.js";
 import { createDots } from "../controls.js";
@@ -21,7 +22,7 @@ export function createAttributes({ character, saveNow, renderCoreResources, rend
                 const name = document.createElement("span");
                 name.className = "dot-label";
                 name.textContent = label;
-                row.append(name, createDots(character.attributes[key], 5, (next) => {
+                row.append(name, createDots(character.attributes[key], ratingTrackMaximum(character, character.attributes[key]), (next) => {
                     character.attributes[key] = Math.max(1, next);
                     clampCoreResources(character);
                     renderAttributes();

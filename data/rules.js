@@ -1,3 +1,5 @@
+import { tierRules } from "./tiers.js";
+
 // Consulta resumida do Chapter 4 fornecido pelo usuário; não aplica efeitos.
 export const rulesReference = [
     ['Testes e resultados', [
@@ -47,7 +49,7 @@ export const rulesReference = [
     ['Blood Surge e Blush of Life', [
         'Blood Surge: ação menor, ou reação ao testar/iniciar cena. Gaste 1 Vitae por +1 Atributo ou 2 Vitae por +1 Disciplina, até o fim da cena. Cada característica aumentada exige custo e ação próprios.',
         'Aumentar Vigor, Autocontrole ou Determinação assim não altera Vitae/Vontade atuais nem máximas. Aumentar Disciplina não ensina poderes novos, mas fortalece efeitos e permite aspectos Maturing de poderes conhecidos.',
-        'Limite do bônus de Atributo por tier: Neonate +2, Ancilla +4, Elder +6. Máximo de Disciplina Clã/fora do Clã segundo o capítulo 4: 5/3, 7/5, 8/7. O capítulo 2 enviado indica 6 como máximo de Ancilla; confirme com o Narrador qual versão prevalece.',
+        "Limite do bônus de Atributo por tier: Neonate +2, Ancilla +4, Elder +6. Disciplinas durante o jogo (Clã/fora do Clã): " + Object.values(tierRules).map((tier) => tier.label + " " + tier.inPlay.clanDisciplineMax + "/" + tier.inPlay.nonClanDisciplineMax).join(", ") + ". Limites gerais de criação: " + Object.values(tierRules).map((tier) => tier.label + " " + tier.creation.maxDots).join(", ") + ". São limites de etapas diferentes.",
         'Blush of Life: ação menor e 1 Vitae, duração até o fim da noite ou encerramento voluntário. Simula vida, permite telas sensíveis ao toque e pequenas porções de comida/bebida sem sustento. Consulte os efeitos de Humanidade para exceções.'
     ]],
     ['Condições', [

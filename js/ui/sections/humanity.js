@@ -127,7 +127,7 @@ export function createHumanity({ character, saveNow, renderCoreResources }) {
                         : !pool.canResist
                             ? "Mortal 3: você não pode resistir à Explosão. Inicie o episódio; a escala só muda quando ele terminar."
                             : "Role Autocontrole + Determinação − dificuldade " + pool.difficulty +
-                                " (3 + modificador de geração). Bônus já considerados: +" + pool.bonus + ". Parada: " + pool.dice +
+                                (pool.clanPenalty ? " (inclui +" + pool.clanPenalty + " de Boiling Passion)" : "") + ". Bônus já considerados: +" + pool.bonus + ". Parada: " + pool.dice +
                                 " dados, antes de outros efeitos. Registre o resultado abaixo ou ceda sem rolar. A ficha não rola dados.";
             for (const result of ["success", "failure", "painful", "accepted"]) {
                 const button = document.getElementById(side + "-" + result);

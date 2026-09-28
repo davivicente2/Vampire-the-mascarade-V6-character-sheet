@@ -1,3 +1,5 @@
+import { frenzyDifficulty } from "./frenzy.js";
+
 export function humanityBounds(character) {
     return { min: -3 + character.lostBeastCircles, max: 3 - character.lostNatureCircles };
 }
@@ -23,24 +25,26 @@ export function shiftHumanity(character, direction) {
 
 export function resistancePool(character, side) {
     const position = character.humanityPosition;
-    const difficulty = 3 + Number(character.identity.generationModifier || 0);
+    const baseDifficulty = 3 + Number(character.identity.generationModifier || 0);
+    const difficulty = side === "beast" ? frenzyDifficulty(character, baseDifficulty) : baseDifficulty;
     const bonus = (character.currentVitae >= 11 ? 1 : 0) +
         (side === 'beast' && position >= 2 ? position - 1 : 0) +
         (side === 'nature' && position === -3 ? 2 : 0);
     const canResist = !(side === 'nature' && position === 3);
-    return { difficulty, bonus, canResist, dice: Math.max(0,
+    return { difficulty, clanPenalty: difficulty - baseDifficulty, bonus, canResist, dice: Math.max(0,
         Number(character.attributes.composure) + Number(character.attributes.resolve) + bonus - difficulty) };
 }
 
 
 export function humanityState(character) {
-    const difficulty = 3 + Number(character.identity.generationModifier || 0);
+    const beastDifficulty = resistancePool(character, "beast").difficulty;
+    const natureDifficulty = resistancePool(character, "nature").difficulty;
     const states = [];
     if (character.beastEpisode) states.push("FRENESI DA BESTA EM CURSO");
-    else if (character.beastPoints >= 5) states.push("⚠ FRENESI DA BESTA: Autocontrole + Determinação, dificuldade " + difficulty);
+    else if (character.beastPoints >= 5) states.push("⚠ FRENESI DA BESTA: Autocontrole + Determinação, dificuldade " + beastDifficulty);
     else if (character.beastPoints >= 3) states.push("BESTA AGITADA");
     if (character.natureEpisode) states.push("EXPLOSÃO EM CURSO");
-    else if (character.naturePoints >= 5) states.push("⚠ EXPLOSÃO: Autocontrole + Determinação, dificuldade " + difficulty);
+    else if (character.naturePoints >= 5) states.push("⚠ EXPLOSÃO: Autocontrole + Determinação, dificuldade " + natureDifficulty);
     else if (character.naturePoints >= 3) states.push("NATUREZA AGITADA");
     return states.join(" · ") || "ESTÁVEL";
 }

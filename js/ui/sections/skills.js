@@ -1,3 +1,4 @@
+import { creationRules } from "../../../data/tiers.js";
 import { SKILL_LABELS } from "../../../data/skills.js";
 import { skillFocusCount } from "../../model/skills.js";
 import { createDots } from "../controls.js";
@@ -44,7 +45,7 @@ export function createSkills({ character, saveNow, renderCalculator }) {
                 focuses.appendChild(note);
             }
 
-            row.append(name, createDots(skill.dots, 5, (next) => {
+            row.append(name, createDots(skill.dots, creationRules.skillTrackDots, (next) => {
                 skill.dots = next;
                 renderSkills();
                 renderCalculator();

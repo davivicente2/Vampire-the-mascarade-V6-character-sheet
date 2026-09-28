@@ -1,3 +1,4 @@
+import { ensureCreationSlots } from "./model/creation.js";
 import { saveCharacter } from "./storage.js";
 import { bindInput as bindControl } from "./ui/controls.js";
 import { installFileActions } from "./ui/file-actions.js";
@@ -27,8 +28,8 @@ export function mountSheet(character) {
     const { renderCoreResources, installCoreResourceActions } = createCoreResources({character, saveNow, renderHumanity});
     const { renderAttributes } = createAttributes({character, saveNow, renderCoreResources, renderCalculator});
     const { renderSkills } = createSkills({character, saveNow, renderCalculator});
-    const { renderClanTraits, renderIdentityAutomation, installIdentityAutomation } = createIdentity({character, saveNow, renderBeastIdentity, renderDisciplines});
-    const { installMeritSelection } = createMerit({character, saveNow});
+    const { renderClanTraits, renderIdentityAutomation, installIdentityAutomation } = createIdentity({character, saveNow, renderBeastIdentity, renderDisciplines, renderCoreResources});
+    const { renderMerits } = createMerit({character, saveNow});
     const bindInput = (id, getter, setter, options) => bindControl(id, getter, setter, {...options, save: saveNow});
 
     function saveNow(message = "Alteração salva automaticamente.") {
@@ -56,11 +57,16 @@ export function mountSheet(character) {
             bindInput(id, () => character.identity[key], (value) => { character.identity[key]=value; }, {
                 number:["generation","generationModifier"].includes(key),
                 after:key === "playLevel" ? () => {
+                    ensureCreationSlots(character);
+                    renderAttributes();
+                    renderResources();
+                    renderDisciplines();
+                    renderMerits();
                     renderClanTraits();
                     renderHumanityDetails();
                     renderLifepaths();
                     renderValidation();
-                } : key === "generationModifier" ? renderHumanity : undefined
+                } : key === "generationModifier" ? renderCoreResources : undefined
             });
         }
 
@@ -85,7 +91,7 @@ export function mountSheet(character) {
     }
 
     bindStaticFields();
-    installMeritSelection();
+    renderMerits();
     installNatureSelection();
     renderIdentityAutomation();
     installIdentityAutomation();

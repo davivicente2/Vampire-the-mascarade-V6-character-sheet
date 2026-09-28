@@ -97,7 +97,6 @@
                 <div>
                     <span>Frenesi do Clã</span>
                     <strong id="clan-frenzy-name">—</strong>
-                    <p id="clan-frenzy-description"></p>
                     <p>Besta: <b id="clan-beast-name"></b></p>
                     <a href="#beast-rules" id="beast-rules-link">Consultar Besta e Frenesi</a>
                 </div>
@@ -170,7 +169,10 @@
                         <input id="quickening" type="number" min="0" max="5" step="1">
                         <button id="quickening-plus" type="button" aria-label="Aumentar Quickening">+</button>
                     </div>
+                    <p class="muted-copy">0–5 pontos. Gaste antes de rolar; excesso marca Besta ou Natureza.</p>
+                    <details class="rule-details"><summary>Ganhos e gastos de Quickening</summary>
                     <p class="muted-copy">Comece a sessão com 0 (ou 2, a critério do Narrador). Cada 10 rolado concede 1. Antes da rolagem: gaste 1 por dado extra, 3 por sucesso básico com Habilidade treinada ou 5 sem treinamento. No limite de 5, cada ganho excedente marca Besta ou Natureza, à sua escolha. Em torpor, Quickening é zerado e não pode ser ganho.</p>
+                    </details>
                 </article>
             </div>
         </section>
@@ -339,30 +341,8 @@
             </div>
 
             <div class="two-column-fields">
-                <div class="compact-field">
-                    <label>
-                        <span>Traço de Clã 1</span>
-                        <select id="clan-trait-1"></select>
-                        <small id="clan-trait-1-description" class="field-help"></small>
-                    </label>
-                    <details class="rule-details"><summary>Regra do Traço</summary><p id="clan-trait-1-rule"></p></details>
-                </div>
-                <div class="compact-field">
-                    <label>
-                        <span>Traço de Clã 2</span>
-                        <select id="clan-trait-2"></select>
-                        <small id="clan-trait-2-description" class="field-help"></small>
-                    </label>
-                    <details class="rule-details"><summary>Regra do Traço</summary><p id="clan-trait-2-rule"></p></details>
-                </div>
-                <div class="compact-field">
-                    <label>
-                        <span>Mérito</span>
-                        <select id="merit" aria-describedby="merit-description"></select>
-                        <small id="merit-description" class="field-help" aria-live="polite"></small>
-                    </label>
-                    <details class="rule-details"><summary>Descrição e ativação</summary><p id="merit-rule"></p></details>
-                </div>
+                <div id="clan-traits" class="stack-list"></div>
+                <div id="merits" class="stack-list"></div>
                 <label><span>Falha</span><textarea id="flaw" rows="4"></textarea></label>
             </div>
         </section>
@@ -375,14 +355,14 @@
                         <h2>Caminhos de Vida</h2>
                     </div>
                 </div>
-                <p class="field-help">Cada Caminho concede 5 pontos de Habilidade e 3 de Recursos. Registre a distribuição diretamente nos seletores abaixo.</p>
+                <p class="field-help">Cada Caminho concede 5 pontos de Habilidade e 3 de Recursos. Registre a distribuição diretamente nos contadores abaixo.</p>
                 <div id="lifepaths" class="stack-list"></div>
                 <details class="lifepath-rules">
                     <summary>Regras dos Caminhos de Vida</summary>
                     <p>Na criação, nenhuma Habilidade pode ultrapassar 3 pontos. Focos são recebidos em 1, 3 e 5 pontos.</p>
                     <p>Personagem jovem e inexperiente pode ter apenas um Caminho; com autorização do Narrador, pode receber os pontos adicionais previstos para compensar a escolha.</p>
                     <p>Ghouls usam apenas caminhos mortais; Duskborn usam caminhos mortais ou de Neonate; vampiros usam caminhos do próprio tier ou inferiores. Quando nenhuma Habilidade se aplicar, o Narrador pode permitir o benefício de competência do Caminho.</p>
-                    <p class="field-help">Os seletores registram a origem dos pontos; Habilidades e Recursos continuam mostrando os valores finais da ficha.</p>
+                    <p class="field-help">Os contadores registram a origem dos pontos; Habilidades e Recursos continuam mostrando os valores finais da ficha.</p>
                 </details>
             </section>
 

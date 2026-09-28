@@ -1,3 +1,5 @@
+import { CURRENT_SCHEMA_VERSION } from "../data/schema.js";
+
 const STORAGE_KEY = "vtm-v6-character-sheet";
 
 export function saveCharacter(character) {
@@ -36,6 +38,9 @@ export function assertCharacter(value) {
         }
     };
     if (!object(value) || !object(value.identity)) fail();
+    if (value.version !== undefined && (!Number.isInteger(Number(value.version)) || Number(value.version) < 1 || Number(value.version) > CURRENT_SCHEMA_VERSION)) {
+        throw new Error("Versão de ficha não suportada: " + value.version + ".");
+    }
     fields(value.identity, ["generation", "generationModifier"]);
     if (value.attributes !== undefined) {
         if (!object(value.attributes) || !Object.values(value.attributes).every(number)) fail();
@@ -49,7 +54,7 @@ export function assertCharacter(value) {
             if (focuses !== undefined && (!Array.isArray(focuses) || !focuses.every(text))) fail();
         });
     }
-    for (const key of ["resources", "disciplines", "lifepaths", "lifepathAllocations", "clanTraits"]) {
+    for (const key of ["resources", "disciplines", "lifepaths", "lifepathAllocations", "clanTraits", "merits"]) {
         if (value[key] !== undefined && !Array.isArray(value[key])) fail();
     }
     value.lifepathAllocations?.forEach((allocation) => {
@@ -65,7 +70,7 @@ export function assertCharacter(value) {
         if (powers !== undefined && !Array.isArray(powers)) fail();
         powers?.forEach((power) => { if (!text(power)) fields(power); });
     });
-    for (const key of ["lifepaths", "clanTraits"]) {
+    for (const key of ["lifepaths", "clanTraits", "merits"]) {
         if (value[key] && !value[key].every(text)) fail();
     }
     for (const key of ["merit", "flaw", "nature", "beast", "items", "frenzyTrigger", "outburstTrigger", "beastEpisode", "natureEpisode", "humanityFate"]) {

@@ -1,3 +1,4 @@
+import { ratingTrackMaximum } from "../../model/creation.js";
 import { disciplines, getDiscipline, getAvailablePowers, getPower } from "../../../data/disciplines.js";
 import { powerMechanics, legacyPowerReminder } from "../disclosure.js";
 import { createDots, populateSelect } from "../controls.js";
@@ -51,7 +52,7 @@ export function createDisciplines({ character, saveNow }) {
                 saveNow("Disciplina removida.");
             });
 
-            const dots = createDots(discipline.dots, 5, (next) => {
+            const dots = createDots(discipline.dots, ratingTrackMaximum(character, discipline.dots), (next) => {
                 discipline.dots = next;
                 renderDisciplines();
                 saveNow("Nível da disciplina salvo.");

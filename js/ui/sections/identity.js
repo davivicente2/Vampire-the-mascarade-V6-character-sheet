@@ -1,4 +1,7 @@
-import { tierLevels as levels } from "../../../data/tiers.js";
+import { visibleSlotCount } from "../../model/creation.js";
+import { createChoiceField } from "../choice-field.js";
+import { HELP } from "../help-text.js";
+import { tierLevels as levels, creationFor } from "../../../data/tiers.js";
 import { clans, getClanByName, getAvailableTraits } from "../../../data/clans.js";
 import { sires, getSireByName } from "../../../data/sires.js";
 import { disciplines } from "../../../data/disciplines.js";
@@ -6,7 +9,7 @@ import { normalizeTraitSelection, syncDisciplinesToIdentity } from "../../model/
 import { populateSelect } from "../controls.js";
 import { rulePreview } from "../disclosure.js";
 
-export function createIdentity({ character, saveNow, renderBeastIdentity, renderDisciplines }) {
+export function createIdentity({ character, saveNow, renderBeastIdentity, renderDisciplines, renderCoreResources }) {
     function currentClan() {
         return getClanByName(character.identity.clan);
     }
@@ -20,9 +23,7 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
         const select = document.getElementById("clan-trait-" + (index + 1));
         const help = document.getElementById("clan-trait-" + (index + 1) + "-description");
         const traits = getAvailableTraits(clan);
-        const saved = normalizeTraitSelection(character.clanTraits[index], clan);
-
-        character.clanTraits[index] = saved;
+        const saved = normalizeTraitSelection(character.clanTraits[index], clan) || character.clanTraits[index] || "";
 
         populateSelect(
             select,
@@ -34,20 +35,36 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
             "Selecione um Traço"
         );
 
+        if (saved && !traits.some((trait) => trait.name === saved)) {
+            select.add(new Option(saved + " (salvo)", saved, true, true));
+        }
+        select.dataset.help = HELP["clan-trait-1"];
         const selected = traits.find((trait) => trait.name === saved);
         const warning = selected && levels[selected.tier] > (levels[character.identity.playLevel] || 0)
             ? "⚠ Requer " + selected.tier + " ou superior. " : "";
-        help.textContent = selected
+        const excess = index >= creationFor(character.identity.playLevel).clanTraits && saved ? "⚠ Traço excedente para este tier; preservado. " : "";
+        help.textContent = excess + (selected
             ? warning + [selected.prerequisites, rulePreview(selected.description)].filter(Boolean).join(" — ")
-            : "Os Traços disponíveis dependem do Clã.";
+            : saved ? "Traço salvo não catalogado neste Clã." : "Os Traços disponíveis dependem do Clã.");
         const rule = document.getElementById("clan-trait-" + (index + 1) + "-rule");
         rule.textContent = selected?.description || "";
         rule.closest("details").hidden = !selected;
     }
 
     function renderClanTraits() {
-        renderClanTraitSelect(0);
-        renderClanTraitSelect(1);
+        const root = document.getElementById("clan-traits");
+        root.replaceChildren();
+        const count = visibleSlotCount(character.clanTraits, creationFor(character.identity.playLevel).clanTraits);
+        for (let index = 0; index < count; index++) {
+            const field = createChoiceField("clan-trait-" + (index + 1), "Traço de Clã " + (index + 1), "Regra do Traço");
+            root.append(field.root);
+            renderClanTraitSelect(index);
+            field.select.addEventListener("change", () => {
+                character.clanTraits[index] = field.select.value;
+                renderClanTraitSelect(index);
+                saveNow("Traço de Clã atualizado.");
+            });
+        }
     }
 
     function renderIdentityAutomation() {
@@ -105,15 +122,15 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
                 : "Selecione a Disciplina"
         );
 
-        document.getElementById("sire-description").textContent = sire?.description || "Selecione um Sire.";
+        document.getElementById("sire-description").textContent = sire?.description || "";
+        document.getElementById("sire-description").closest("details").hidden = !sire;
         document.getElementById("clan-curse-summary").textContent = rulePreview(clan?.curse?.description || "Selecione um Clã.");
         document.getElementById("clan-beast-name").textContent = clan?.beast?.name || "—";
         document.getElementById("clan-curse-name").textContent = clan?.curse?.name || character.identity.curse || "—";
         document.getElementById("clan-curse-description").textContent =
             clan?.curse?.description || "Selecione um clã.";
         document.getElementById("clan-frenzy-name").textContent = clan?.frenzy?.name || "—";
-        document.getElementById("clan-frenzy-description").textContent =
-            rulePreview(clan?.frenzy?.description || "Selecione um clã.");
+
 
         renderClanTraits();
         renderBeastIdentity();
@@ -128,10 +145,11 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
             const variableSlot = clan?.disciplineSlots.find((slot) => slot.length > 1);
             character.identity.clanDisciplineChoice = variableSlot?.[0] || "";
 
-            character.clanTraits = ["", ""];
+            character.clanTraits = Array(creationFor(character.identity.playLevel).clanTraits).fill("");
             syncDisciplinesToIdentity(character, {resetExtras:false});
             renderIdentityAutomation();
             renderDisciplines();
+            renderCoreResources();
             saveNow("Clã e opções relacionadas atualizados.");
         });
 
@@ -161,14 +179,6 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
             syncDisciplinesToIdentity(character, {resetExtras:false});
             renderDisciplines();
             saveNow("Disciplina variável do Clã atualizada.");
-        });
-
-        [0,1].forEach((index) => {
-            document.getElementById("clan-trait-" + (index + 1)).addEventListener("change", (event) => {
-                character.clanTraits[index] = event.target.value;
-                renderClanTraitSelect(index);
-                saveNow("Traço de Clã atualizado.");
-            });
         });
     }
 

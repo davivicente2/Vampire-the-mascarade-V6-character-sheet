@@ -29,9 +29,6 @@
 .auto-info-panel p {
     color: var(--muted);
     font-size: 0.82rem;
-}
-
-.auto-info-panel p {
     margin: 0.35rem 0 0;
 }
 

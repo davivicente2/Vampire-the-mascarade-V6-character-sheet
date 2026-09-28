@@ -179,18 +179,16 @@ export function runTests() {
         byId('lifepath-0').value = path.name;
         byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
         const allocation = byId('lifepath-allocation-0');
-        const skillOptions = [...allocation.querySelector('.lifepath-skill-choice').options].map((option) => option.value);
-        const resourceOptions = [...allocation.querySelector('.lifepath-resource-choice').options].map((option) => option.value);
+        const skillOptions = [...allocation.querySelectorAll('[data-kind=skills] .allocation-row')].map((row) => row.dataset.choice);
+        const resourceOptions = [...allocation.querySelectorAll('[data-kind=resources] .allocation-row')].map((row) => row.dataset.choice);
         check(skillOptions.includes(path.skills[0]) &&
             resourceOptions.includes(path.resources[0]) && saved().lifepaths[0] === path.name,
-            path.name + ' lifepath renders compact benefit selectors and saves');
+            path.name + ' lifepath renders compact distribution counters and saves');
     }
     check(JSON.stringify(saved().skills) === skillSnapshot, 'Selecting lifepath does not spend skill dots');
     byId('lifepath-0').value = 'Criminal';
     byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
-    const firstSkillChoice = byId('lifepath-allocation-0').querySelector('.lifepath-skill-choice');
-    firstSkillChoice.value = getLifepath('Criminal').skills[0];
-    firstSkillChoice.dispatchEvent(new Event('change', { bubbles: true }));
+    byId('lifepath-allocation-0').querySelector('[data-kind=skills] [data-action=plus]').click();
     check(saved().lifepathAllocations[0].skills[0] === getLifepath('Criminal').skills[0], 'Lifepath skill choice persists');
     byId('lifepath-0').value = 'Diplomat';
     byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
