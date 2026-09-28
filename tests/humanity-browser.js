@@ -73,7 +73,7 @@ export function runTests() {
     byId('play-level').dispatchEvent(new Event('change', { bubbles: true }));
     const powerRow = () => byId('disciplines').querySelector('.power-row');
     const powerSelect = powerRow().querySelector('select');
-    check(powerRow().querySelector('.power-description').textContent.includes('Efeito:'), 'Power effect is visible outside input');
+    check(powerRow().querySelector('.power-description').textContent.includes('Efeito:'), 'Power effect remains available outside editable notes');
     powerSelect.value = [...powerSelect.options].filter((option) => option.value).at(-1).value;
     powerSelect.dispatchEvent(new Event('change', { bubbles: true }));
     const chosen = saved().disciplines[0];

@@ -863,3 +863,22 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .lifepath-details summary, .lifepath-rules summary { cursor: pointer; color: var(--muted); font-weight: 700; }
 .lifepath-details p, .lifepath-rules p { margin: 0.5rem 0; }
 @media (max-width: 680px) { .lifepath-allocations { grid-template-columns: 1fr; } }
+
+/* Compact consultation panels: native details remain keyboard/touch accessible. */
+.rule-details { margin: 0.55rem 0; font-size: 0.85rem; }
+.rule-details summary, .power-description summary { cursor: pointer; color: var(--muted); }
+.rule-details summary:focus-visible, .power-description summary:focus-visible {
+    outline: 2px solid currentColor; outline-offset: 3px;
+}
+.rule-details p { line-height: 1.5; }
+.compact-field { min-width: 0; }
+.power-row { grid-template-columns: minmax(140px, 1fr) minmax(70px, 0.4fr) minmax(95px, 0.6fr) 34px; }
+.power-activation, .power-cost { align-self: center; overflow-wrap: anywhere; }
+.power-description { min-width: 0; }
+.power-description input { width: 100%; margin-top: 0.4rem; }
+.auto-info-panel a { font-size: 0.82rem; }
+@media (max-width: 600px) {
+    .power-row { grid-template-columns: minmax(0, 1fr) 70px 34px; }
+    .power-activation { grid-column: 1 / -1; grid-row: 2; }
+    .power-row > .icon-button { grid-column: 3; grid-row: 1; }
+}

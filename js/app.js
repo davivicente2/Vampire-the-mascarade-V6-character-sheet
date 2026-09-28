@@ -1,3 +1,4 @@
+import { rulePreview, powerMechanics, legacyPowerReminder } from "./disclosure.js";
 import { lifepaths, getLifepath, lifepathRequirement } from "../data/lifepaths.js";
 import { natures, getNature } from "../data/natures.js";
 import { installTooltips } from "./tooltips.js";
@@ -147,7 +148,7 @@ const DEFAULT_CHARACTER = {
     merit: "Subdued Hunger — You have some control over your hunger and gain a bonus to resist hunger frenzy.",
     flaw: "",
     nature: "Survivor — You always pull through, surviving whatever the world throws at you.",
-    beast: "Enticer — Your Beast rejoices in corrupting others, in making them chase their repressed desires and darkest wishes.",
+    beast: "",
     items: "foto da esposa, pistola",
     currentVitae: 13,
     currentWillpower: 12,
@@ -210,20 +211,6 @@ function normalizePower(power) {
     };
 }
 
-function powerReminder(power) {
-    if (!power) return "";
-
-    const mechanics = [
-        power.type,
-        power.attribute ? "Atributo: " + power.attribute : "",
-        power.difficulty ? "Dificuldade: " + power.difficulty : "",
-        power.distance ? "Distância: " + power.distance : "",
-        power.duration ? "Duração: " + power.duration : ""
-    ].filter(Boolean).join(" · ");
-
-    return [mechanics, power.summary].filter(Boolean).join(" — ");
-}
-
 function normalizeCharacter(value) {
     const base = clone(EMPTY_CHARACTER);
     const incoming = value && typeof value === "object" ? value : {};
@@ -263,7 +250,6 @@ function normalizeCharacter(value) {
             const sourcePower = getPower(discipline.name, power.name);
             if (!sourcePower) return;
             if (!power.cost) power.cost = sourcePower.cost || "";
-            if (!power.reminder) power.reminder = powerReminder(sourcePower);
         });
     });
 
@@ -481,9 +467,15 @@ function renderClanTraitSelect(index) {
     );
 
     const selected = traits.find((trait) => trait.name === saved);
+    const levels = {neonate: 1, ancilla: 2, elder: 3};
+    const warning = selected && levels[selected.tier] > (levels[character.identity.playLevel] || 0)
+        ? "⚠ Requer " + selected.tier + " ou superior. " : "";
     help.textContent = selected
-        ? [selected.prerequisites, selected.description].filter(Boolean).join(" — ")
+        ? warning + [selected.prerequisites, rulePreview(selected.description)].filter(Boolean).join(" — ")
         : "Os Traços disponíveis dependem do Clã.";
+    const rule = document.getElementById("clan-trait-" + (index + 1) + "-rule");
+    rule.textContent = selected?.description || "";
+    rule.closest("details").hidden = !selected;
 }
 
 function renderClanTraits() {
@@ -546,13 +538,15 @@ function renderIdentityAutomation() {
             : "Selecione a Disciplina"
     );
 
-    document.getElementById("curse").value = clan?.curse?.name || character.identity.curse || "";
-    document.getElementById("clan-curse-name").textContent = clan?.curse?.name || "—";
+    document.getElementById("sire-description").textContent = sire?.description || "Selecione um Sire.";
+    document.getElementById("clan-curse-summary").textContent = rulePreview(clan?.curse?.description || "Selecione um Clã.");
+    document.getElementById("clan-beast-name").textContent = clan?.beast?.name || "—";
+    document.getElementById("clan-curse-name").textContent = clan?.curse?.name || character.identity.curse || "—";
     document.getElementById("clan-curse-description").textContent =
         clan?.curse?.description || "Selecione um clã.";
     document.getElementById("clan-frenzy-name").textContent = clan?.frenzy?.name || "—";
     document.getElementById("clan-frenzy-description").textContent =
-        clan?.frenzy?.description || "Selecione um clã.";
+        rulePreview(clan?.frenzy?.description || "Selecione um clã.");
 
     renderClanTraits();
     renderBeastIdentity();
@@ -577,7 +571,11 @@ function installIdentityAutomation() {
     document.getElementById("sire").addEventListener("change", (event) => {
         const sire = sires.find((item) => item.id === event.target.value) || null;
         character.identity.sire = sire?.name || "";
-        character.identity.sireDiscipline = sire?.disciplines?.[0] || "";
+        // Keep a still-valid choice (and all invested Discipline dots/powers).
+        const previous = character.identity.sireDiscipline;
+        character.identity.sireDiscipline = sire && (sire.disciplines.includes(previous) ||
+            (sire.mode === "custom-clan" && disciplines[previous]))
+            ? previous : sire?.disciplines?.[0] || "";
         syncDisciplinesToIdentity({resetExtras:false});
         renderIdentityAutomation();
         renderDisciplines();
@@ -836,22 +834,30 @@ function renderDisciplines() {
                 power.name = powerName.value;
                 const sourcePower = getPower(discipline.name, power.name);
                 power.cost = sourcePower?.cost || "";
-                power.reminder = powerReminder(sourcePower);
+                power.reminder = "";
                 renderDisciplines();
                 saveNow("Poder atualizado.");
             });
 
+            const costReadout = document.createElement("small");
+            costReadout.className = "power-cost";
+            costReadout.textContent = power.cost || "Custo não informado";
             const cost = document.createElement("input");
             cost.value = power.cost || "";
             cost.placeholder = "Custo";
+            cost.setAttribute("aria-label", "Custo de " + (power.name || "poder"));
             cost.addEventListener("input", () => {
                 power.cost = cost.value;
+                costReadout.textContent = power.cost || "Custo não informado";
                 saveNow("Custo salvo.");
             });
 
             const reminder = document.createElement("input");
-            reminder.value = power.reminder || "";
-            reminder.placeholder = "Atributo · dificuldade · distância · duração · resumo";
+            const sourcePower = getPower(discipline.name, power.name);
+            // Preserve legacy serialized text, but do not present generated rules as personal notes.
+            reminder.value = power.reminder === legacyPowerReminder(sourcePower) ? "" : power.reminder || "";
+            reminder.placeholder = "Anotações pessoais do poder";
+            reminder.setAttribute("aria-label", "Anotações de " + (power.name || "poder"));
             reminder.title = reminder.value;
             reminder.addEventListener("input", () => {
                 power.reminder = reminder.value;
@@ -870,9 +876,16 @@ function renderDisciplines() {
                 saveNow("Poder removido.");
             });
 
-            row.append(powerName, cost, reminder, removePower);
-            const sourcePower = getPower(discipline.name, power.name);
-            const description = document.createElement("div");
+            const activation = document.createElement("small");
+            activation.className = "power-activation";
+            activation.textContent = sourcePower
+                ? "Rank " + sourcePower.rank + " · " + (sourcePower.activate || "Ativação não informada")
+                : power.name ? "⚠ Poder não catalogado" : "";
+            row.append(powerName, costReadout, activation, removePower);
+            const description = document.createElement("details");
+            const summary = document.createElement("summary");
+            summary.textContent = "Efeito e anotações";
+            description.appendChild(summary);
             description.className = "power-description";
             description.id = "power-description-" + disciplineIndex + "-" + powerIndex;
             description.setAttribute("aria-live", "polite");
@@ -890,16 +903,14 @@ function renderDisciplines() {
             if (sourcePower) {
                 const mechanics = document.createElement("p");
                 mechanics.className = "field-help";
-                mechanics.textContent = [
-                    sourcePower.activate ? "Ativação: " + sourcePower.activate : "",
-                    sourcePower.type ? "Tipo: " + sourcePower.type : "",
-                    sourcePower.attribute ? "Atributo: " + sourcePower.attribute : "",
-                    sourcePower.difficulty ? "Dificuldade: " + sourcePower.difficulty : "",
-                    sourcePower.distance ? "Alcance: " + sourcePower.distance : "",
-                    sourcePower.duration ? "Duração: " + sourcePower.duration : ""
-                ].filter(Boolean).join(" · ");
+                mechanics.textContent = powerMechanics(sourcePower);
                 description.appendChild(mechanics);
             }
+            const costLabel = document.createElement("label");
+            const costCaption = document.createElement("span");
+            costCaption.textContent = "Custo (editável)";
+            costLabel.append(costCaption, cost);
+            description.append(reminder, costLabel);
             row.appendChild(description);
             powers.appendChild(row);
         });
@@ -1044,17 +1055,12 @@ function renderLifepaths() {
             rules.className = "field-help";
             rules.textContent = "Repita uma opção para investir mais de 1 ponto nela. Focos fornecidos aparecem entre parênteses; na criação, uma Habilidade não pode ultrapassar 3.";
             details.append(description, rules);
-            if (requirement) {
-                const warning = document.createElement("p");
-                warning.className = "validation-warning";
-                warning.textContent = requirement;
-                details.appendChild(warning);
-            }
         };
 
         select.addEventListener("change", () => {
             character.lifepaths[index] = select.value === "__custom__" ? notes.value : select.value;
-            character.lifepathAllocations[index] = emptyLifepathAllocation();
+            // renderDetails drops only allocations unavailable in the new path.
+            if (!getLifepath(select.value)) character.lifepathAllocations[index] = emptyLifepathAllocation();
             renderDetails();
             saveNow("Caminho de Vida salvo.");
         });
@@ -1247,7 +1253,7 @@ function renderHumanityDetails() {
                     (episode === "accepted" ? " Como você cedeu voluntariamente, recuperará 2 Vontade ao concluir, até o máximo." : "") +
                     (episode === "painful" ? " Falha dolorosa: o Narrador ganha 1 Drama; resolva também a Escolha sua Dor." : "")
                 : marks < 5
-                    ? marks + "/5 marcas. Faltam " + (5 - marks) + " para exigir resistência. Os botões de resultado aparecem ao completar as 5 caixas."
+                    ? "Faltam " + (5 - marks) + " marcas para exigir resistência."
                     : !pool.canResist
                         ? "Mortal 3: você não pode resistir à Explosão. Inicie o episódio; a escala só muda quando ele terminar."
                         : "Role Autocontrole + Determinação − dificuldade " + pool.difficulty +
@@ -1391,9 +1397,13 @@ function installMeritSelection() {
     const renderDescription = () => {
         const merit = getMerit(select.value);
         const separator = select.value.indexOf(" — ");
-        description.textContent = meritHelp(merit) || (select.value
-            ? (separator >= 0 ? select.value.slice(separator + 3) : select.value)
-            : "Selecione um Mérito para ver sua descrição.");
+        const full = document.getElementById("merit-rule");
+        full.textContent = meritHelp(merit) || (select.value
+            ? (separator >= 0 ? select.value.slice(separator + 3) : select.value) : "");
+        description.textContent = merit
+            ? [merit.prerequisites, rulePreview(merit.description)].filter(Boolean).join(" — ")
+            : rulePreview(full.textContent);
+        full.closest("details").hidden = !select.value;
     };
 
     renderDescription();
@@ -1503,6 +1513,11 @@ installActions();
 installHumanityActions();
 renderRulesReference();
 installTooltips();
+document.getElementById("beast-rules-link").addEventListener("click", () => {
+    const panel = document.getElementById("beast-rules");
+    panel.open = true;
+    panel.querySelector("summary").focus();
+});
 
 if (loadError) {
     document.getElementById("save-status").textContent = "Não foi possível carregar a ficha salva.";

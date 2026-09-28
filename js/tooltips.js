@@ -12,7 +12,6 @@ const HELP = {
     sire: 'Quem criou ou ensinou seu personagem. A seleção define as opções de Disciplina do Sire.',
     'sire-discipline': 'Disciplina concedida pelo tipo de Sire. Escolhê-la inclui a Disciplina na ficha; distribua seu ponto manualmente.',
     'clan-special-discipline': 'Escolha entre as alternativas de Disciplina oferecidas pelo seu Clã.',
-    curse: 'Maldição preenchida pelo Clã escolhido. A descrição aparece no painel do Clã.',
     'nefarious-damage': 'Bloqueia caixas de Vitae da direita para a esquerda e reduz o máximo efetivo. Todas bloqueadas: Morte Final. Cura: 5 Vitae + 1 Vontade, uma vez por noite, a partir da noite seguinte ao dano.',
     'effective-vitae': 'Máximo de Vitae disponível após subtrair o Dano Nefasto.',
     'hunger-state': '11+ Vitae: Satisfeito; 6–10: Sedento; 1–5: Faminto; 0: Torpor. Dano Nefasto em todas as caixas significa Morte Final.',
@@ -22,7 +21,7 @@ const HELP = {
     'quickening-minus': 'Retira 1 Quickening. Use para registrar um gasto; não adiciona dados automaticamente à calculadora.',
     'quickening-plus': 'Adiciona 1 Quickening, até 5. Se já estiver no máximo, marque o ganho excedente em Besta ou Natureza, à sua escolha. Não pode ganhar em torpor.',
     beast: 'Impulsos do lado monstruoso, ligados ao Clã. A descrição orienta a interpretação e o Frenesi da Besta.',
-    nature: 'Escolha uma das oito Naturezas. Abaixo aparecem sua descrição, formas de satisfazê-la e a Explosão específica. Escolher uma Natureza não marca caixas nem move a Humanidade.',
+    nature: 'Escolha uma das oito Naturezas. Consulte a indulgência e os efeitos em “Indulgência e efeito da Explosão”. Escolher uma Natureza não marca caixas nem move a Humanidade.',
     'beast-points': 'Marca a agitação da Besta, de 0 a 5. Cinco marcas exigem Autocontrole, dificuldade 3 + modificador de geração. Marcar pontos não move a escala nem recupera Vontade automaticamente.',
     'nature-points': 'Marca a agitação da Natureza, de 0 a 5. Cinco marcas exigem resistência à Explosão. Marcar pontos não move a escala nem recupera Vontade automaticamente.',
     'humanity-scale': 'Clique em um círculo disponível para corrigir a posição manualmente. Isso não resolve episódios nem altera círculos perdidos. Concluir Frenesi/Explosão aplica o passo pelas regras.',
@@ -31,7 +30,7 @@ const HELP = {
     'outburst-trigger': 'Anote os gatilhos e comportamentos da Explosão ligada à sua Natureza.',
     'clan-trait-1': 'Primeiro dos dois Traços de Clã. Confira os pré-requisitos na descrição abaixo.',
     'clan-trait-2': 'Escolha um Traço diferente do primeiro. Traços de Ancilla geram aviso se o tier for Neonate.',
-    merit: 'Escolha seu Mérito. A descrição abaixo apresenta requisitos, benefícios e ativação. Usar a ativação o deixa inativo até a próxima noite; registre esse uso na mesa.',
+    merit: 'Escolha seu Mérito. Abra “Descrição e ativação” para consultar a regra disponível. Usar a ativação o deixa inativo até a próxima noite; registre esse uso na mesa.',
     flaw: 'Anote sua Falha e como ela complica a vida do personagem.',
     items: 'Equipamento, objetos pessoais e outras anotações de inventário.',
     'add-resource': 'Adiciona uma linha para um Recurso, seu nível e os detalhes de quem ou do que ele representa.',
@@ -71,7 +70,7 @@ function helpTarget(element) {
         ? 'Ajuste o nível deste Recurso; clicar no último ponto preenchido reduz 1.'
         : 'Descreva o Recurso ou seus detalhes: nome do contato, localização do refúgio, identidade da máscara etc.') };
     if (control.closest('#disciplines')) return { element: control, text: control.title || (control.matches('select')
-        ? 'Escolha a Disciplina ou um poder disponível nos pontos atuais. Escolher um poder preenche o custo e o lembrete; o gasto é manual.'
+        ? 'Escolha a Disciplina ou um poder disponível nos pontos atuais. Escolher um poder preenche o custo; o gasto é manual. Abra “Efeito e anotações” para consultar os detalhes.'
         : control.matches('input') ? 'Custo ou lembrete do poder. Pode editar para registrar condições ou detalhes da campanha.'
         : control.textContent === '+ Poder' ? 'Adiciona outro poder à Disciplina, para escolher entre os disponíveis no nível atual.'
         : 'Ajuste os pontos da Disciplina. Poderes já escolhidos são preservados; requisitos não atendidos aparecem nos avisos.') };

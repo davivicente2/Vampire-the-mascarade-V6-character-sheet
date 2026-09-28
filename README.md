@@ -40,3 +40,12 @@ console.table(runTests());
 ```
 
 Cada item retornado é uma verificação aprovada; qualquer falha interrompe a execução com um erro.
+
+Para verificar também a interface compacta e o ciclo completo de importação/exportação, execute no mesmo perfil temporário:
+
+```js
+const ux = await import('./tests/disclosure-browser.js');
+console.table(await ux.runTests());
+```
+
+Essa suíte usa uma ficha de teste em um iframe, recarrega a página e restaura o armazenamento anterior ao terminar. Consulte [a auditoria de UX](docs/ux-review.md) para as mudanças de apresentação e as limitações de regras preservadas.
