@@ -127,7 +127,6 @@ const DEFAULT_CHARACTER = {
 };
 
 let character = normalizeCharacter(loadCharacter() || DEFAULT_CHARACTER);
-let dirty = false;
 
 function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -183,9 +182,10 @@ function clampTrackers() {
 }
 
 function setDirty(message) {
-    dirty = true;
-    document.getElementById("save-status").textContent = "Alterações não salvas.";
-    document.getElementById("save-detail").textContent = message || "Clique em Salvar para manter esta versão no navegador.";
+    saveCharacter(character);
+    document.getElementById("save-status").textContent = "Salvo automaticamente.";
+    document.getElementById("save-detail").textContent =
+        message || "A alteração foi armazenada neste navegador.";
     renderValidation();
 }
 
@@ -583,13 +583,6 @@ function refreshAll() {
 }
 
 function installActions() {
-    document.getElementById("save-button").addEventListener("click", () => {
-        saveCharacter(character);
-        dirty = false;
-        document.getElementById("save-status").textContent = "Ficha salva.";
-        document.getElementById("save-detail").textContent = "Esta versão está armazenada localmente neste navegador.";
-    });
-
     document.getElementById("export-button").addEventListener("click", () => {
         exportCharacter(character);
     });
@@ -629,14 +622,6 @@ function installActions() {
         location.reload();
     });
 
-    window.addEventListener("beforeunload", (event) => {
-        if (!dirty) {
-            return;
-        }
-
-        event.preventDefault();
-        event.returnValue = "";
-    });
 }
 
 bindStaticFields();
