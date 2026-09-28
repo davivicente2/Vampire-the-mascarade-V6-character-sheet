@@ -1,0 +1,124 @@
+@media print {
+    @page {
+        size: A4;
+        margin: 9mm;
+    }
+
+    :root {
+        color-scheme: light;
+    }
+
+    body {
+        background: white !important;
+        color: #111 !important;
+        font-size: 9pt;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .app-header {
+        width: 100%;
+        padding: 0 0 4mm;
+        margin: 0;
+        color: #111;
+    }
+
+    .app-header h1 {
+        font-size: 24pt;
+    }
+
+    .eyebrow,
+    .section-kicker,
+    .subtitle,
+    label > span,
+    .standalone-field > span,
+    .field-label {
+        color: #444 !important;
+    }
+
+    .sheet-shell {
+        width: 100%;
+        margin: 0;
+        display: block;
+    }
+
+    .sheet-card,
+    .attribute-group,
+    .discipline-card {
+        break-inside: avoid;
+        background: white !important;
+        border-color: #aaa !important;
+        color: #111 !important;
+        box-shadow: none !important;
+    }
+
+    .sheet-card {
+        margin-bottom: 3mm;
+        padding: 3mm;
+        border-radius: 0;
+    }
+
+    .primary-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 3mm;
+    }
+
+    .identity-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .attribute-groups {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .skills-grid,
+    .two-column-fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    input,
+    select,
+    textarea {
+        border: 0 !important;
+        border-bottom: 1px solid #777 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: #111 !important;
+        padding: 1mm 0 !important;
+        min-height: 0;
+    }
+
+    textarea {
+        resize: none;
+        overflow: hidden;
+    }
+
+    .dot,
+    .tracker-dot {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+        width: 4mm;
+        height: 4mm;
+        min-height: 4mm;
+        border-color: #111 !important;
+    }
+
+    .dot.filled,
+    .tracker-dot.filled {
+        background: #111 !important;
+        border-color: #111 !important;
+    }
+
+    .section-heading {
+        margin-bottom: 2mm;
+        padding-bottom: 1mm;
+        border-color: #999;
+    }
+
+    .section-heading h2 {
+        font-size: 14pt;
+    }
+}
