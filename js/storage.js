@@ -49,9 +49,14 @@ export function assertCharacter(value) {
             if (focuses !== undefined && (!Array.isArray(focuses) || !focuses.every(text))) fail();
         });
     }
-    for (const key of ["resources", "disciplines", "lifepaths", "clanTraits"]) {
+    for (const key of ["resources", "disciplines", "lifepaths", "lifepathAllocations", "clanTraits"]) {
         if (value[key] !== undefined && !Array.isArray(value[key])) fail();
     }
+    value.lifepathAllocations?.forEach((allocation) => {
+        if (!object(allocation)) fail();
+        if (!Array.isArray(allocation.skills) || !allocation.skills.every(text)) fail();
+        if (!Array.isArray(allocation.resources) || !allocation.resources.every(text)) fail();
+    });
     value.resources?.forEach((resource) => fields(resource, ["dots"]));
     value.disciplines?.forEach((discipline) => {
         if (!object(discipline)) fail();

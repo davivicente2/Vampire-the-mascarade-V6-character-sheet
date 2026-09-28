@@ -136,6 +136,10 @@ const DEFAULT_CHARACTER = {
         "Criminal — You made your living by breaking the law.",
         "Military — You served your country under its military organizations and were trained in the art of war."
     ],
+    lifepathAllocations: [
+        { skills: ["Atletismo (Corrida)", "Percepção", "Briga (Luta suja)", "Sabotagem (Arrombamento)", "Subterfúgio"], resources: ["Contatos: receptador", "Riqueza", "Máscara"] },
+        { skills: ["Atletismo", "Briga", "Medicina (Primeiros socorros)", "Tiro (Armas pesadas)", "Sobrevivência"], resources: ["Repositório: armas", "Contatos: militares", "Aliado: antigos companheiros"] }
+    ],
     clanTraits: [
         "Beguiling Words — You gain a dice bonus equal to your generation modifier to tests to deceive, lie, or deny or obscure the truth.",
         "Divine Image — Once each night, you can use an action to transform into a divine form, channeling the power of your vampire ancestors."
@@ -176,6 +180,10 @@ const EMPTY_CHARACTER = {
         {name:"", dots:0, powers:[{name:"", cost:"", reminder:""}]}
     ],
     lifepaths:["",""],
+    lifepathAllocations:[
+        {skills:["","","","",""], resources:["","",""]},
+        {skills:["","","","",""], resources:["","",""]}
+    ],
     clanTraits:["",""],
     merit:"", flaw:"", nature:"", beast:"", items:"",
     currentVitae:0, currentWillpower:0, quickening:0, nefariousDamage:0,
@@ -261,6 +269,18 @@ function normalizeCharacter(value) {
 
     if (Array.isArray(incoming.lifepaths)) base.lifepaths = incoming.lifepaths.slice(0, 2);
     while (base.lifepaths.length < 2) base.lifepaths.push("");
+
+    if (Array.isArray(incoming.lifepathAllocations)) {
+        base.lifepathAllocations = incoming.lifepathAllocations.slice(0, 2).map((allocation) => ({
+            skills: Array.isArray(allocation?.skills) ? allocation.skills.slice(0, 5).map((value) => String(value || "")) : [],
+            resources: Array.isArray(allocation?.resources) ? allocation.resources.slice(0, 3).map((value) => String(value || "")) : []
+        }));
+    }
+    while (base.lifepathAllocations.length < 2) base.lifepathAllocations.push({skills:[], resources:[]});
+    base.lifepathAllocations = base.lifepathAllocations.map((allocation) => ({
+        skills: [...allocation.skills, "", "", "", "", ""].slice(0, 5),
+        resources: [...allocation.resources, "", "", ""].slice(0, 3)
+    }));
 
     if (Array.isArray(incoming.clanTraits)) base.clanTraits = incoming.clanTraits.slice(0, 2);
     while (base.clanTraits.length < 2) base.clanTraits.push("");
@@ -905,10 +925,40 @@ function addDiscipline() {
     saveNow("Nova disciplina criada.");
 }
 
+function emptyLifepathAllocation() {
+    return {skills:["","","","",""], resources:["","",""]};
+}
+
+function renderLifepathPointGroup({title, className, options, values, count, onChange}) {
+    const fieldset = document.createElement("fieldset");
+    fieldset.className = "lifepath-point-group";
+    const legend = document.createElement("legend");
+    legend.textContent = title + " · " + count + " pontos";
+    fieldset.appendChild(legend);
+    const grid = document.createElement("div");
+    grid.className = "lifepath-choice-grid";
+
+    for (let point = 0; point < count; point += 1) {
+        const label = document.createElement("label");
+        const caption = document.createElement("span");
+        caption.textContent = "Ponto " + (point + 1);
+        const select = document.createElement("select");
+        select.className = className;
+        populateSelect(select, options.map((option) => ({value:option, label:option})), values[point] || "", "—");
+        select.addEventListener("change", () => onChange(point, select.value));
+        label.append(caption, select);
+        grid.appendChild(label);
+    }
+    fieldset.appendChild(grid);
+    return fieldset;
+}
+
 function renderLifepaths() {
     const root = document.getElementById("lifepaths");
     root.replaceChildren();
     while (character.lifepaths.length < 2) character.lifepaths.push("");
+    while (character.lifepathAllocations.length < 2) character.lifepathAllocations.push(emptyLifepathAllocation());
+
     character.lifepaths.slice(0, 2).forEach((value, index) => {
         const card = document.createElement("div");
         card.className = "lifepath-card";
@@ -920,52 +970,101 @@ function renderLifepaths() {
         const selected = getLifepath(value);
         const custom = Boolean(value && !selected);
         populateSelect(select, [
-            ...lifepaths.map((path) => ({ value: path.name, label: path.name + " — " +
-                ({ mortal: "Mortal", neonate: "Neonate+", ancilla: "Ancilla+" }[path.tier]) })),
-            { value: "__custom__", label: "Personalizado / texto salvo" }
-        ], custom ? "__custom__" : selected?.name || "", "Selecione um Caminho (ou deixe vazio)");
+            ...lifepaths.map((path) => ({ value: path.name, label: path.name + " · " + ({ mortal: "Mortal", neonate: "Neonate+", ancilla: "Ancilla+" }[path.tier]) })),
+            { value: "__custom__", label: "Personalizado" }
+        ], custom ? "__custom__" : selected?.name || "", "Selecione um Caminho");
         label.append(caption, select);
-        const help = document.createElement("div");
+
+        const help = document.createElement("small");
         help.id = "lifepath-help-" + index;
-        help.className = "lifepath-help";
+        help.className = "field-help lifepath-help";
         help.setAttribute("aria-live", "polite");
         select.setAttribute("aria-describedby", help.id);
+
         const notes = document.createElement("textarea");
-        notes.rows = 4;
+        notes.rows = 3;
         notes.setAttribute("aria-label", "Caminho de Vida personalizado " + (index + 1));
         notes.placeholder = "Nome, história, cinco Habilidades e três Recursos";
         notes.value = custom ? value : "";
-        const renderHelp = () => {
-            help.replaceChildren();
+
+        const allocationRoot = document.createElement("div");
+        allocationRoot.id = "lifepath-allocation-" + index;
+        allocationRoot.className = "lifepath-allocations";
+
+        const details = document.createElement("details");
+        details.className = "lifepath-details";
+        const detailsSummary = document.createElement("summary");
+        detailsSummary.textContent = "Descrição e regras";
+        details.appendChild(detailsSummary);
+
+        const renderDetails = () => {
+            allocationRoot.replaceChildren();
+            details.replaceChildren(detailsSummary);
             const path = getLifepath(select.value);
             const isCustom = select.value === "__custom__";
             notes.hidden = !isCustom;
-            const lines = path ? [
-                path.description,
-                "Habilidades — distribua 5 pontos: " + path.skills.join("; ") + ".",
-                "Recursos — distribua 3 pontos: " + path.resources.join("; ") + ".",
-                "Os termos entre parênteses indicam os focos fornecidos. Nos demais casos, escolha um foco adequado.",
-                lifepathRequirement(path, character.identity.playLevel)
-            ] : [isCustom
-                ? "Defina o papel na história, escolha 5 Habilidades e 3 Recursos com o Narrador. Distribua os pontos nas seções correspondentes."
-                : "Escolha dois Caminhos na criação. Para personagem jovem e inexperiente, pode deixar um dos campos vazio."];
-            for (const line of lines.filter(Boolean)) {
-                const p = document.createElement("p");
-                p.textContent = line;
-                help.appendChild(p);
+            allocationRoot.hidden = !path;
+            details.hidden = !path;
+
+            if (!path) {
+                help.textContent = isCustom ? "Caminho personalizado: descreva abaixo as opções combinadas com o Narrador." : "";
+                return;
+            }
+
+            const requirement = lifepathRequirement(path, character.identity.playLevel);
+            help.textContent = requirement;
+
+            const allocation = character.lifepathAllocations[index] || emptyLifepathAllocation();
+            allocation.skills = allocation.skills.map((choice) => path.skills.includes(choice) ? choice : "");
+            allocation.resources = allocation.resources.map((choice) => path.resources.includes(choice) ? choice : "");
+            character.lifepathAllocations[index] = allocation;
+
+            allocationRoot.append(
+                renderLifepathPointGroup({
+                    title: "Habilidades", className: "lifepath-skill-choice",
+                    options: path.skills, values: allocation.skills, count: 5,
+                    onChange: (point, choice) => {
+                        character.lifepathAllocations[index].skills[point] = choice;
+                        saveNow("Distribuição de Habilidades do Caminho salva.");
+                    }
+                }),
+                renderLifepathPointGroup({
+                    title: "Recursos", className: "lifepath-resource-choice",
+                    options: path.resources, values: allocation.resources, count: 3,
+                    onChange: (point, choice) => {
+                        character.lifepathAllocations[index].resources[point] = choice;
+                        saveNow("Distribuição de Recursos do Caminho salva.");
+                    }
+                })
+            );
+
+            const description = document.createElement("p");
+            description.textContent = path.description;
+            const rules = document.createElement("p");
+            rules.className = "field-help";
+            rules.textContent = "Repita uma opção para investir mais de 1 ponto nela. Focos fornecidos aparecem entre parênteses; na criação, uma Habilidade não pode ultrapassar 3.";
+            details.append(description, rules);
+            if (requirement) {
+                const warning = document.createElement("p");
+                warning.className = "validation-warning";
+                warning.textContent = requirement;
+                details.appendChild(warning);
             }
         };
+
         select.addEventListener("change", () => {
             character.lifepaths[index] = select.value === "__custom__" ? notes.value : select.value;
-            renderHelp();
-            saveNow("Caminho de Vida salvo. Distribua os benefícios manualmente.");
+            character.lifepathAllocations[index] = emptyLifepathAllocation();
+            renderDetails();
+            saveNow("Caminho de Vida salvo.");
         });
         notes.addEventListener("input", () => {
             character.lifepaths[index] = notes.value;
             saveNow("Caminho personalizado salvo.");
         });
-        renderHelp();
-        card.append(label, help, notes);
+
+        renderDetails();
+        card.append(label, help, allocationRoot, details, notes);
         root.appendChild(card);
     });
 }

@@ -178,11 +178,22 @@ export function runTests() {
     for (const path of lifepaths) {
         byId('lifepath-0').value = path.name;
         byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
-        check(byId('lifepath-help-0').textContent.includes(path.skills[0]) &&
-            byId('lifepath-help-0').textContent.includes(path.resources[0]) && saved().lifepaths[0] === path.name,
-            path.name + ' lifepath displays benefits and saves');
+        const allocation = byId('lifepath-allocation-0');
+        const skillOptions = [...allocation.querySelector('.lifepath-skill-choice').options].map((option) => option.value);
+        const resourceOptions = [...allocation.querySelector('.lifepath-resource-choice').options].map((option) => option.value);
+        check(skillOptions.includes(path.skills[0]) &&
+            resourceOptions.includes(path.resources[0]) && saved().lifepaths[0] === path.name,
+            path.name + ' lifepath renders compact benefit selectors and saves');
     }
     check(JSON.stringify(saved().skills) === skillSnapshot, 'Selecting lifepath does not spend skill dots');
+    byId('lifepath-0').value = 'Criminal';
+    byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
+    const firstSkillChoice = byId('lifepath-allocation-0').querySelector('.lifepath-skill-choice');
+    firstSkillChoice.value = getLifepath('Criminal').skills[0];
+    firstSkillChoice.dispatchEvent(new Event('change', { bubbles: true }));
+    check(saved().lifepathAllocations[0].skills[0] === getLifepath('Criminal').skills[0], 'Lifepath skill choice persists');
+    byId('lifepath-0').value = 'Diplomat';
+    byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
     check(byId('lifepath-help-0').textContent.includes('não está disponível para Neonate'), 'Ancilla lifepath warns at Neonate tier');
     byId('play-level').value = 'ancilla';
     byId('play-level').dispatchEvent(new Event('change', { bubbles: true }));
