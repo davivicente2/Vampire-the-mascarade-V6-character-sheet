@@ -13,11 +13,10 @@
         <div>
             <p class="eyebrow">Vampire: The Masquerade V6 — Alpha Playtest</p>
             <h1>Character Sheet</h1>
-            <p class="subtitle">Ficha editável, salvamento local, JSON e impressão em PDF.</p>
+            <p class="subtitle">Ficha editável, salvamento automático, JSON e impressão em PDF.</p>
         </div>
 
         <div class="toolbar no-print" aria-label="Ações da ficha">
-            <button id="save-button" type="button">Salvar</button>
             <button id="export-button" type="button">Exportar JSON</button>
             <label class="button-like" for="import-file">Importar JSON</label>
             <input id="import-file" type="file" accept=".json,application/json" hidden>
@@ -29,8 +28,8 @@
     <main class="sheet-shell">
         <section class="status-panel no-print" aria-live="polite">
             <div>
-                <strong id="save-status">Ficha carregada.</strong>
-                <span id="save-detail">Alterações são mantidas neste navegador ao clicar em Salvar.</span>
+                <strong id="save-status">Salvamento automático ativo.</strong>
+                <span id="save-detail">Qualquer alteração é salva neste navegador automaticamente.</span>
             </div>
             <div id="validation-summary"></div>
         </section>
