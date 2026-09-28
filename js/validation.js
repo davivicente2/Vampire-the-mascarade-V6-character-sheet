@@ -37,8 +37,11 @@ export function validateCharacter(character) {
         }
 
         const powers = character.disciplines
-            .flatMap((discipline) => discipline.powers)
-            .filter((power) => power.trim().length > 0);
+            .flatMap((discipline) => discipline.powers || [])
+            .filter((power) => {
+                const name = typeof power === "string" ? power : power?.name;
+                return Boolean(name && name.trim().length > 0);
+            });
 
         if (powers.length !== 4) {
             warnings.push(
