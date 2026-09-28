@@ -1,7 +1,6 @@
 import {
     saveCharacter,
     loadCharacter,
-    clearCharacter,
     exportCharacter,
     importCharacter
 } from "./storage.js";
@@ -124,6 +123,73 @@ const DEFAULT_CHARACTER = {
     items: "foto da esposa, pistola",
     currentVitae: 13,
     currentWillpower: 12
+};
+
+
+const EMPTY_CHARACTER = {
+    version: 1,
+    identity: {
+        name: "",
+        clan: "",
+        apparentAge: "",
+        actualAge: "",
+        embraceDate: "",
+        nostalgicDecade: "",
+        generation: 0,
+        generationModifier: 0,
+        playLevel: "",
+        archetype: "",
+        sire: "",
+        curse: ""
+    },
+    attributes: {
+        strength: 0,
+        dexterity: 0,
+        stamina: 0,
+        charisma: 0,
+        manipulation: 0,
+        composure: 0,
+        intelligence: 0,
+        wits: 0,
+        resolve: 0
+    },
+    skills: {
+        athletics: { dots: 0, focus: "" },
+        awareness: { dots: 0, focus: "" },
+        craft: { dots: 0, focus: "" },
+        expression: { dots: 0, focus: "" },
+        fighting: { dots: 0, focus: "" },
+        investigation: { dots: 0, focus: "" },
+        knowledge: { dots: 0, focus: "" },
+        medicine: { dots: 0, focus: "" },
+        persuasion: { dots: 0, focus: "" },
+        shooting: { dots: 0, focus: "" },
+        sabotage: { dots: 0, focus: "" },
+        subterfuge: { dots: 0, focus: "" },
+        survival: { dots: 0, focus: "" }
+    },
+    resources: [
+        { name: "", dots: 0 },
+        { name: "", dots: 0 },
+        { name: "", dots: 0 },
+        { name: "", dots: 0 },
+        { name: "", dots: 0 }
+    ],
+    disciplines: [
+        { name: "", dots: 0, powers: [""] },
+        { name: "", dots: 0, powers: [""] },
+        { name: "", dots: 0, powers: [""] }
+    ],
+    lifepaths: ["", ""],
+    clanTraits: ["", ""],
+    merit: "",
+    flaw: "",
+    nature: "",
+    beast: "",
+    humanityScale: "",
+    items: "",
+    currentVitae: 0,
+    currentWillpower: 0
 };
 
 let character = normalizeCharacter(loadCharacter() || DEFAULT_CHARACTER);
@@ -611,14 +677,14 @@ function installActions() {
 
     document.getElementById("reset-button").addEventListener("click", () => {
         const confirmed = confirm(
-            "Restaurar a ficha para os valores iniciais extraídos do PDF? A versão salva neste navegador será apagada."
+            "Limpar toda a ficha e começar um personagem novo? Os dados salvos neste navegador serão substituídos por uma ficha vazia."
         );
 
         if (!confirmed) {
             return;
         }
 
-        clearCharacter();
+        saveCharacter(clone(EMPTY_CHARACTER));
         location.reload();
     });
 
