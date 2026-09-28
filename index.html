@@ -152,7 +152,7 @@
                         <strong id="willpower-label"></strong>
                     </div>
                     <div id="willpower-tracker" class="tracker" aria-label="Força de Vontade atual"></div>
-                    <p class="muted-copy">Máximo calculado a partir de Compostura + Determinação.</p>
+                    <p class="muted-copy">Máximo: 5 + Autocontrole + Determinação.</p>
                 </article>
 
                 <article class="resource-panel">
@@ -162,10 +162,10 @@
                     </div>
                     <div class="stepper no-print">
                         <button id="quickening-minus" type="button" aria-label="Diminuir Quickening">−</button>
-                        <input id="quickening" type="number" min="0" step="1">
+                        <input id="quickening" type="number" min="0" max="5" step="1">
                         <button id="quickening-plus" type="button" aria-label="Aumentar Quickening">+</button>
                     </div>
-                    <p class="muted-copy">Recurso do jogador obtido por boas rolagens e gasto conforme as regras da versão do playtest em uso.</p>
+                    <p class="muted-copy">Comece a sessão com 0 (ou 2, a critério do Narrador). Cada 10 rolado concede 1. Antes da rolagem: gaste 1 por dado extra, 3 por sucesso básico com Habilidade treinada ou 5 sem treinamento. No limite de 5, cada ganho excedente marca Besta ou Natureza, à sua escolha. Em torpor, Quickening é zerado e não pode ser ganho.</p>
                 </article>
             </div>
         </section>
@@ -189,6 +189,16 @@
                         <strong id="beast-points-label"></strong>
                     </div>
                     <div id="beast-points" class="tracker" aria-label="Pontos de Besta"></div>
+                    <div class="humanity-resolution">
+                        <p id="beast-resistance" class="field-help" aria-live="polite"></p>
+                        <div class="humanity-actions no-print" role="group" aria-label="Resolver Frenesi da Besta">
+                            <button id="beast-success" type="button">Resisti</button>
+                            <button id="beast-failure" type="button">Falhei</button>
+                            <button id="beast-painful" type="button">Falha dolorosa</button>
+                            <button id="beast-accepted" type="button">Aceitar impulso</button>
+                            <button id="beast-finish" type="button">Concluir Frenesi da Besta</button>
+                        </div>
+                    </div>
                     <label>
                         <span>Frenesi da Besta — gatilho</span>
                         <textarea id="frenzy-trigger" rows="3"></textarea>
@@ -207,6 +217,14 @@
                         <span>Rastreador de estado</span>
                         <strong id="humanity-state"></strong>
                     </div>
+                    <div class="humanity-stage-info" aria-live="polite">
+                        <h3 id="humanity-stage"></h3>
+                        <p id="humanity-effects"></p>
+                        <p id="humanity-appearance" class="field-help"></p>
+                        <p id="humanity-losses"></p>
+                        <strong id="humanity-fate"></strong>
+                    </div>
+
                 </article>
 
                 <article class="humanity-side">
@@ -219,6 +237,16 @@
                         <strong id="nature-points-label"></strong>
                     </div>
                     <div id="nature-points" class="tracker" aria-label="Pontos de Natureza"></div>
+                    <div class="humanity-resolution">
+                        <p id="nature-resistance" class="field-help" aria-live="polite"></p>
+                        <div class="humanity-actions no-print" role="group" aria-label="Resolver Explosão da Natureza">
+                            <button id="nature-success" type="button">Resisti</button>
+                            <button id="nature-failure" type="button">Falhei</button>
+                            <button id="nature-painful" type="button">Falha dolorosa</button>
+                            <button id="nature-accepted" type="button">Aceitar impulso</button>
+                            <button id="nature-finish" type="button">Concluir Explosão da Natureza</button>
+                        </div>
+                    </div>
                     <label>
                         <span>Explosão (Outburst) — gatilho</span>
                         <textarea id="outburst-trigger" rows="3"></textarea>
@@ -234,6 +262,7 @@
                     <h2>Habilidades</h2>
                 </div>
             </div>
+            <p class="field-help">Ganhe um foco em 1, 3 e 5 pontos de Habilidade. Um foco relevante concede +1 dado ao teste.</p>
             <div id="skills" class="skills-grid"></div>
         </section>
 
@@ -382,6 +411,11 @@
                     <a href="https://www.paradoxinteractive.com/games/world-of-darkness/news/vtm-sixth-edition-faq" target="_blank" rel="noreferrer">FAQ oficial</a>
                 </p>
             </div>
+        </details>
+        <details class="sheet-card rules-card">
+            <summary>Consulta — Regras da Noite</summary>
+            <p class="field-help">Resumos do capítulo 4 fornecido para esta campanha. Consulte as decisões do Narrador para exceções. Esta consulta não aplica custos nem modificadores automaticamente.</p>
+            <div id="rules-reference"></div>
         </details>
     </main>
 

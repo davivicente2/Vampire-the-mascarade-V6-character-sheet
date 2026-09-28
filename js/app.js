@@ -1,3 +1,7 @@
+import { installTooltips } from "./tooltips.js";
+import { humanityStages, humanityBounds, shiftHumanity, resistancePool } from "../data/humanity.js";
+import { rulesReference } from "../data/rules.js";
+import { skillFocusCount, normalizeSkillFocuses } from "../data/skills.js";
 import {
     saveCharacter,
     loadCharacter,
@@ -158,9 +162,9 @@ const EMPTY_CHARACTER = {
         playLevel: "", archetype: "", sire: "", sireDiscipline: "", clanDisciplineChoice: "", curse: ""
     },
     attributes: {
-        strength: 0, dexterity: 0, stamina: 0,
-        charisma: 0, manipulation: 0, composure: 0,
-        intelligence: 0, wits: 0, resolve: 0
+        strength: 1, dexterity: 1, stamina: 1,
+        charisma: 1, manipulation: 1, composure: 1,
+        intelligence: 1, wits: 1, resolve: 1
     },
     skills: Object.fromEntries(Object.keys(SKILL_LABELS).map((key) => [key, {dots:0, focus:""}])),
     resources: RESOURCE_PRESETS.map(([name, details]) => ({name, dots:0, details})),
@@ -174,6 +178,7 @@ const EMPTY_CHARACTER = {
     merit:"", flaw:"", nature:"", beast:"", items:"",
     currentVitae:0, currentWillpower:0, quickening:0, nefariousDamage:0,
     beastPoints:0, naturePoints:0, humanityPosition:0,
+    lostBeastCircles:0, lostNatureCircles:0, beastEpisode:"", natureEpisode:"", humanityFate:"",
     frenzyTrigger:"", outburstTrigger:""
 };
 
@@ -222,6 +227,7 @@ function normalizeCharacter(value) {
             ...base.skills[key],
             ...(incoming.skills?.[key] || {})
         };
+        base.skills[key].focuses = normalizeSkillFocuses(base.skills[key]);
     }
 
     if (Array.isArray(incoming.resources)) {
@@ -260,20 +266,29 @@ function normalizeCharacter(value) {
     for (const key of [
         "merit","flaw","nature","beast","items",
         "currentVitae","currentWillpower","quickening","nefariousDamage",
-        "beastPoints","naturePoints","humanityPosition","frenzyTrigger","outburstTrigger"
+        "beastPoints","naturePoints","humanityPosition","frenzyTrigger","outburstTrigger",
+        "lostBeastCircles","lostNatureCircles","beastEpisode","natureEpisode","humanityFate"
     ]) {
         if (incoming[key] !== undefined) base[key] = incoming[key];
     }
 
     const bounded = (value, max, min = 0) => Math.max(min, Math.min(max, Math.trunc(Number(value) || 0)));
-    for (const key of Object.keys(base.attributes)) base.attributes[key] = bounded(base.attributes[key], 5);
+    for (const key of Object.keys(base.attributes)) base.attributes[key] = bounded(base.attributes[key], 5, 1);
     for (const skill of Object.values(base.skills)) skill.dots = bounded(skill.dots, 5);
     for (const item of [...base.resources, ...base.disciplines]) item.dots = bounded(item.dots, 5);
     for (const key of ["currentVitae", "currentWillpower", "quickening", "nefariousDamage"]) {
         base[key] = bounded(base[key], Number.MAX_SAFE_INTEGER);
     }
     for (const key of ["beastPoints", "naturePoints"]) base[key] = bounded(base[key], 5);
-    base.humanityPosition = bounded(base.humanityPosition, 3, -3);
+    base.quickening = bounded(base.quickening, 5);
+    base.lostBeastCircles = bounded(base.lostBeastCircles, 3);
+    base.lostNatureCircles = bounded(base.lostNatureCircles, 3);
+    for (const key of ["beastEpisode", "natureEpisode"]) {
+        if (!["", "failure", "painful", "accepted"].includes(base[key])) base[key] = "";
+    }
+    if (!["", "wight", "departure"].includes(base.humanityFate)) base.humanityFate = "";
+    const bounds = humanityBounds(base);
+    base.humanityPosition = bounded(base.humanityPosition, bounds.max, bounds.min);
     return base;
 }
 
@@ -291,6 +306,7 @@ function maxWillpower() {
 
 function hungerState() {
     const value = Number(character.currentVitae || 0);
+    if (effectiveMaxVitae() === 0) return "MORTE FINAL";
     if (value <= 0) return "TORPOR";
     if (value >= 11) return "SATISFEITO";
     if (value >= 6) return "SEDENTO";
@@ -298,11 +314,15 @@ function hungerState() {
 }
 
 function humanityState() {
-    if (character.beastPoints >= 5) return "⚠ TESTE DE FRENESI";
-    if (character.naturePoints >= 5) return "⚠ TESTE DE OUTBURST";
-    if (character.beastPoints >= 3) return "BESTA AGITADA";
-    if (character.naturePoints >= 3) return "NATUREZA AGITADA";
-    return "ESTÁVEL";
+    const difficulty = 3 + Number(character.identity.generationModifier || 0);
+    const states = [];
+    if (character.beastEpisode) states.push("FRENESI DA BESTA EM CURSO");
+    else if (character.beastPoints >= 5) states.push("⚠ FRENESI DA BESTA: Autocontrole + Determinação, dificuldade " + difficulty);
+    else if (character.beastPoints >= 3) states.push("BESTA AGITADA");
+    if (character.natureEpisode) states.push("EXPLOSÃO EM CURSO");
+    else if (character.naturePoints >= 5) states.push("⚠ EXPLOSÃO: Autocontrole + Determinação, dificuldade " + difficulty);
+    else if (character.naturePoints >= 3) states.push("NATUREZA AGITADA");
+    return states.join(" · ") || "ESTÁVEL";
 }
 
 function saveNow(message = "Alteração salva automaticamente.") {
@@ -583,7 +603,7 @@ function renderAttributes() {
             name.className = "dot-label";
             name.textContent = label;
             row.append(name, createDots(character.attributes[key], 5, (next) => {
-                character.attributes[key] = next;
+                character.attributes[key] = Math.max(1, next);
                 clampCoreResources();
                 renderAttributes();
                 renderCoreResources();
@@ -609,22 +629,41 @@ function renderSkills() {
         const name = document.createElement("span");
         name.textContent = label;
 
-        const focus = document.createElement("input");
-        focus.type = "text";
-        focus.className = "skill-focus";
-        focus.placeholder = "Foco(s)";
-        focus.value = skill.focus || "";
-        focus.addEventListener("input", () => {
-            skill.focus = focus.value;
-            saveNow("Foco salvo.");
-        });
+        const focuses = document.createElement("div");
+        focuses.className = "skill-focuses";
+        const count = skillFocusCount(skill.dots);
+        for (let index = 0; index < count; index += 1) {
+            const field = document.createElement("label");
+            const caption = document.createElement("span");
+            caption.textContent = "Foco " + (index + 1);
+            const focus = document.createElement("input");
+            focus.type = "text";
+            focus.className = "skill-focus";
+            focus.placeholder = "Especialização";
+            focus.setAttribute("aria-label", label + " — " + caption.textContent);
+            focus.value = skill.focuses[index] || "";
+            focus.addEventListener("input", () => {
+                while (skill.focuses.length <= index) skill.focuses.push("");
+                skill.focuses[index] = focus.value;
+                skill.focus = skill.focuses.filter(Boolean).join(", ");
+                saveNow("Foco salvo.");
+            });
+            field.append(caption, focus);
+            focuses.appendChild(field);
+        }
+        if (skill.focuses.slice(count).some(Boolean)) {
+            const note = document.createElement("small");
+            note.className = "field-help";
+            note.textContent = "Focos acima do nível atual foram preservados e reaparecem ao recuperar os pontos.";
+            focuses.appendChild(note);
+        }
 
         row.append(name, createDots(skill.dots, 5, (next) => {
             skill.dots = next;
             renderSkills();
             renderCalculator();
             saveNow("Habilidade salva.");
-        }, label), focus);
+        }, label), focuses);
 
         root.appendChild(row);
     }
@@ -809,6 +848,36 @@ function renderDisciplines() {
             });
 
             row.append(powerName, cost, reminder, removePower);
+            const sourcePower = getPower(discipline.name, power.name);
+            const description = document.createElement("div");
+            description.className = "power-description";
+            description.id = "power-description-" + disciplineIndex + "-" + powerIndex;
+            description.setAttribute("aria-live", "polite");
+            powerName.setAttribute("aria-describedby", description.id);
+            powerName.setAttribute("aria-label", "Poder de " + (discipline.name || "Disciplina"));
+
+            const effect = document.createElement("p");
+            const effectLabel = document.createElement("strong");
+            effectLabel.textContent = "Efeito: ";
+            effect.append(effectLabel, sourcePower?.description || sourcePower?.summary ||
+                (power.name ? "Este poder não tem descrição na base. Use o lembrete para anotar seu efeito."
+                    : "Selecione um poder para ver o que ele faz."));
+            description.appendChild(effect);
+
+            if (sourcePower) {
+                const mechanics = document.createElement("p");
+                mechanics.className = "field-help";
+                mechanics.textContent = [
+                    sourcePower.activate ? "Ativação: " + sourcePower.activate : "",
+                    sourcePower.type ? "Tipo: " + sourcePower.type : "",
+                    sourcePower.attribute ? "Atributo: " + sourcePower.attribute : "",
+                    sourcePower.difficulty ? "Dificuldade: " + sourcePower.difficulty : "",
+                    sourcePower.distance ? "Alcance: " + sourcePower.distance : "",
+                    sourcePower.duration ? "Duração: " + sourcePower.duration : ""
+                ].filter(Boolean).join(" · ");
+                description.appendChild(mechanics);
+            }
+            row.appendChild(description);
             powers.appendChild(row);
         });
 
@@ -858,8 +927,9 @@ function renderLifepaths() {
 function clampCoreResources() {
     character.currentVitae = Math.max(0, Math.min(Number(character.currentVitae || 0), effectiveMaxVitae()));
     character.currentWillpower = Math.max(0, Math.min(Number(character.currentWillpower || 0), maxWillpower()));
-    character.quickening = Math.max(0, Number(character.quickening || 0));
-    character.nefariousDamage = Math.max(0, Number(character.nefariousDamage || 0));
+    character.quickening = Math.max(0, Math.min(5, Math.trunc(Number(character.quickening) || 0)));
+    character.nefariousDamage = Math.max(0, Math.trunc(Number(character.nefariousDamage) || 0));
+    if (character.currentVitae === 0) character.quickening = 0;
 }
 
 function renderCoreResources() {
@@ -874,9 +944,16 @@ function renderCoreResources() {
     document.getElementById("willpower-label").textContent = character.currentWillpower + " / " + wpMax;
     document.getElementById("effective-vitae").textContent = effective;
     document.getElementById("hunger-state").textContent = state;
-    document.getElementById("hunger-effect").textContent = HUNGER_EFFECTS[state];
-    document.getElementById("quickening-label").textContent = String(character.quickening);
+    document.getElementById("hunger-effect").textContent = state === "MORTE FINAL"
+        ? "Todas as caixas de Vitae estão marcadas com Dano Nefasto: o personagem foi destruído."
+        : HUNGER_EFFECTS[state] + (state === "FAMINTO"
+            ? " Dificuldade para resistir ao frenesi de fome: " + (6 - character.currentVitae) + "."
+            : "");
+    document.getElementById("quickening-label").textContent = character.quickening + " / 5";
     document.getElementById("quickening").value = character.quickening;
+    document.getElementById("quickening-minus").disabled = character.quickening === 0;
+    document.getElementById("quickening-plus").disabled = character.quickening === 5 || character.currentVitae === 0;
+    document.getElementById("quickening").disabled = character.currentVitae === 0;
     document.getElementById("nefarious-damage").value = character.nefariousDamage;
 
     const vitaeRoot = document.getElementById("vitae-tracker");
@@ -885,6 +962,13 @@ function renderCoreResources() {
         renderCoreResources();
         saveNow("Vitae salvo.");
     }, "Vitae", "tracker-dot"));
+    [...vitaeRoot.querySelectorAll("button")].forEach((button, index) => {
+        if (index >= effective) {
+            button.disabled = true;
+            button.textContent = "×";
+            button.setAttribute("aria-label", "Vitae " + (index + 1) + ": bloqueada por Dano Nefasto");
+        }
+    });
 
     const wpRoot = document.getElementById("willpower-tracker");
     wpRoot.replaceChildren(createDots(character.currentWillpower, wpMax, (next) => {
@@ -892,6 +976,13 @@ function renderCoreResources() {
         renderCoreResources();
         saveNow("Força de Vontade salva.");
     }, "Força de Vontade", "tracker-dot"));
+    renderHumanity();
+    wpRoot.nextElementSibling.textContent = "Máximo: 5 + Autocontrole + Determinação." +
+        (character.currentWillpower === 0
+            ? " Sem Vontade: resista ao frenesi de fúria (dificuldade base 2, ajustada pela situação) ou aceite-o."
+            : character.currentWillpower <= 3
+                ? " Com 3 ou menos: uma falha dolorosa pode provocar frenesi de fúria."
+                : "");
 }
 
 function renderHumanity() {
@@ -902,7 +993,6 @@ function renderHumanity() {
     const beastRoot = document.getElementById("beast-points");
     beastRoot.replaceChildren(createDots(character.beastPoints, 5, (next) => {
         character.beastPoints = next;
-        character.humanityPosition = Math.max(-3, Math.min(3, character.naturePoints - character.beastPoints));
         renderHumanity();
         saveNow("Pontos de Besta salvos.");
     }, "Pontos de Besta", "tracker-dot"));
@@ -910,11 +1000,12 @@ function renderHumanity() {
     const natureRoot = document.getElementById("nature-points");
     natureRoot.replaceChildren(createDots(character.naturePoints, 5, (next) => {
         character.naturePoints = next;
-        character.humanityPosition = Math.max(-3, Math.min(3, character.naturePoints - character.beastPoints));
         renderHumanity();
         saveNow("Pontos de Natureza salvos.");
     }, "Pontos de Natureza", "tracker-dot"));
 
+    renderHumanityDetails();
+    const bounds = humanityBounds(character);
     const scale = document.getElementById("humanity-scale");
     scale.replaceChildren();
 
@@ -922,13 +1013,93 @@ function renderHumanity() {
         const button=document.createElement("button");
         button.type="button";
         button.className="humanity-dot" + (pos===Number(character.humanityPosition) ? " active" : "");
-        button.title = pos < 0 ? "Mais próximo da Besta" : pos > 0 ? "Mais próximo da Natureza" : "Neutro";
+        button.title = humanityStages[pos].name;
+        button.setAttribute("aria-label", humanityStages[pos].name);
+        button.setAttribute("aria-pressed", String(pos === character.humanityPosition));
+        const lost = pos < bounds.min || pos > bounds.max;
+        button.disabled = lost || Boolean(character.humanityFate);
+        if (lost) {
+            button.textContent = "×";
+            button.title += " — círculo perdido";
+            button.setAttribute("aria-label", button.title);
+        }
         button.addEventListener("click", () => {
             character.humanityPosition = pos;
             renderHumanity();
             saveNow("Escala de Humanidade salva.");
         });
         scale.appendChild(button);
+    }
+}
+
+function renderHumanityDetails() {
+    const stage = humanityStages[character.humanityPosition];
+    document.getElementById("humanity-stage").textContent = stage.name;
+    document.getElementById("humanity-effects").textContent = stage.effects;
+    document.getElementById("humanity-appearance").textContent = stage.appearance;
+    document.getElementById("humanity-losses").textContent =
+        "Círculos perdidos — Besta: " + character.lostBeastCircles + "; Natureza: " + character.lostNatureCircles + ".";
+    document.getElementById("humanity-fate").textContent = character.humanityFate === "wight"
+        ? "A jornada terminou: tornou-se um Wight sob controle do Narrador."
+        : character.humanityFate === "departure" ? "A jornada terminou: defina seu afastamento com o Narrador." : "";
+    for (const side of ["beast", "nature"]) {
+        const pool = resistancePool(character, side);
+        const episode = character[side + "Episode"];
+        const blocked = Boolean(character.humanityFate || episode || character[side + "Points"] < 5);
+        document.getElementById(side + "-resistance").textContent = episode
+            ? "Episódio em curso. Conclua-o para aplicar o passo na escala." + (episode === "painful" ? " Falha dolorosa: o Narrador ganha 1 Drama; resolva também a Escolha sua Dor." : "")
+            : !pool.canResist ? "Mortal 3: não é possível resistir à Explosão."
+            : "Ao preencher 5 caixas: Autocontrole + Determinação, dificuldade " + pool.difficulty +
+                ". Bônus aplicáveis: +" + pool.bonus + ". Parada: " + pool.dice + " dados (antes de outros efeitos).";
+        for (const result of ["success", "failure", "painful", "accepted"]) {
+            document.getElementById(side + "-" + result).disabled = blocked ||
+                (result === "success" && !pool.canResist);
+        }
+        document.getElementById(side + "-finish").disabled = !episode || Boolean(character.humanityFate);
+    }
+}
+
+function installHumanityActions() {
+    for (const side of ["beast", "nature"]) {
+        for (const result of ["success", "failure", "painful", "accepted"]) {
+            document.getElementById(side + "-" + result).addEventListener("click", () => {
+                if (character[side + "Points"] < 5 || character[side + "Episode"] || character.humanityFate) return;
+                if (result === "success") {
+                    if (!resistancePool(character, side).canResist) return;
+                    character[side + "Points"] = 4;
+                } else {
+                    character[side + "Points"] = 0;
+                    character[side + "Episode"] = result;
+                }
+                renderHumanity();
+                saveNow(result === "success" ? "Resistência bem-sucedida: uma marca apagada." : "Episódio iniciado; escala será alterada ao concluir.");
+            });
+        }
+        document.getElementById(side + "-finish").addEventListener("click", () => {
+            const episode = character[side + "Episode"];
+            if (!episode || character.humanityFate) return;
+            shiftHumanity(character, side === "beast" ? -1 : 1);
+            if (episode === "accepted") character.currentWillpower = Math.min(maxWillpower(), character.currentWillpower + 2);
+            character[side + "Episode"] = "";
+            renderCoreResources();
+            saveNow("Episódio concluído e Humanidade atualizada.");
+        });
+    }
+}
+
+function renderRulesReference() {
+    const root = document.getElementById("rules-reference");
+    for (const [title, paragraphs] of rulesReference) {
+        const section = document.createElement("details");
+        const summary = document.createElement("summary");
+        summary.textContent = title;
+        section.appendChild(summary);
+        for (const text of paragraphs) {
+            const p = document.createElement("p");
+            p.textContent = text;
+            section.appendChild(p);
+        }
+        root.appendChild(section);
     }
 }
 
@@ -1037,7 +1208,7 @@ function bindStaticFields() {
             after:key === "playLevel" ? () => {
                 renderClanTraits();
                 renderValidation();
-            } : undefined
+            } : key === "generationModifier" ? renderHumanity : undefined
         });
     }
 
@@ -1118,6 +1289,9 @@ renderHumanity();
 renderCalculator();
 renderValidation();
 installActions();
+installHumanityActions();
+renderRulesReference();
+installTooltips();
 
 if (loadError) {
     document.getElementById("save-status").textContent = "Não foi possível carregar a ficha salva.";

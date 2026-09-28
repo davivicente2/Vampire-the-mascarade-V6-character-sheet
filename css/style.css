@@ -305,6 +305,12 @@ textarea {
     padding-block: 0.45rem;
 }
 
+.skill-focuses {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
 .stack-list {
     display: grid;
     gap: 0.65rem;
@@ -425,7 +431,7 @@ textarea {
         grid-template-columns: minmax(100px, 1fr) auto;
     }
 
-    .skill-focus {
+    .skill-focuses {
         grid-column: 1 / -1;
     }
 
@@ -741,6 +747,17 @@ input[readonly] {
     min-width: 0;
 }
 
+.power-description {
+    grid-column: 1 / -1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.power-description p { margin: 0.25rem 0; }
+.power-description .field-help { min-height: 0; }
+
 @media (max-width: 680px) {
     .auto-info-panel {
         grid-template-columns: 1fr;
@@ -750,4 +767,53 @@ input[readonly] {
 /* Keep conditional fields hidden even when labels use display: flex. */
 [hidden] {
     display: none !important;
+}
+
+.humanity-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.5rem 0;
+}
+.humanity-actions button { font-size: 0.8rem; }
+.humanity-stage-info { text-align: left; font-size: 0.85rem; }
+.humanity-stage-info p { line-height: 1.5; }
+.humanity-dot:disabled { opacity: 0.5; cursor: not-allowed; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+.rules-card { margin-top: 1rem; }
+.rules-card summary { cursor: pointer; font-weight: 700; }
+#rules-reference details { margin-top: 1rem; }
+#rules-reference p { line-height: 1.55; }
+
+.help-trigger {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex: 0 0 auto;
+    width: 1.5rem;
+    height: 1.5rem;
+    min-height: 0;
+    padding: 0;
+    margin-left: 0.4rem;
+    border-radius: 50%;
+    font-size: 0.85rem;
+}
+.sheet-tooltip {
+    position: fixed;
+    z-index: 1000;
+    width: max-content;
+    max-width: min(340px, calc(100vw - 16px));
+    max-height: calc(100dvh - 16px);
+    overflow-y: auto;
+    padding: 0.75rem;
+    border: 1px solid #a995a4;
+    border-radius: 8px;
+    background: #25202a;
+    color: #fff;
+    box-shadow: 0 4px 18px #0008;
+    font-size: 0.85rem;
+    font-weight: normal;
+    line-height: 1.5;
+    text-align: left;
+    text-transform: none;
 }

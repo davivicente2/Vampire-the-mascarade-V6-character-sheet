@@ -42,7 +42,12 @@ export function assertCharacter(value) {
     }
     if (value.skills !== undefined) {
         if (!object(value.skills)) fail();
-        Object.values(value.skills).forEach((skill) => fields(skill, ["dots"]));
+        Object.values(value.skills).forEach((skill) => {
+            if (!object(skill)) fail();
+            const { focuses, ...rest } = skill;
+            fields(rest, ["dots"]);
+            if (focuses !== undefined && (!Array.isArray(focuses) || !focuses.every(text))) fail();
+        });
     }
     for (const key of ["resources", "disciplines", "lifepaths", "clanTraits"]) {
         if (value[key] !== undefined && !Array.isArray(value[key])) fail();
@@ -58,10 +63,10 @@ export function assertCharacter(value) {
     for (const key of ["lifepaths", "clanTraits"]) {
         if (value[key] && !value[key].every(text)) fail();
     }
-    for (const key of ["merit", "flaw", "nature", "beast", "items", "frenzyTrigger", "outburstTrigger"]) {
+    for (const key of ["merit", "flaw", "nature", "beast", "items", "frenzyTrigger", "outburstTrigger", "beastEpisode", "natureEpisode", "humanityFate"]) {
         if (value[key] !== undefined && !text(value[key])) fail();
     }
-    for (const key of ["currentVitae", "currentWillpower", "quickening", "nefariousDamage", "beastPoints", "naturePoints", "humanityPosition"]) {
+    for (const key of ["currentVitae", "currentWillpower", "quickening", "nefariousDamage", "beastPoints", "naturePoints", "humanityPosition", "lostBeastCircles", "lostNatureCircles"]) {
         if (value[key] !== undefined && !number(value[key])) fail();
     }
 }
