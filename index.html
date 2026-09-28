@@ -13,7 +13,7 @@
         <div>
             <p class="eyebrow">Vampire: The Masquerade V6 — Alpha Playtest</p>
             <h1>Character Sheet</h1>
-            <p class="subtitle">Ficha editável, salvamento automático, JSON e impressão em PDF.</p>
+            <p class="subtitle">Ficha editável com salvamento automático e recursos de mesa.</p>
         </div>
 
         <div class="toolbar no-print" aria-label="Ações da ficha">
@@ -36,125 +36,199 @@
 
         <section class="sheet-card identity-card">
             <div class="section-heading">
-                <p class="section-kicker">Personagem</p>
-                <h2>Identidade</h2>
+                <div>
+                    <p class="section-kicker">Personagem</p>
+                    <h2>Identidade</h2>
+                </div>
             </div>
 
             <div class="form-grid identity-grid">
-                <label>
-                    <span>Nome</span>
-                    <input id="character-name" type="text">
-                </label>
-                <label>
-                    <span>Clã</span>
-                    <input id="clan" type="text">
-                </label>
-                <label>
-                    <span>Idade aparente</span>
-                    <input id="age-apparent" type="text">
-                </label>
-                <label>
-                    <span>Idade real</span>
-                    <input id="age-actual" type="text">
-                </label>
-                <label>
-                    <span>Data do Abraço</span>
-                    <input id="embrace-date" type="text">
-                </label>
-                <label>
-                    <span>Década nostálgica</span>
-                    <input id="nostalgic-decade" type="text">
-                </label>
-                <label>
-                    <span>Geração</span>
-                    <input id="generation" type="number" min="1" max="20">
-                </label>
-                <label>
-                    <span>Modificador de geração</span>
-                    <input id="generation-modifier" type="number" min="0" max="10">
-                </label>
+                <label><span>Nome</span><input id="character-name" type="text"></label>
+                <label><span>Clã</span><input id="clan" type="text"></label>
+                <label><span>Idade aparente</span><input id="age-apparent" type="text"></label>
+                <label><span>Idade real</span><input id="age-actual" type="text"></label>
+                <label><span>Data do Abraço</span><input id="embrace-date" type="text"></label>
+                <label><span>Década nostálgica</span><input id="nostalgic-decade" type="text"></label>
+                <label><span>Geração</span><input id="generation" type="number" min="0" max="20"></label>
+                <label><span>Modificador de geração</span><input id="generation-modifier" type="number" min="0" max="10"></label>
                 <label>
                     <span>Nível de jogo</span>
                     <select id="play-level">
+                        <option value="">—</option>
                         <option value="neonate">Neonate</option>
                         <option value="ancilla">Ancilla</option>
                         <option value="elder">Elder</option>
                     </select>
                 </label>
-                <label>
-                    <span>Arquétipo</span>
-                    <input id="archetype" type="text">
-                </label>
-                <label>
-                    <span>Sire</span>
-                    <input id="sire" type="text">
-                </label>
-                <label>
-                    <span>Maldição</span>
-                    <input id="curse" type="text">
-                </label>
+                <label><span>Arquétipo</span><input id="archetype" type="text"></label>
+                <label><span>Sire</span><input id="sire" type="text"></label>
+                <label><span>Maldição do Clã</span><input id="curse" type="text"></label>
             </div>
         </section>
 
-        <div class="primary-grid">
-            <section class="sheet-card">
-                <div class="section-heading">
+        <section class="sheet-card">
+            <div class="section-heading">
+                <div>
                     <p class="section-kicker">Nove atributos</p>
                     <h2>Atributos</h2>
                 </div>
-                <div id="attributes" class="attribute-groups"></div>
-            </section>
+            </div>
+            <div id="attributes" class="attribute-groups"></div>
+        </section>
 
-            <section class="sheet-card">
-                <div class="section-heading">
-                    <p class="section-kicker">Recursos de cena</p>
-                    <h2>Vitae & Vontade</h2>
+        <section class="sheet-card">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">Recursos centrais</p>
+                    <h2>Vitae, Vontade & Quickening</h2>
                 </div>
+            </div>
 
-                <div class="tracker-block">
+            <div class="core-resources-grid">
+                <article class="resource-panel">
                     <div class="tracker-header">
                         <span>Vitae</span>
                         <strong id="vitae-label"></strong>
                     </div>
                     <div id="vitae-tracker" class="tracker" aria-label="Vitae atual"></div>
-                </div>
 
-                <div class="tracker-block">
+                    <div class="resource-meta-grid">
+                        <label>
+                            <span>Dano Nefasto</span>
+                            <input id="nefarious-damage" type="number" min="0" step="1">
+                        </label>
+                        <div class="readout">
+                            <span>Máx. efetivo</span>
+                            <strong id="effective-vitae"></strong>
+                        </div>
+                        <div class="readout">
+                            <span>Estado</span>
+                            <strong id="hunger-state"></strong>
+                        </div>
+                    </div>
+
+                    <div class="effect-box">
+                        <span>Efeito do estado de fome</span>
+                        <p id="hunger-effect"></p>
+                    </div>
+                </article>
+
+                <article class="resource-panel">
                     <div class="tracker-header">
                         <span>Força de Vontade</span>
                         <strong id="willpower-label"></strong>
                     </div>
                     <div id="willpower-tracker" class="tracker" aria-label="Força de Vontade atual"></div>
-                </div>
+                    <p class="muted-copy">Máximo calculado a partir de Compostura + Determinação.</p>
+                </article>
 
-                <label class="standalone-field">
-                    <span>Escala de Humanidade</span>
-                    <input id="humanity-scale" type="text">
-                </label>
-            </section>
-        </div>
+                <article class="resource-panel">
+                    <div class="tracker-header">
+                        <span>Quickening</span>
+                        <strong id="quickening-label"></strong>
+                    </div>
+                    <div class="stepper no-print">
+                        <button id="quickening-minus" type="button" aria-label="Diminuir Quickening">−</button>
+                        <input id="quickening" type="number" min="0" step="1">
+                        <button id="quickening-plus" type="button" aria-label="Aumentar Quickening">+</button>
+                    </div>
+                    <p class="muted-copy">Recurso do jogador obtido por boas rolagens e gasto conforme as regras da versão do playtest em uso.</p>
+                </article>
+            </div>
+        </section>
 
         <section class="sheet-card">
             <div class="section-heading">
-                <p class="section-kicker">Competências</p>
-                <h2>Habilidades</h2>
+                <div>
+                    <p class="section-kicker">Conflito interno</p>
+                    <h2>Humanidade • Natureza ↔ Besta</h2>
+                </div>
+            </div>
+
+            <div class="humanity-layout">
+                <article class="humanity-side">
+                    <label>
+                        <span>Besta — impulso / descrição</span>
+                        <textarea id="beast" rows="5"></textarea>
+                    </label>
+                    <div class="tracker-header compact">
+                        <span>Pontos de Besta</span>
+                        <strong id="beast-points-label"></strong>
+                    </div>
+                    <div id="beast-points" class="tracker" aria-label="Pontos de Besta"></div>
+                    <label>
+                        <span>Frenesi da Besta — gatilho</span>
+                        <textarea id="frenzy-trigger" rows="3"></textarea>
+                    </label>
+                </article>
+
+                <article class="humanity-center">
+                    <span class="field-label">Escala de Humanidade</span>
+                    <div id="humanity-scale" class="humanity-scale" role="group" aria-label="Escala de Humanidade"></div>
+                    <div class="humanity-axis">
+                        <span>Besta</span>
+                        <span>Neutro</span>
+                        <span>Natureza</span>
+                    </div>
+                    <div class="state-readout">
+                        <span>Rastreador de estado</span>
+                        <strong id="humanity-state"></strong>
+                    </div>
+                </article>
+
+                <article class="humanity-side">
+                    <label>
+                        <span>Natureza — valores humanos</span>
+                        <textarea id="nature" rows="5"></textarea>
+                    </label>
+                    <div class="tracker-header compact">
+                        <span>Pontos de Natureza</span>
+                        <strong id="nature-points-label"></strong>
+                    </div>
+                    <div id="nature-points" class="tracker" aria-label="Pontos de Natureza"></div>
+                    <label>
+                        <span>Explosão (Outburst) — gatilho</span>
+                        <textarea id="outburst-trigger" rows="3"></textarea>
+                    </label>
+                </article>
+            </div>
+        </section>
+
+        <section class="sheet-card">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">Competências</p>
+                    <h2>Habilidades</h2>
+                </div>
             </div>
             <div id="skills" class="skills-grid"></div>
         </section>
 
-        <div class="primary-grid">
+        <div class="primary-grid wide-left">
             <section class="sheet-card">
                 <div class="section-heading">
-                    <p class="section-kicker">Influência & bens</p>
-                    <h2>Recursos</h2>
+                    <div>
+                        <p class="section-kicker">Influência & bens</p>
+                        <h2>Recursos</h2>
+                    </div>
+                    <button id="add-resource" class="small-button no-print" type="button">+ Recurso</button>
+                </div>
+                <div class="resource-table-head no-print">
+                    <span>Recurso</span>
+                    <span>Nível</span>
+                    <span>Detalhes</span>
+                    <span></span>
                 </div>
                 <div id="resources" class="stack-list"></div>
             </section>
 
             <section class="sheet-card">
                 <div class="section-heading">
-                    <p class="section-kicker">Sangue</p>
-                    <h2>Disciplinas</h2>
+                    <div>
+                        <p class="section-kicker">Sangue</p>
+                        <h2>Disciplinas</h2>
+                    </div>
+                    <button id="add-discipline" class="small-button no-print" type="button">+ Disciplina</button>
                 </div>
                 <div id="disciplines" class="stack-list"></div>
             </section>
@@ -162,61 +236,108 @@
 
         <section class="sheet-card">
             <div class="section-heading">
-                <p class="section-kicker">Histórico</p>
-                <h2>Caminhos de Vida</h2>
-            </div>
-            <div id="lifepaths" class="two-column-fields"></div>
-        </section>
-
-        <section class="sheet-card">
-            <div class="section-heading">
-                <p class="section-kicker">Identidade vampírica</p>
-                <h2>Traços, Mérito, Natureza & Fera</h2>
+                <div>
+                    <p class="section-kicker">Identidade vampírica</p>
+                    <h2>Clã • Mérito • Falha</h2>
+                </div>
             </div>
 
             <div class="two-column-fields">
-                <label>
-                    <span>Traço de Clã 1</span>
-                    <textarea id="clan-trait-1" rows="3"></textarea>
-                </label>
-                <label>
-                    <span>Traço de Clã 2</span>
-                    <textarea id="clan-trait-2" rows="3"></textarea>
-                </label>
-                <label>
-                    <span>Mérito</span>
-                    <textarea id="merit" rows="3"></textarea>
-                </label>
-                <label>
-                    <span>Falha</span>
-                    <textarea id="flaw" rows="3"></textarea>
-                </label>
-                <label>
-                    <span>Natureza</span>
-                    <textarea id="nature" rows="3"></textarea>
-                </label>
-                <label>
-                    <span>Fera</span>
-                    <textarea id="beast" rows="3"></textarea>
-                </label>
+                <label><span>Traço de Clã 1</span><textarea id="clan-trait-1" rows="4"></textarea></label>
+                <label><span>Traço de Clã 2</span><textarea id="clan-trait-2" rows="4"></textarea></label>
+                <label><span>Mérito</span><textarea id="merit" rows="4"></textarea></label>
+                <label><span>Falha</span><textarea id="flaw" rows="4"></textarea></label>
             </div>
         </section>
 
-        <section class="sheet-card">
+        <div class="primary-grid">
+            <section class="sheet-card">
+                <div class="section-heading">
+                    <div>
+                        <p class="section-kicker">Histórico</p>
+                        <h2>Caminhos de Vida</h2>
+                    </div>
+                </div>
+                <div id="lifepaths" class="stack-list"></div>
+            </section>
+
+            <section class="sheet-card">
+                <div class="section-heading">
+                    <div>
+                        <p class="section-kicker">Inventário</p>
+                        <h2>Itens / Equipamentos</h2>
+                    </div>
+                </div>
+                <textarea id="items" rows="8"></textarea>
+            </section>
+        </div>
+
+        <section class="sheet-card no-print">
             <div class="section-heading">
-                <p class="section-kicker">Inventário</p>
-                <h2>Itens & Notas</h2>
+                <div>
+                    <p class="section-kicker">Mesa</p>
+                    <h2>Calculadora de Parada de Dados</h2>
+                </div>
             </div>
-            <textarea id="items" rows="4"></textarea>
+
+            <div class="calculator-grid">
+                <label>
+                    <span>Atributo</span>
+                    <select id="calculator-attribute"></select>
+                </label>
+                <label>
+                    <span>Habilidade</span>
+                    <select id="calculator-skill"></select>
+                </label>
+                <label>
+                    <span>Dificuldade</span>
+                    <input id="calculator-difficulty" type="number" min="0" value="0">
+                </label>
+                <div class="calculator-result">
+                    <span>Parada final</span>
+                    <strong id="calculator-result">0 dados</strong>
+                    <small id="calculator-breakdown"></small>
+                </div>
+            </div>
+            <p class="muted-copy">A calculadora aplica Atributo + Habilidade − Dificuldade e nunca retorna menos que 0 dados.</p>
         </section>
 
         <section class="sheet-card validation-card no-print">
             <div class="section-heading">
-                <p class="section-kicker">Playtest</p>
-                <h2>Revisão da ficha</h2>
+                <div>
+                    <p class="section-kicker">Playtest</p>
+                    <h2>Revisão da ficha</h2>
+                </div>
             </div>
             <div id="validation-list"></div>
         </section>
+
+        <details class="sheet-card rules-card no-print">
+            <summary>Regras rápidas usadas pela ficha</summary>
+            <div class="rules-content">
+                <table class="rules-table">
+                    <thead>
+                        <tr><th>Tópico</th><th>Como a ficha trata</th><th>Lembrete</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Vitae</td><td>Máximo calculado automaticamente</td><td>Base + Vigor.</td></tr>
+                        <tr><td>Força de Vontade</td><td>Máximo calculado automaticamente</td><td>Base + Autocontrole + Determinação.</td></tr>
+                        <tr><td>Dificuldade</td><td>Calculadora de parada</td><td>Subtrai dados da parada.</td></tr>
+                        <tr><td>Quickening</td><td>Rastreador próprio</td><td>Recurso do jogador.</td></tr>
+                        <tr><td>Humanidade</td><td>Natureza ↔ Besta</td><td>Escala e estados de agitação.</td></tr>
+                        <tr><td>Disciplinas</td><td>Poder, custo e lembrete</td><td>Reduz consulta durante a cena.</td></tr>
+                        <tr><td>Dano Nefasto</td><td>Reduz o máximo efetivo de Vitae</td><td>Nunca abaixo de 0.</td></tr>
+                    </tbody>
+                </table>
+
+                <p class="source-links">
+                    Referências gerais do Alpha:
+                    <a href="https://www.paradoxinteractive.com/games/world-of-darkness/news/vtm-sixth-edition-alpha-playtests-open-now" target="_blank" rel="noreferrer">anúncio do playtest</a>
+                    ·
+                    <a href="https://www.paradoxinteractive.com/games/world-of-darkness/news/vtm-sixth-edition-faq" target="_blank" rel="noreferrer">FAQ oficial</a>
+                </p>
+            </div>
+        </details>
     </main>
 
     <script type="module" src="js/app.js"></script>
