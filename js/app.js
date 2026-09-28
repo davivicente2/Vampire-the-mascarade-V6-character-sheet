@@ -6,6 +6,19 @@ import {
 } from "./storage.js";
 
 import { validateCharacter } from "./validation.js";
+import {
+    clans,
+    getClanByName,
+    resolveClanDisciplines,
+    getAvailableTraits
+} from "../data/clans.js";
+import { sires, getSireByName } from "../data/sires.js";
+import {
+    disciplines,
+    getDiscipline,
+    getAvailablePowers,
+    getPower
+} from "../data/disciplines.js";
 
 const ATTRIBUTE_GROUPS = {
     physical: [
@@ -76,7 +89,9 @@ const DEFAULT_CHARACTER = {
         playLevel: "neonate",
         archetype: "",
         sire: "Cruel Sire",
-        curse: "Flagrante do Sol"
+        sireDiscipline: "Obfuscate",
+        clanDisciplineChoice: "",
+        curse: "Sunlight Bane"
     },
     attributes: {
         strength: 2, dexterity: 3, stamina: 3,
@@ -139,7 +154,7 @@ const EMPTY_CHARACTER = {
     identity: {
         name: "", clan: "", apparentAge: "", actualAge: "", embraceDate: "",
         nostalgicDecade: "", generation: 0, generationModifier: 0,
-        playLevel: "", archetype: "", sire: "", curse: ""
+        playLevel: "", archetype: "", sire: "", sireDiscipline: "", clanDisciplineChoice: "", curse: ""
     },
     attributes: {
         strength: 0, dexterity: 0, stamina: 0,
@@ -178,6 +193,20 @@ function normalizePower(power) {
     };
 }
 
+function powerReminder(power) {
+    if (!power) return "";
+
+    const mechanics = [
+        power.type,
+        power.attribute ? "Atributo: " + power.attribute : "",
+        power.difficulty ? "Dificuldade: " + power.difficulty : "",
+        power.distance ? "Distância: " + power.distance : "",
+        power.duration ? "Duração: " + power.duration : ""
+    ].filter(Boolean).join(" · ");
+
+    return [mechanics, power.summary].filter(Boolean).join(" — ");
+}
+
 function normalizeCharacter(value) {
     const base = clone(DEFAULT_CHARACTER);
     const incoming = value && typeof value === "object" ? value : {};
@@ -210,6 +239,15 @@ function normalizeCharacter(value) {
                 : [{name:"", cost:"", reminder:""}]
         }));
     }
+
+    base.disciplines.forEach((discipline) => {
+        discipline.powers.forEach((power) => {
+            const sourcePower = getPower(discipline.name, power.name);
+            if (!sourcePower) return;
+            if (!power.cost) power.cost = sourcePower.cost || "";
+            if (!power.reminder) power.reminder = powerReminder(sourcePower);
+        });
+    });
 
     if (Array.isArray(incoming.lifepaths)) base.lifepaths = incoming.lifepaths.slice(0, 2);
     while (base.lifepaths.length < 2) base.lifepaths.push("");
@@ -292,6 +330,220 @@ function createDots(value, max, onChange, label, className = "dot") {
     }
 
     return wrapper;
+}
+
+
+function currentClan() {
+    return getClanByName(character.identity.clan);
+}
+
+function currentSire() {
+    return getSireByName(character.identity.sire);
+}
+
+function normalizeTraitSelection(savedValue, clan) {
+    const raw = String(savedValue || "").trim();
+    if (!raw || !clan) return "";
+    const exact = clan.traits.find((trait) => trait.name === raw);
+    if (exact) return exact.name;
+
+    const normalized = raw.toLowerCase();
+    return clan.traits.find((trait) =>
+        normalized === trait.name.toLowerCase() ||
+        normalized.startsWith(trait.name.toLowerCase() + " ")
+    )?.name || "";
+}
+
+function syncDisciplinesToIdentity({resetExtras = true} = {}) {
+    const clan = currentClan();
+    if (!clan) return;
+
+    const desired = resolveClanDisciplines(clan, character.identity.clanDisciplineChoice);
+    const sireDiscipline = character.identity.sireDiscipline;
+    if (sireDiscipline && !desired.includes(sireDiscipline)) {
+        desired.push(sireDiscipline);
+    }
+
+    const existing = character.disciplines || [];
+    const next = desired.map((name) => {
+        const old = existing.find((discipline) => discipline.name === name);
+        return old || {name, dots: 0, powers: [{name:"", cost:"", reminder:""}]};
+    });
+
+    if (!resetExtras) {
+        existing.forEach((discipline) => {
+            if (discipline.name && !next.some((item) => item.name === discipline.name)) {
+                next.push(discipline);
+            }
+        });
+    }
+
+    character.disciplines = next;
+}
+
+function populateSelect(select, options, selectedValue, placeholder = "—") {
+    select.replaceChildren();
+
+    if (placeholder !== null) {
+        const empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = placeholder;
+        select.appendChild(empty);
+    }
+
+    options.forEach(({value, label}) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        select.appendChild(option);
+    });
+
+    select.value = selectedValue || "";
+}
+
+function renderClanTraitSelect(index) {
+    const clan = currentClan();
+    const select = document.getElementById("clan-trait-" + (index + 1));
+    const help = document.getElementById("clan-trait-" + (index + 1) + "-description");
+    const traits = getAvailableTraits(clan);
+    const saved = normalizeTraitSelection(character.clanTraits[index], clan);
+
+    character.clanTraits[index] = saved;
+
+    populateSelect(
+        select,
+        traits.map((trait) => ({
+            value: trait.name,
+            label: (trait.tier === "ancilla" ? "⚠ Ancilla — " : "") + trait.name
+        })),
+        saved,
+        "Selecione um Traço"
+    );
+
+    const selected = traits.find((trait) => trait.name === saved);
+    help.textContent = selected
+        ? [selected.prerequisites, selected.description].filter(Boolean).join(" — ")
+        : "Os Traços disponíveis dependem do Clã.";
+}
+
+function renderClanTraits() {
+    renderClanTraitSelect(0);
+    renderClanTraitSelect(1);
+}
+
+function renderIdentityAutomation() {
+    const clanSelect = document.getElementById("clan");
+    const sireSelect = document.getElementById("sire");
+    const sireDisciplineSelect = document.getElementById("sire-discipline");
+    const specialField = document.getElementById("clan-special-discipline-field");
+    const specialSelect = document.getElementById("clan-special-discipline");
+
+    const clan = currentClan();
+    const sire = currentSire();
+
+    populateSelect(
+        clanSelect,
+        clans.map((item) => ({value:item.id, label:item.name})),
+        clan?.id || "",
+        "Selecione um clã"
+    );
+
+    populateSelect(
+        sireSelect,
+        sires.map((item) => ({value:item.id, label:item.name})),
+        sire?.id || "",
+        "Selecione um Sire"
+    );
+
+    const variableSlot = clan?.disciplineSlots.find((slot) => slot.length > 1);
+    if (variableSlot) {
+        if (!variableSlot.includes(character.identity.clanDisciplineChoice)) {
+            character.identity.clanDisciplineChoice = variableSlot[0];
+        }
+        specialField.hidden = false;
+        populateSelect(
+            specialSelect,
+            variableSlot.map((name) => ({value:name,label:name})),
+            character.identity.clanDisciplineChoice,
+            null
+        );
+    } else {
+        character.identity.clanDisciplineChoice = "";
+        specialField.hidden = true;
+        specialSelect.replaceChildren();
+    }
+
+    const sireOptions = sire?.disciplines?.length
+        ? sire.disciplines
+        : Object.keys(disciplines);
+
+    populateSelect(
+        sireDisciplineSelect,
+        sireOptions.map((name) => ({value:name,label:name})),
+        character.identity.sireDiscipline,
+        sire?.mode === "custom-clan"
+            ? "Escolha a Disciplina do clã relacionado"
+            : "Selecione a Disciplina"
+    );
+
+    document.getElementById("curse").value = clan?.curse?.name || character.identity.curse || "";
+    document.getElementById("clan-curse-name").textContent = clan?.curse?.name || "—";
+    document.getElementById("clan-curse-description").textContent =
+        clan?.curse?.description || "Selecione um clã.";
+    document.getElementById("clan-frenzy-name").textContent = clan?.frenzy?.name || "—";
+    document.getElementById("clan-frenzy-description").textContent =
+        clan?.frenzy?.description || "Selecione um clã.";
+
+    renderClanTraits();
+}
+
+function installIdentityAutomation() {
+    document.getElementById("clan").addEventListener("change", (event) => {
+        const clan = clans.find((item) => item.id === event.target.value) || null;
+        character.identity.clan = clan?.name || "";
+        character.identity.curse = clan?.curse?.name || "";
+
+        const variableSlot = clan?.disciplineSlots.find((slot) => slot.length > 1);
+        character.identity.clanDisciplineChoice = variableSlot?.[0] || "";
+
+        character.clanTraits = ["", ""];
+        syncDisciplinesToIdentity({resetExtras:true});
+        renderIdentityAutomation();
+        renderDisciplines();
+        saveNow("Clã e opções relacionadas atualizados.");
+    });
+
+    document.getElementById("sire").addEventListener("change", (event) => {
+        const sire = sires.find((item) => item.id === event.target.value) || null;
+        character.identity.sire = sire?.name || "";
+        character.identity.sireDiscipline = sire?.disciplines?.[0] || "";
+        syncDisciplinesToIdentity({resetExtras:true});
+        renderIdentityAutomation();
+        renderDisciplines();
+        saveNow("Sire e opções relacionadas atualizados.");
+    });
+
+    document.getElementById("sire-discipline").addEventListener("change", (event) => {
+        character.identity.sireDiscipline = event.target.value;
+        syncDisciplinesToIdentity({resetExtras:true});
+        renderDisciplines();
+        saveNow("Disciplina do Sire atualizada.");
+    });
+
+    document.getElementById("clan-special-discipline").addEventListener("change", (event) => {
+        character.identity.clanDisciplineChoice = event.target.value;
+        syncDisciplinesToIdentity({resetExtras:true});
+        renderDisciplines();
+        saveNow("Disciplina variável do Clã atualizada.");
+    });
+
+    [0,1].forEach((index) => {
+        document.getElementById("clan-trait-" + (index + 1)).addEventListener("change", (event) => {
+            character.clanTraits[index] = event.target.value;
+            renderClanTraitSelect(index);
+            saveNow("Traço de Clã atualizado.");
+        });
+    });
 }
 
 function renderAttributes() {
@@ -423,12 +675,30 @@ function renderDisciplines() {
         const head = document.createElement("div");
         head.className = "discipline-head";
 
-        const name = document.createElement("input");
-        name.value = discipline.name;
-        name.placeholder = "Disciplina";
-        name.addEventListener("input", () => {
+        const name = document.createElement("select");
+        populateSelect(
+            name,
+            Object.keys(disciplines).map((disciplineName) => ({
+                value: disciplineName,
+                label: disciplineName
+            })),
+            discipline.name,
+            "Disciplina"
+        );
+
+        if (discipline.name && !getDiscipline(discipline.name)) {
+            const custom = document.createElement("option");
+            custom.value = discipline.name;
+            custom.textContent = discipline.name + " (personalizada)";
+            custom.selected = true;
+            name.appendChild(custom);
+        }
+
+        name.addEventListener("change", () => {
             discipline.name = name.value;
-            saveNow("Disciplina salva.");
+            discipline.powers = [{name:"", cost:"", reminder:""}];
+            renderDisciplines();
+            saveNow("Disciplina atualizada.");
         });
 
         const remove = document.createElement("button");
@@ -458,16 +728,41 @@ function renderDisciplines() {
             const row = document.createElement("div");
             row.className = "power-row";
 
-            const powerName = document.createElement("input");
-            powerName.value = power.name;
-            powerName.placeholder = "Poder";
-            powerName.addEventListener("input", () => {
+            const powerName = document.createElement("select");
+            const available = getAvailablePowers(discipline.name, discipline.dots);
+
+            populateSelect(
+                powerName,
+                available.map((candidate) => ({
+                    value: candidate.name,
+                    label: "●".repeat(candidate.rank) + " " + candidate.name +
+                        (candidate.maturing ? " (M)" : "")
+                })),
+                power.name,
+                "Selecione um Poder"
+            );
+
+            if (power.name && !available.some((candidate) => candidate.name === power.name)) {
+                const sourcePower = getPower(discipline.name, power.name);
+                const legacy = document.createElement("option");
+                legacy.value = power.name;
+                legacy.textContent = "⚠ " + power.name +
+                    (sourcePower ? " — requer " + sourcePower.rank + " dots" : " — não catalogado");
+                legacy.selected = true;
+                powerName.appendChild(legacy);
+            }
+
+            powerName.addEventListener("change", () => {
                 power.name = powerName.value;
-                saveNow("Poder salvo.");
+                const sourcePower = getPower(discipline.name, power.name);
+                power.cost = sourcePower?.cost || "";
+                power.reminder = powerReminder(sourcePower);
+                renderDisciplines();
+                saveNow("Poder atualizado.");
             });
 
             const cost = document.createElement("input");
-            cost.value = power.cost;
+            cost.value = power.cost || "";
             cost.placeholder = "Custo";
             cost.addEventListener("input", () => {
                 power.cost = cost.value;
@@ -475,10 +770,12 @@ function renderDisciplines() {
             });
 
             const reminder = document.createElement("input");
-            reminder.value = power.reminder;
-            reminder.placeholder = "Lembrete";
+            reminder.value = power.reminder || "";
+            reminder.placeholder = "Atributo · dificuldade · distância · duração · resumo";
+            reminder.title = reminder.value;
             reminder.addEventListener("input", () => {
                 power.reminder = reminder.value;
+                reminder.title = reminder.value;
                 saveNow("Lembrete salvo.");
             });
 
@@ -682,20 +979,21 @@ function renderValidation() {
 
 function bindStaticFields() {
     const identityBindings = [
-        ["character-name","name"],["clan","clan"],["age-apparent","apparentAge"],["age-actual","actualAge"],
+        ["character-name","name"],["age-apparent","apparentAge"],["age-actual","actualAge"],
         ["embrace-date","embraceDate"],["nostalgic-decade","nostalgicDecade"],["generation","generation"],
-        ["generation-modifier","generationModifier"],["play-level","playLevel"],["archetype","archetype"],
-        ["sire","sire"],["curse","curse"]
+        ["generation-modifier","generationModifier"],["play-level","playLevel"],["archetype","archetype"]
     ];
 
     for (const [id,key] of identityBindings) {
         bindInput(id, () => character.identity[key], (value) => { character.identity[key]=value; }, {
-            number:["generation","generationModifier"].includes(key)
+            number:["generation","generationModifier"].includes(key),
+            after:key === "playLevel" ? () => {
+                renderClanTraits();
+                renderValidation();
+            } : undefined
         });
     }
 
-    bindInput("clan-trait-1",()=>character.clanTraits[0] || "",(v)=>character.clanTraits[0]=v);
-    bindInput("clan-trait-2",()=>character.clanTraits[1] || "",(v)=>character.clanTraits[1]=v);
     bindInput("merit",()=>character.merit,(v)=>character.merit=v);
     bindInput("flaw",()=>character.flaw,(v)=>character.flaw=v);
     bindInput("nature",()=>character.nature,(v)=>character.nature=v);
@@ -757,6 +1055,8 @@ function installActions() {
 }
 
 bindStaticFields();
+renderIdentityAutomation();
+installIdentityAutomation();
 renderAttributes();
 renderSkills();
 renderResources();
