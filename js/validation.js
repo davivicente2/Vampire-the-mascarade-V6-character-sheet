@@ -1,8 +1,27 @@
+import { getClanByName } from "../data/clans.js";
+import { getSireByName } from "../data/sires.js";
+import { getPower } from "../data/disciplines.js";
+
 export function validateCharacter(character) {
     const warnings = [];
 
     if (!character.identity.name.trim()) {
         warnings.push("O personagem ainda não tem nome.");
+    }
+
+    const clan = getClanByName(character.identity.clan);
+    const sire = getSireByName(character.identity.sire);
+
+    if (character.identity.clan && !clan) {
+        warnings.push("O Clã salvo não está entre os sete Clãs disponíveis nesta campanha.");
+    }
+
+    if (sire?.disciplines?.length &&
+        character.identity.sireDiscipline &&
+        !sire.disciplines.includes(character.identity.sireDiscipline)) {
+        warnings.push(
+            "A Disciplina escolhida para o Sire não está entre as opções concedidas por esse tipo de Sire."
+        );
     }
 
     if (character.identity.playLevel === "neonate") {
@@ -59,15 +78,51 @@ export function validateCharacter(character) {
         }
     }
 
-    const hasDivineImage = character.clanTraits.some((trait) =>
-        trait.toLowerCase().includes("divine image")
-    );
+    if (clan) {
+        const selectedTraits = character.clanTraits.filter(Boolean);
 
-    if (hasDivineImage && character.identity.playLevel === "neonate") {
-        warnings.push(
-            "Divine Image pede Ancilla ou mais forte. Mantenha apenas se o Narrador autorizou uma exceção de playtest."
-        );
+        if (selectedTraits.length !== 2) {
+            warnings.push("Selecione 2 Traços de Clã.");
+        }
+
+        if (new Set(selectedTraits).size !== selectedTraits.length) {
+            warnings.push("Os dois Traços de Clã devem ser escolhas diferentes.");
+        }
+
+        selectedTraits.forEach((traitName) => {
+            const trait = clan.traits.find((item) => item.name === traitName);
+            if (!trait) {
+                warnings.push(traitName + " não pertence ao Clã " + clan.name + ".");
+                return;
+            }
+
+            if (character.identity.playLevel === "neonate" && trait.tier === "ancilla") {
+                warnings.push(
+                    trait.name + " requer Ancilla ou mais forte. Mantenha apenas se o Narrador autorizou uma exceção."
+                );
+            }
+        });
     }
+
+    character.disciplines.forEach((discipline) => {
+        (discipline.powers || []).forEach((power) => {
+            const name = typeof power === "string" ? power : power?.name;
+            if (!name) return;
+
+            const sourcePower = getPower(discipline.name, name);
+            if (!sourcePower) {
+                warnings.push(name + " não foi encontrado na base de " + discipline.name + ".");
+                return;
+            }
+
+            if (sourcePower.rank > Number(discipline.dots || 0)) {
+                warnings.push(
+                    name + " requer " + sourcePower.rank + " dots em " + discipline.name +
+                    ", mas a ficha tem " + Number(discipline.dots || 0) + "."
+                );
+            }
+        });
+    });
 
     return warnings;
 }
