@@ -1,5 +1,3 @@
-import { traitIssues } from "../../model/eligibility.js";
-import { clanTraitXp } from "../../../data/advancement.js";
 import { populateEligibleSelect } from "../eligible-select.js";
 import { sireDisciplines } from "../../model/selection-limits.js";
 import { visibleSlotCount } from "../../model/creation.js";
@@ -24,55 +22,114 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
     function renderClanTraits() {
         const clan = currentClan();
         const normal = creationFor(character.identity.playLevel).clanTraits;
+
         for (const [list, rootId] of [["clanTraits", "clan-traits"], ["advancementClanTraits", "advancement-clan-traits"]]) {
             const acquired = list === "advancementClanTraits";
             const root = document.getElementById(rootId);
             root.replaceChildren();
             const count = acquired ? character[list].length : visibleSlotCount(character[list], normal);
+
             for (let index = 0; index < count; index++) {
                 const id = (acquired ? "acquired-trait-" : "clan-trait-") + (index + 1);
-                const field = createChoiceField(id, (acquired ? "Traço adquirido " : "Traço de Clã ") + (index + 1), "Regra do Traço");
+                const field = createChoiceField(
+                    id,
+                    (acquired ? "Traço adicional " : "Traço de Clã ") + (index + 1),
+                    "Referência do material atual"
+                );
                 const raw = character[list][index] || "";
-                const saved = normalizeTraitSelection(raw, clan) || raw;
-                const selected = clan?.traits.find((trait) => trait.name === saved);
+                const selected = clan?.traits.find((trait) => trait.name === raw) || null;
+                const manual = Boolean(raw && !selected);
                 const writable = character.mode === "play" || (!acquired && index < normal);
-                const available = writable ? (clan?.traits || []).filter((trait) => !traitIssues(character, trait, list, index).length) : [];
-                const issues = selected ? traitIssues(character, selected, list, index) : saved ? ["Traço salvo não catalogado neste Clã."] : [];
-                populateEligibleSelect(field.select, available.map((trait) => ({value:trait.name, label:trait.name})), saved, "Selecione um Traço", issues.join(" "));
-                field.select.dataset.help = selected
-                    ? selected.name + ": " + rulePreview(selected.description) + " Requisitos: " + selected.prerequisites + ". Abra a regra para detalhes."
-                    : HELP["clan-trait-1"];
-                const extra = !acquired && index >= normal && saved ? "Traço acima dos espaços iniciais deste tier; preservado. " : "";
-                const cost = acquired && selected ? "Aquisição: " + clanTraitXp[selected.tier] + " XP. " : "";
-                field.help.textContent = extra + cost + (issues.length ? "⚠ " + issues.join(" ") + " " : "") + (selected
-                    ? [selected.prerequisites, rulePreview(selected.description)].filter(Boolean).join(" — ")
-                    : "As opções exigem Clã, tier e pontos de Disciplina compatíveis.");
-                field.rule.textContent = selected ? selected.description + (selected.description.includes("Activation.")
-                    ? "\n\nAtivação: depois de ativar o Traço, seus efeitos ficam inativos até a próxima noite, conforme a regra compartilhada com Méritos." : "") : "";
+
+                const options = writable
+                    ? [
+                        ...(clan?.traits || []).map((trait) => ({value:trait.name, label:trait.name})),
+                        {value:"__manual__", label:"Outro / manual"}
+                    ]
+                    : selected
+                        ? [{value:selected.name, label:selected.name}]
+                        : manual
+                            ? [{value:"__manual__", label:"Outro / manual"}]
+                            : [];
+
+                populateSelect(
+                    field.select,
+                    options,
+                    manual ? "__manual__" : selected?.name || "",
+                    "Selecione um Traço"
+                );
+                field.select.disabled = !writable;
+
+                const manualInput = document.createElement("input");
+                manualInput.type = "text";
+                manualInput.className = "manual-choice-input";
+                manualInput.placeholder = "Nome do Traço / decisão da mesa";
+                manualInput.setAttribute("aria-label", (acquired ? "Traço adicional" : "Traço de Clã") + " manual " + (index + 1));
+                manualInput.value = manual ? raw : "";
+                manualInput.hidden = !manual;
+                field.select.after(manualInput);
+
+                const extra = !acquired && index >= normal && raw
+                    ? "Escolha acima dos espaços iniciais deste tier; preservada. "
+                    : "";
+
+                field.help.textContent = extra + (selected
+                    ? "Entrada catalogada no material atual. A descrição abaixo é apenas referência; a mesa pode usar uma versão diferente."
+                    : manual
+                        ? "Entrada manual. A ficha não valida requisitos nem custo desta escolha."
+                        : "Use uma opção catalogada como referência ou escolha Outro / manual.");
+
+                field.rule.textContent = selected
+                    ? "Referência do material atual.\n\nPré-requisitos indicados: " +
+                        (selected.prerequisites || "Nenhum informado.") + "\n\n" + selected.description
+                    : "";
                 field.details.hidden = !selected;
+
                 field.select.addEventListener("change", () => {
-                    const next = clan?.traits.find((trait) => trait.name === field.select.value);
-                    if (field.select.value && (!writable || !next || traitIssues(character, next, list, index).length)) return;
+                    if (!writable) return;
+                    if (field.select.value === "__manual__") {
+                        character[list][index] = manualInput.value.trim();
+                        manualInput.hidden = false;
+                        field.details.hidden = true;
+                        manualInput.focus();
+                        saveNow("Modo manual de Traço selecionado.");
+                        return;
+                    }
                     character[list][index] = field.select.value;
                     renderClanTraits();
                     document.getElementById(id)?.focus();
-                    saveNow("Traço de Clã atualizado.");
+                    saveNow("Traço atualizado.");
                 });
+
+                manualInput.addEventListener("input", () => {
+                    if (!writable) return;
+                    character[list][index] = manualInput.value;
+                    saveNow("Traço manual salvo.");
+                });
+
                 if (acquired && character.mode === "play") {
                     const remove = document.createElement("button");
-                    remove.type = "button"; remove.className = "small-button no-print"; remove.textContent = "Remover Traço adquirido";
-                    remove.addEventListener("click", () => { character[list].splice(index, 1); renderClanTraits(); saveNow("Traço adquirido removido."); });
+                    remove.type = "button";
+                    remove.className = "small-button no-print";
+                    remove.textContent = "Remover Traço";
+                    remove.addEventListener("click", () => {
+                        character[list].splice(index, 1);
+                        renderClanTraits();
+                        saveNow("Traço removido.");
+                    });
                     field.root.append(remove);
                 }
+
                 root.append(field.root);
             }
         }
+
         const add = document.getElementById("add-clan-trait");
         add.hidden = character.mode !== "play";
-        add.disabled = character.advancementClanTraits.includes("") || !(clan?.traits || []).some((trait) => !traitIssues(character, trait).length);
+        add.disabled = character.advancementClanTraits.includes("");
         document.getElementById("clan-trait-advancement-help").textContent = character.mode === "play"
-            ? "Novos Traços: Neonate 5 XP · Ancilla 10 XP · Elder 15 XP. Registre o gasto na mesa, entre sessões; os pré-requisitos continuam valendo."
-            : "Na criação: " + normal + " Traços. Traços adicionais podem ser comprados no modo Em jogo: 5/10/15 XP conforme o tier do Traço.";
+            ? "Adicione Traços conforme a decisão da mesa. Opções e requisitos catalogados servem apenas como referência."
+            : "Na criação: " + normal + " espaço(s) de Traço. A ficha não bloqueia decisões manuais da mesa.";
     }
 
     function renderIdentityAutomation() {
@@ -151,9 +208,9 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
     function installIdentityAutomation() {
         document.getElementById("add-clan-trait").addEventListener("click", () => {
             if (character.mode !== "play" || character.advancementClanTraits.includes("")) return;
-            const clan = currentClan();
-            if (!(clan?.traits || []).some((trait) => !traitIssues(character, trait).length)) return;
-            character.advancementClanTraits.push(""); renderClanTraits(); saveNow("Espaço para Traço adquirido adicionado.");
+            character.advancementClanTraits.push("");
+            renderClanTraits();
+            saveNow("Espaço para Traço adicionado.");
         });
         document.getElementById("clan").addEventListener("change", (event) => {
             const clan = clans.find((item) => item.id === event.target.value) || null;

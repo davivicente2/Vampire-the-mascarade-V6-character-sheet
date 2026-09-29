@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="dark">
+    <meta name="color-scheme" content="light">
     <title>Vampire V6 — Ficha de Personagem</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
@@ -17,7 +17,7 @@
         </div>
 
         <div class="toolbar no-print" aria-label="Ações da ficha">
-            <button id="notes-button" type="button" aria-haspopup="dialog">Anotações</button>
+            <button id="notes-button" type="button" aria-haspopup="dialog" data-notes-open>Anotações</button>
             <button id="export-button" type="button">Exportar JSON</button>
             <label class="button-like" for="import-file">Importar JSON</label>
             <input id="import-file" type="file" accept=".json,application/json" hidden>
@@ -410,6 +410,7 @@
                         <p class="section-kicker">Inventário</p>
                         <h2>Itens / Equipamentos</h2>
                     </div>
+                    <button id="notes-button-secondary" class="small-button no-print" type="button" aria-haspopup="dialog" data-notes-open>Anotações</button>
                 </div>
                 <details class="note-panel"><summary>Equipamentos e objetos pessoais</summary><label><span>Inventário</span><textarea id="items" rows="8"></textarea></label></details>
             </section>

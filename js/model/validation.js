@@ -1,8 +1,7 @@
-import { traitIssues, meritIssues, powerIssues } from "./eligibility.js";
+import { powerIssues } from "./eligibility.js";
 import { ratingLimit, disciplineChoices, sireDisciplines } from "./selection-limits.js";
 import { ATTRIBUTE_GROUPS } from "../../data/attributes.js";
 import { getMerit } from "../../data/merits.js";
-import { normalizeTraitSelection } from "./identity.js";
 import { tierRules, creationRules } from "../../data/tiers.js";
 import { getLifepath, lifepathRequirement } from "../../data/lifepaths.js";
 import { getClanByName } from "../../data/clans.js";
@@ -109,20 +108,8 @@ export function validateCharacter(character) {
     const chosenMerits = filled(character.merits).map((value) => getMerit(value)?.name || value);
     if (new Set(chosenMerits).size !== chosenMerits.length) warnings.push("Méritos repetidos: confirme a escolha com o Narrador.");
 
-    for (const list of ["clanTraits", "advancementClanTraits"]) {
-        (character[list] || []).forEach((value, index) => {
-            if (!value) return;
-            const name = normalizeTraitSelection(value, clan) || value;
-            const trait = clan?.traits.find((item) => item.name === name);
-            if (!trait) warnings.push(name + " não pertence ao Clã selecionado; escolha salva preservada.");
-            else for (const issue of traitIssues(character, trait, list, index)) warnings.push(name + ": " + issue);
-        });
-    }
-    character.merits.forEach((value, index) => {
-        const merit = getMerit(value);
-        if (merit) for (const issue of meritIssues(character, merit, index)) warnings.push(merit.name + ": " + issue);
-        else if (value) warnings.push(value.split(" — ")[0] + ": Mérito salvo não catalogado; confirme a regra com o Narrador.");
-    });
+    // Traits and Merits may be entered manually. Catalog prerequisites are reference only;
+    // validation intentionally avoids treating them as authoritative table rules.
     if (character.mode === "creation" && character.advancementClanTraits.some(Boolean)) warnings.push("Traços adquiridos em jogo foram preservados; eles não contam nos espaços iniciais da criação.");
     if (character.mode === "play") {
         for (const [key, skill] of Object.entries(character.skills)) if (skill.dots > 5) warnings.push("Habilidade " + key + ": máximo de 5 em jogo; valor salvo preservado.");

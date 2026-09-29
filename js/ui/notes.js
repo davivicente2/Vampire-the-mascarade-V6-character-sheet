@@ -56,8 +56,17 @@ export function installNotes({ character, saveNow }) {
         });
         root.append(panel);
     }
-    document.getElementById("notes-button").addEventListener("click", () => dialog.showModal());
-    document.getElementById("notes-close").addEventListener("click", () => dialog.close());
+    let notesOpener = document.getElementById("notes-button");
+    document.querySelectorAll("[data-notes-open]").forEach((button) => {
+        button.addEventListener("click", () => {
+            notesOpener = button;
+            dialog.showModal();
+        });
+    });
+    document.getElementById("notes-close").addEventListener("click", () => {
+        dialog.close();
+        notesOpener?.focus();
+    });
     document.querySelectorAll(".note-panel").forEach(refreshNotePanel);
     document.addEventListener("input", (event) => {
         const panel = event.target.closest(".note-panel");
