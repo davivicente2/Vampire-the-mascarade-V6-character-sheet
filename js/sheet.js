@@ -41,6 +41,24 @@ export function mountSheet(character) {
         renderClanTraits();
     }
 
+    function renderSessionSummary() {
+        document.body.dataset.sheetMode = character.mode || "creation";
+        const name = character.identity.name?.trim() || "Personagem sem nome";
+        const clan = character.identity.clan?.trim() || "Sem clã";
+        const generation = Number(character.identity.generation || 0);
+        document.getElementById("session-character-name").textContent = name;
+        document.getElementById("session-character-meta").textContent =
+            clan + " · " + (generation ? generation + "ª geração" : "geração —");
+        document.getElementById("session-vitae").textContent =
+            document.getElementById("vitae-label").textContent || "0 / 0";
+        document.getElementById("session-willpower").textContent =
+            document.getElementById("willpower-label").textContent || "0 / 0";
+        document.getElementById("session-quickening").textContent =
+            document.getElementById("quickening-label").textContent || "0 / 5";
+        document.getElementById("session-humanity").textContent =
+            document.getElementById("humanity-stage").textContent || "Neutro";
+    }
+
     function renderModeAndTier() {
         ensureCreationSlots(character);
         renderAttributes(); renderSkills(); renderResources(); renderDisciplines();
@@ -48,6 +66,7 @@ export function mountSheet(character) {
         document.getElementById("skills-creation-help").textContent = character.mode === "creation"
             ? "Na criação, máximo de 3 pontos por Habilidade. Focos em 1 e 3; o terceiro foco fica disponível em 5 pontos durante o jogo."
             : "Em jogo, Habilidades podem chegar a 5. Focos em 1, 3 e 5 pontos; um foco relevante concede +1 dado ao teste.";
+        renderSessionSummary();
     }
 
     function saveNow(message = "Alteração salva automaticamente.") {
@@ -62,6 +81,7 @@ export function mountSheet(character) {
         document.getElementById("save-status").textContent = "Salvo automaticamente.";
         document.getElementById("save-detail").textContent = message;
         renderValidation();
+        renderSessionSummary();
     }
 
     function bindStaticFields() {

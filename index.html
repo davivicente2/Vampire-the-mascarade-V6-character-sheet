@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
-    <title>Vampire V6 — Character Sheet</title>
+    <title>Vampire V6 — Ficha de Personagem</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
 </head>
@@ -12,7 +12,7 @@
     <header class="app-header">
         <div>
             <p class="eyebrow">Vampire: The Masquerade V6 — Alpha Playtest</p>
-            <h1>Character Sheet</h1>
+            <h1>Ficha de Personagem</h1>
             <p class="subtitle">Ficha editável com salvamento automático e recursos de mesa.</p>
         </div>
 
@@ -36,7 +36,28 @@
             <label class="sheet-mode"><span>Modo da ficha</span><select id="sheet-mode"><option value="creation">Criação</option><option value="play">Em jogo</option></select></label>
         </section>
 
-        <section class="sheet-card identity-card">
+        <aside id="session-dashboard" class="session-dashboard no-print" aria-label="Resumo rápido do personagem">
+            <div class="session-identity">
+                <strong id="session-character-name">Personagem sem nome</strong>
+                <span id="session-character-meta">Sem clã · geração —</span>
+            </div>
+            <div class="session-stats" aria-label="Recursos rápidos">
+                <span><small>Vitae</small><strong id="session-vitae">0 / 0</strong></span>
+                <span><small>Vontade</small><strong id="session-willpower">0 / 0</strong></span>
+                <span><small>Quickening</small><strong id="session-quickening">0 / 5</strong></span>
+                <span><small>Humanidade</small><strong id="session-humanity">Neutro</strong></span>
+            </div>
+            <nav class="session-nav" aria-label="Navegação rápida da ficha">
+                <a href="#section-core">Sangue</a>
+                <a href="#section-humanity">Humanidade</a>
+                <a href="#section-disciplines">Disciplinas</a>
+                <a href="#section-skills">Habilidades</a>
+                <a href="#section-resources">Recursos</a>
+                <a href="#section-identity">Identidade</a>
+            </nav>
+        </aside>
+
+        <section id="section-identity" class="sheet-card identity-card">
             <div class="section-heading">
                 <div>
                     <p class="section-kicker">Personagem</p>
@@ -115,7 +136,7 @@
             </div>
         </section>
 
-        <section class="sheet-card">
+        <section id="section-attributes" class="sheet-card">
             <div class="section-heading">
                 <div>
                     <p class="section-kicker">Nove atributos</p>
@@ -125,7 +146,7 @@
             <div id="attributes" class="attribute-groups"></div>
         </section>
 
-        <section class="sheet-card">
+        <section id="section-core" class="sheet-card">
             <div class="section-heading">
                 <div>
                     <p class="section-kicker">Recursos centrais</p>
@@ -189,7 +210,7 @@
             </div>
         </section>
 
-        <section class="sheet-card">
+        <section id="section-humanity" class="sheet-card">
             <div class="section-heading">
                 <div>
                     <p class="section-kicker">Conflito interno</p>
@@ -303,7 +324,7 @@
             </div></details>
         </section>
 
-        <section class="sheet-card">
+        <section id="section-skills" class="sheet-card">
             <div class="section-heading">
                 <div>
                     <p class="section-kicker">Competências</p>
@@ -315,7 +336,7 @@
         </section>
 
         <div class="primary-grid wide-left">
-            <section class="sheet-card">
+            <section id="section-resources" class="sheet-card">
                 <div class="section-heading">
                     <div>
                         <p class="section-kicker">Influência & bens</p>
@@ -332,7 +353,7 @@
                 <div id="resources" class="stack-list"></div>
             </section>
 
-            <section class="sheet-card">
+            <section id="section-disciplines" class="sheet-card">
                 <div class="section-heading">
                     <div>
                         <p class="section-kicker">Sangue</p>
@@ -344,7 +365,7 @@
             </section>
         </div>
 
-        <section class="sheet-card">
+        <section id="section-vampiric" class="sheet-card">
             <div class="section-heading">
                 <div>
                     <p class="section-kicker">Identidade vampírica</p>
@@ -364,8 +385,8 @@
             </div>
         </section>
 
-        <div class="primary-grid">
-            <section class="sheet-card">
+        <div id="section-history" class="primary-grid">
+            <section id="section-lifepaths" class="sheet-card">
                 <div class="section-heading">
                     <div>
                         <p class="section-kicker">Histórico</p>
@@ -383,7 +404,7 @@
                 </details>
             </section>
 
-            <section class="sheet-card">
+            <section id="section-inventory" class="sheet-card">
                 <div class="section-heading">
                     <div>
                         <p class="section-kicker">Inventário</p>
@@ -394,7 +415,7 @@
             </section>
         </div>
 
-        <section class="sheet-card no-print">
+        <section id="section-calculator" class="sheet-card no-print">
             <div class="section-heading">
                 <div>
                     <p class="section-kicker">Mesa</p>
@@ -424,7 +445,7 @@
             <p class="muted-copy">A calculadora aplica Atributo + Habilidade − Dificuldade e nunca retorna menos que 0 dados.</p>
         </section>
 
-        <section class="sheet-card validation-card no-print">
+        <section id="section-validation" class="sheet-card validation-card no-print">
             <div class="section-heading">
                 <div>
                     <p class="section-kicker">Playtest</p>
@@ -434,7 +455,7 @@
             <div id="validation-list"></div>
         </section>
 
-        <details class="sheet-card rules-card">
+        <details id="section-rules" class="sheet-card rules-card">
             <summary>Consulta — Regras da Noite</summary>
             <p class="field-help">Resumos do capítulo 4 fornecido para esta campanha. Consulte as decisões do Narrador para exceções. Esta consulta não aplica custos nem modificadores automaticamente.</p>
             <div id="rules-reference"></div>
