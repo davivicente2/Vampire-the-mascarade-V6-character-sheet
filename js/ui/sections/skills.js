@@ -1,13 +1,15 @@
+import { lifepathSkillContributions, setSkillTotal } from "../../model/lifepath-skills.js";
 import { creationRules } from "../../../data/tiers.js";
 import { SKILL_LABELS } from "../../../data/skills.js";
 import { skillFocusCount } from "../../model/skills.js";
 import { createDots } from "../controls.js";
 
-export function createSkills({ character, saveNow, renderCalculator }) {
+export function createSkills({ character, saveNow, renderCalculator, onSkillsChange }) {
     function renderSkills() {
         const root = document.getElementById("skills");
         root.replaceChildren();
 
+        const contributions = lifepathSkillContributions(character);
         for (const [key, label] of Object.entries(SKILL_LABELS)) {
             const skill = character.skills[key];
             const row = document.createElement("div");
@@ -15,6 +17,10 @@ export function createSkills({ character, saveNow, renderCalculator }) {
 
             const name = document.createElement("span");
             name.textContent = label;
+            const origin = document.createElement("small");
+            origin.className = "field-help skill-origin";
+            origin.textContent = contributions[key] + " dos Caminhos + " + Math.max(0, skill.dots - contributions[key]) + " adicionais";
+            name.append(origin);
 
             const focuses = document.createElement("div");
             focuses.className = "skill-focuses";
@@ -45,12 +51,19 @@ export function createSkills({ character, saveNow, renderCalculator }) {
                 focuses.appendChild(note);
             }
 
-            row.append(name, createDots(skill.dots, creationRules.skillTrackDots, (next) => {
-                skill.dots = next;
+            const dots = createDots(skill.dots, creationRules.skillTrackDots, (next) => {
+                setSkillTotal(character, key, next);
                 renderSkills();
                 renderCalculator();
-                saveNow("Habilidade salva.");
-            }, label), focuses);
+                onSkillsChange();
+                saveNow("Pontos adicionais de Habilidade salvos.");
+            }, label);
+            [...dots.children].forEach((button, index) => {
+                const next = index + 1 === skill.dots ? index : index + 1;
+                button.disabled = next < contributions[key];
+            });
+            if (contributions[key]) origin.title = "Para retirar pontos vindos dos Caminhos, edite a distribuição do Caminho correspondente.";
+            row.append(name, dots, focuses);
 
             root.appendChild(row);
         }

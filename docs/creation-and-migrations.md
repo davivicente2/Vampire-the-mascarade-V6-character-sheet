@@ -21,7 +21,18 @@ Cada Caminho concede 5 pontos de Habilidade e 3 de Recursos. Com o número norma
 
 A normalização deixa de reduzir dots ao máximo do tier. Ela preserva valores e listas existentes; os controles oferecem o máximo do tier e os dots maiores já registrados. Ao reduzir o tier, aparecem avisos para valores e escolhas excedentes. Recuperar o tier ou recarregar não apaga dados. Apenas slots finais vazios podem ficar fora da visualização; continuam no JSON.
 
-Contadores dos Caminhos editam as ocorrências em `lifepathAllocations`, mantendo o formato anterior. Eles param em 5/3 e não alteram Habilidades ou Recursos finais. Uma distribuição importada fora do catálogo ou acima do orçamento permanece disponível para correção manual. Trocar o Caminho explicitamente remove apenas suas alocações incompatíveis.
+Contadores dos Caminhos editam as ocorrências em `lifepathAllocations`, mantendo o formato anterior. Eles param em 5/3. Cada alteração na distribuição de Habilidades atualiza seus pontos finais e a calculadora. Recursos finais continuam manuais. Uma distribuição importada fora do catálogo ou acima do orçamento permanece disponível para correção manual. Trocar o Caminho explicitamente remove apenas suas alocações incompatíveis.
+
+### Sincronização de Habilidades
+
+- O total de uma Habilidade é a soma dos pontos distribuídos nos Caminhos com os pontos adicionais. Editar um Caminho preserva esses pontos adicionais e os focos pessoais.
+- Na seção Habilidades, os controles editam o total respeitando o mínimo já concedido pelos Caminhos. Para retirar pontos dessa origem, edite o Caminho correspondente. A origem aparece junto do nome da Habilidade.
+- Novas alocações respeitam o limite de 3 na criação, considerando o total de todos os Caminhos e os pontos adicionais. Valores importados maiores não são reduzidos.
+- Em fichas antigas, os valores finais são considerados como já incluindo as alocações. Se o total estiver abaixo da contribuição dos Caminhos, ele é completado até essa contribuição; pontos existentes não são somados novamente. Essa convenção evita duplicação, pois o formato antigo não indicava se a distribuição já havia sido aplicada.
+- A normalização é idempotente: recarregar ou importar novamente não reaplica pontos. O schema continua 3, sem novos campos persistidos.
+- As opções do catálogo são associadas às Habilidades pelo nome, separando a indicação de foco entre parênteses. Focos não são preenchidos automaticamente. Opções desconhecidas são preservadas, sem atribuir pontos a uma Habilidade presumida.
+- Alocações importadas sem um Caminho reconhecido continuam visíveis para correção, inclusive para retirar pontos que já contribuam para Habilidades.
+- Distribuições completas se recolhem, mostrando total e escolhas no resumo; podem ser reabertas para edição. Distribuições incompletas ou incompatíveis abrem por padrão. O estado de abertura é apenas de interface, não é exportado no JSON.
 
 A exceção de personagem jovem continua possível deixando os demais Caminhos vazios. Os bônus opcionais de compensação dependem da decisão do Narrador; não são aplicados nem presumidos na validação dos totais.
 
@@ -46,4 +57,8 @@ Não foi criado um modo de avanço separado nesta rodada; a referência explica 
 
 `tests/creation-browser.js` cobre migração e idempotência, importação real de arquivos v2 e atuais, Neonate/Ancilla/Elder, orçamentos, 6/8 dots, troca de tier com reload, múltiplos Méritos, exportação, Recursos personalizados, contadores, Brujah e largura de 390 px. As suítes anteriores continuam verificando Humanidade, focos, tooltips e ausência de listeners duplicados.
 
-Verificação final: 191 testes aprovados no Firefox, tanto na raiz do servidor quanto sob `/sheet/`. A limpeza dos seletores CSS foi comparada em 390, 800 e 1280 px, sem diferenças nos estilos calculados dos componentes envolvidos.
+`tests/lifepath-sync-browser.js` verifica contribuições de múltiplos Caminhos, pontos adicionais, focos, limites de criação, recolhimento, calculadora, troca de Caminho/tier, recarregamento, importação/exportação sem duplicação e largura de 390 px.
+
+Após a sincronização, as quatro suítes totalizam 231 verificações aprovadas no Firefox, na raiz do servidor e sob `/sheet/`. Imports e dependências dos 62 módulos também foram conferidos com `tests/check_structure.py`.
+
+Na rodada de criação por tier, 191 verificações passaram no Firefox, tanto na raiz do servidor quanto sob `/sheet/`. A limpeza dos seletores CSS foi comparada em 390, 800 e 1280 px, sem diferenças nos estilos calculados dos componentes envolvidos.

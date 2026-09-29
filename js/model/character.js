@@ -1,3 +1,4 @@
+import { reconcileLifepathSkills } from "./lifepath-skills.js";
 import { migrateCharacter } from "./migrations.js";
 import { ensureCreationSlots, emptyLifepathAllocation } from "./creation.js";
 import { EMPTY_CHARACTER } from "../../data/characters/empty.js";
@@ -108,5 +109,6 @@ export function normalizeCharacter(value) {
     if (!["", "wight", "departure"].includes(base.humanityFate)) base.humanityFate = "";
     const bounds = humanityBounds(base);
     base.humanityPosition = bounded(base.humanityPosition, bounds.max, bounds.min);
+    reconcileLifepathSkills(base);
     return base;
 }

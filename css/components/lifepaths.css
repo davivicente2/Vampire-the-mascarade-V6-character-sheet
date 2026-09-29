@@ -94,3 +94,13 @@
 .allocation-row > span { overflow-wrap: anywhere; }
 .allocation-row button { min-height: 30px; padding: 0.15rem; }
 .allocation-row output { text-align: center; }
+
+.lifepath-allocation-panel { min-width: 0; }
+.lifepath-allocation-panel > summary {
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+}
+.lifepath-allocation-panel[open] > summary { margin-bottom: 0.5rem; }
+.lifepath-allocation-panel > summary:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }

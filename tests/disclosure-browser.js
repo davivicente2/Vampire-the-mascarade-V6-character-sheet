@@ -38,7 +38,7 @@ export async function runTests() {
         let waiting = loaded(); document.body.appendChild(frame); await waiting;
         check(byId('nature').value === 'Survivor', 'Old partial sheet loads without new character fields');
         check(doc().querySelectorAll('.skill-focus').length === 2, 'Old focus text normalizes on load');
-        check([...doc().querySelectorAll('details')].every((panel) => !panel.open), 'All rule panels start collapsed');
+        check([...doc().querySelectorAll('details:not(.lifepath-allocation-panel)')].every((panel) => !panel.open), 'All rule panels start collapsed');
         check(!byId('curse') && byId('clan-curse-description').closest('details'), 'Curse has one full description and no duplicate form field');
         check(byId('nature-outburst-effect').closest('details') && !byId('nature-outburst-name').closest('details'), 'Nature keeps Outburst name visible and effect collapsed');
         check(byId('merit-description').textContent.includes('Animalism 1+') && byId('merit-rule').closest('details'), 'Merit prerequisites remain visible with full description collapsed');

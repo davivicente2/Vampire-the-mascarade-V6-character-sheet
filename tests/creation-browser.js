@@ -147,14 +147,14 @@ export async function runTests() {
         const skills=JSON.stringify(saved().skills),resources=JSON.stringify(saved().resources);
         const group=byId('lifepath-allocation-0').querySelector('[data-kind=skills]');
         const row=group.querySelector('.allocation-row');
-        for(let i=0;i<7;i++)row.querySelector('[data-action=plus]').click();
+        for(let i=0;i<7;i++)group.querySelector('[data-action=plus]:not(:disabled)')?.click();
         check(group.querySelector('.allocation-total').textContent==='Total: 5/5' && [...group.querySelectorAll('[data-action=plus]')].every(b=>b.disabled),'Lifepath skill counters stop at five points');
         row.querySelector('[data-action=minus]').click();
         check(group.querySelector('.allocation-total').textContent==='Total: 4/5','Minus removes exactly one allocated skill point');
         const rg=byId('lifepath-allocation-0').querySelector('[data-kind=resources]');
         for(let i=0;i<5;i++)rg.querySelector('[data-action=plus]').click();
         check(rg.querySelector('.allocation-total').textContent==='Total: 3/3','Resource allocation stops at three');
-        check(JSON.stringify(saved().skills)===skills && JSON.stringify(saved().resources)===resources,'Counters never spend final Skill/Resource dots');
+        check(JSON.stringify(saved().skills)!==skills && JSON.stringify(saved().resources)===resources,'Skill counters sync Habilidades while Resource totals remain manual');
         check(!byId('lifepaths').querySelector('select.lifepath-skill-choice'),'Repeated allocation selectors are gone');
         frame.style.width='390px';
         check(doc().documentElement.scrollWidth<=doc().documentElement.clientWidth,'Elder sheet and counters fit a mobile viewport');

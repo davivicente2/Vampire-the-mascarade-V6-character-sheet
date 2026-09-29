@@ -9,7 +9,7 @@ function helpTarget(element) {
     const row = control.closest('.skill-row');
     if (row) return { element: control, text: control.matches('input')
         ? 'Especialização desta Habilidade: +1 dado quando for relevante ao teste. Foco 1 é liberado em 1 ponto, Foco 2 em 3 e Foco 3 em 5. Diminuir os pontos preserva os focos ocultos.'
-        : 'Ajuste os pontos da Habilidade. Em 1, 3 e 5 pontos, um novo campo de Foco aparece. Clique no último ponto preenchido para reduzir 1.' };
+        : 'Ajuste os pontos adicionais da Habilidade. Os pontos dos Caminhos já estão incluídos; para retirá-los, edite a distribuição no Caminho. Em 1, 3 e 5 pontos, um novo campo de Foco aparece. Clique no último ponto preenchido para reduzir 1.' };
     if (control.closest('#attributes')) return { element: control, text: 'Ajuste este Atributo, com mínimo de 1. Vigor altera o máximo de Vitae; Autocontrole e Determinação alteram o máximo de Vontade.' };
     if (control.closest('#resources')) return { element: control, text: control.title || (control.matches('button')
         ? 'Ajuste o nível deste Recurso; clicar no último ponto preenchido reduz 1.'
@@ -19,7 +19,7 @@ function helpTarget(element) {
         : control.matches('input') ? 'Custo ou lembrete do poder. Pode editar para registrar condições ou detalhes da campanha.'
         : control.textContent === '+ Poder' ? 'Adiciona outro poder à Disciplina, para escolher entre os disponíveis no nível atual.'
         : 'Ajuste os pontos da Disciplina. Poderes já escolhidos são preservados; requisitos não atendidos aparecem nos avisos.') };
-    if (control.closest('#lifepaths')) return { element: control, text: 'Escolha um Caminho e confira abaixo suas Habilidades, focos e Recursos. Distribua manualmente 5 pontos de Habilidade e 3 de Recursos por Caminho. Personalizado preserva seu texto livre.' };
+    if (control.closest('#lifepaths')) return { element: control, text: control.title || 'Distribua 5 pontos de Habilidade e 3 de Recursos por Caminho. As Habilidades atualizam a ficha automaticamente, preservando pontos adicionais e focos; os Recursos finais são preenchidos manualmente. Ao completar, a lista se recolhe; clique no resumo para editar. Personalizado preserva seu texto livre.' };
     return null;
 }
 
@@ -68,7 +68,9 @@ export function installTooltips() {
         tooltip.hidden = true;
     }
     function show(target) {
-        if (!target) { hide(); return; }
+        const closedPanel = target?.element.closest('details:not([open])');
+        if (!target || !target.element.isConnected || !target.element.getClientRects().length ||
+            (closedPanel && !closedPanel.querySelector('summary')?.contains(target.element))) { hide(); return; }
         if (active !== target.element) {
             hide();
             active = target.element;

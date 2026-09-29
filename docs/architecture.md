@@ -18,6 +18,7 @@ A ficha continua em HTML, CSS e módulos JavaScript nativos, sem build ou framew
 | Escala, episódios e resistência de Humanidade | `js/model/humanity.js` |
 | Sincronização das Disciplinas com Clã/Sire | `js/model/identity.js` |
 | Focos e compatibilidade do campo antigo | `js/model/skills.js` |
+| Contribuições dos Caminhos e sincronização com Habilidades | `js/model/lifepath-skills.js` |
 | Avisos de criação e requisitos | `js/model/validation.js` |
 | localStorage, validação estrutural e JSON | `js/storage.js` |
 | Renderização e eventos de cada seção | `js/ui/sections/` |
@@ -41,7 +42,7 @@ A ficha continua em HTML, CSS e módulos JavaScript nativos, sem build ou framew
 
 O modelo recebe o personagem explicitamente. Ele não acessa DOM, localStorage ou controles da página. Os catálogos em `data/` dependem apenas de outros catálogos; funções de consulta podem permanecer junto dos dados, enquanto alterações na ficha ficam no modelo.
 
-Os valores finais continuam no mesmo objeto de personagem. A chave de armazenamento continua igual. O schema 3 adiciona `merits[]` por migração explícita, mantendo o campo singular antigo e aceitando fichas anteriores; consulte [Criação e migrações](creation-and-migrations.md). Selecionar um Lifepath continua registrando a origem dos pontos sem distribuí-los automaticamente.
+Os valores finais continuam no mesmo objeto de personagem. A chave de armazenamento continua igual. O schema 3 adiciona `merits[]` por migração explícita, mantendo o campo singular antigo e aceitando fichas anteriores; consulte [Criação e migrações](creation-and-migrations.md). O jogador distribui os pontos dos Caminhos; cada alteração em Habilidades atualiza o total da ficha e a calculadora, preservando os pontos adicionais. As contribuições são derivadas de `lifepathAllocations`, sem um segundo registro persistido. Recursos e focos continuam sob edição manual.
 
 Os métodos de instalação de eventos são chamados uma vez na montagem. Métodos de renderização podem ser chamados novamente e substituem apenas os controles dinâmicos. Isso evita instalar vários listeners no mesmo controle estático.
 

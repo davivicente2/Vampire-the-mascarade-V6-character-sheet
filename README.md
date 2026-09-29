@@ -20,6 +20,12 @@ As alterações ficam no armazenamento local do navegador, associado ao endereç
 
 Site publicado: https://davivicente2.github.io/Vampire-the-mascarade-V6-character-sheet/
 
+## Caminhos de Vida e Habilidades
+
+Distribuir pontos de Habilidade em um Caminho atualiza os pontos finais e a calculadora. A seção Habilidades mostra a parcela dos Caminhos e os pontos adicionais; para remover pontos vindos de um Caminho, edite sua distribuição. Pontos adicionais e focos pessoais são preservados. Ao completar a distribuição, a lista se recolhe e pode ser reaberta pelo resumo. Recursos finais continuam manuais.
+
+Fichas antigas são carregadas considerando que os pontos finais já incluem a distribuição registrada. Totais menores que a contribuição dos Caminhos são completados, sem duplicar pontos ao recarregar ou importar.
+
 ## Regras da Noite e Humanidade
 
 A ficha mostra os efeitos dos sete estágios de Humanidade. Marcar Besta/Natureza não move a escala. Com cinco marcas, registre o resultado do teste: sucesso apaga uma marca; falha, falha dolorosa ou aceitação inicia um episódio. Concluir o episódio move a escala uma vez; aceitar voluntariamente também recupera 2 Vontade ao final.
@@ -81,3 +87,10 @@ console.table(await creation.runTests());
 ```
 
 As quantidades por tier, preservação de excedentes e compatibilidade do schema 3 estão em [Criação e migrações](docs/creation-and-migrations.md).
+
+Para testar sincronização dos Caminhos com Habilidades, recolhimento e preservação dos pontos/focos:
+
+```js
+const sync = await import('./tests/lifepath-sync-browser.js');
+console.table(await sync.runTests());
+```

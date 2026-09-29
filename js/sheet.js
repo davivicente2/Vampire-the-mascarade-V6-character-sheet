@@ -22,12 +22,13 @@ export function mountSheet(character) {
     const { renderCalculator } = createCalculator({character});
     const { renderResources, addResource } = createResources({character, saveNow});
     const { renderDisciplines, addDiscipline } = createDisciplines({character, saveNow});
-    const { renderLifepaths } = createLifepaths({character, saveNow});
+    const { renderLifepaths, refreshLifepathSkills } = createLifepaths({character, saveNow,
+        onSkillsChange: () => { renderSkills(); renderCalculator(); }});
     const humanity = createHumanity({character, saveNow, renderCoreResources: () => renderCoreResources()});
     const { renderHumanity, renderBeastIdentity, installNatureSelection, renderHumanityDetails, installHumanityActions } = humanity;
     const { renderCoreResources, installCoreResourceActions } = createCoreResources({character, saveNow, renderHumanity});
     const { renderAttributes } = createAttributes({character, saveNow, renderCoreResources, renderCalculator});
-    const { renderSkills } = createSkills({character, saveNow, renderCalculator});
+    const { renderSkills } = createSkills({character, saveNow, renderCalculator, onSkillsChange: refreshLifepathSkills});
     const { renderClanTraits, renderIdentityAutomation, installIdentityAutomation } = createIdentity({character, saveNow, renderBeastIdentity, renderDisciplines, renderCoreResources});
     const { renderMerits } = createMerit({character, saveNow});
     const bindInput = (id, getter, setter, options) => bindControl(id, getter, setter, {...options, save: saveNow});

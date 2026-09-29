@@ -1,3 +1,4 @@
+import { lifepathSkillContributions } from "../js/model/lifepath-skills.js";
 import { shiftHumanity, resistancePool } from '../js/model/humanity.js';
 import { skillFocusCount, normalizeSkillFocuses } from '../js/model/skills.js';
 import { assertCharacter } from '../js/storage.js';
@@ -126,6 +127,11 @@ export function runTests() {
     check(saved().attributes.strength === 1, 'Attribute cannot fall below one');
     check([0, 1, 2, 3, 4, 5].map(skillFocusCount).join() === '0,1,1,2,2,3', 'Focus thresholds are 1, 3 and 5');
     check(normalizeSkillFocuses({ focus: 'light firearms, heavy firearms' }).join('|') === 'light firearms|heavy firearms', 'Legacy focuses migrate separately');
+    // Release allocated Athletics dots before testing edits down to zero.
+    for (const id of ['lifepath-allocation-0', 'lifepath-allocation-1']) {
+        const row = [...byId(id).querySelectorAll('[data-kind=skills] .allocation-row')].find(row => row.dataset.choice.startsWith('Atletismo'));
+        row.querySelector('[data-action=minus]').click();
+    }
     const skillRow = () => byId('skills').querySelector('.skill-row');
     const rateSkill = (rating) => skillRow().querySelectorAll('.dots button')[rating - 1].click();
     rateSkill(5);
@@ -174,7 +180,8 @@ export function runTests() {
     check(byId('beast').value === beastNotes, 'Changing clan preserves personal Beast notes');
     check(lifepaths.length === 14 && byId('lifepath-0').options.length === 16, 'Fourteen lifepaths plus empty and custom options');
     check(byId('lifepath-0').value === 'Criminal' && byId('lifepath-1').value === 'Military', 'Legacy lifepaths recognized');
-    const skillSnapshot = JSON.stringify(saved().skills);
+    const extras = () => { const c=saved(), fromPaths=lifepathSkillContributions(c); return JSON.stringify(Object.fromEntries(Object.entries(c.skills).map(([key,skill])=>[key,skill.dots-fromPaths[key]]))); };
+    const skillSnapshot = extras();
     for (const path of lifepaths) {
         byId('lifepath-0').value = path.name;
         byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
@@ -185,11 +192,11 @@ export function runTests() {
             resourceOptions.includes(path.resources[0]) && saved().lifepaths[0] === path.name,
             path.name + ' lifepath renders compact distribution counters and saves');
     }
-    check(JSON.stringify(saved().skills) === skillSnapshot, 'Selecting lifepath does not spend skill dots');
+    check(extras() === skillSnapshot, 'Selecting lifepath preserves additional skill dots');
     byId('lifepath-0').value = 'Criminal';
     byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
-    byId('lifepath-allocation-0').querySelector('[data-kind=skills] [data-action=plus]').click();
-    check(saved().lifepathAllocations[0].skills[0] === getLifepath('Criminal').skills[0], 'Lifepath skill choice persists');
+    [...byId('lifepath-allocation-0').querySelectorAll('[data-kind=skills] .allocation-row')].find(row => row.dataset.choice === 'Percepção').querySelector('[data-action=plus]').click();
+    check(saved().lifepathAllocations[0].skills.includes('Percepção'), 'Lifepath skill choice persists');
     byId('lifepath-0').value = 'Diplomat';
     byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
     check(byId('lifepath-help-0').textContent.includes('não está disponível para Neonate'), 'Ancilla lifepath warns at Neonate tier');
