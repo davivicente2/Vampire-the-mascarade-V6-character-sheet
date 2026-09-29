@@ -1,128 +1,632 @@
 @media print {
     @page {
-        size: A4;
-        margin: 9mm;
+        size: A4 portrait;
+        margin: 8mm;
     }
 
     :root {
         color-scheme: light;
+        --bg: #fff;
+        --panel: #fff;
+        --panel-soft: #fff;
+        --text: #111;
+        --muted: #555;
+        --line: #8d8d8d;
+        --accent: #651521;
+        --warning: #6f4b12;
+        --success: #315d3c;
+        --radius: 0;
+    }
+
+    * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    html,
+    body {
+        width: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #111 !important;
     }
 
     body {
-        background: white !important;
-        color: #111 !important;
-        font-size: 9pt;
+        font-size: 7.6pt;
+        line-height: 1.22;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
     }
 
-    .no-print {
+    .no-print,
+    #notes-dialog,
+    #section-calculator,
+    #section-validation,
+    #section-rules,
+    .session-dashboard,
+    .toolbar,
+    .sheet-tooltip {
         display: none !important;
     }
 
-    #notes-dialog { display: none !important; }
-    .print-only:not([hidden]) { display: block; }
-    #notes-print p { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .print-only:not([hidden]) {
+        display: block !important;
+    }
+
+    /* The screen theme adds a framed paper canvas. Printing already is the paper. */
+    .sheet-shell {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        outline: 0 !important;
+        background: #fff !important;
+        display: block !important;
+    }
 
     .app-header {
-        width: 100%;
-        padding: 0 0 4mm;
-        margin: 0;
-        color: #111;
+        width: 100% !important;
+        margin: 0 0 2.5mm !important;
+        padding: 0 0 1.5mm !important;
+        display: block !important;
+        border-bottom: 1.5pt solid #222;
+        color: #111 !important;
     }
 
     .app-header h1 {
-        font-size: 24pt;
+        margin: 0 !important;
+        font-size: 16pt !important;
+        line-height: 1;
     }
 
-    .eyebrow,
-    .section-kicker,
-    .subtitle,
+    .app-header .eyebrow {
+        margin: 0 0 0.8mm !important;
+        font-size: 6.5pt !important;
+        color: #651521 !important;
+    }
+
+    .app-header .subtitle {
+        display: none !important;
+    }
+
+    /*
+     * Large cards are intentionally allowed to split.
+     * The old global break-inside:avoid was the main cause of large blank gaps.
+     */
+    .sheet-card {
+        margin: 0 0 2mm !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: #111 !important;
+        break-inside: auto !important;
+        page-break-inside: auto !important;
+    }
+
+    .section-heading {
+        margin: 0 0 1.2mm !important;
+        padding: 0 0 0.7mm !important;
+        border-bottom: 1pt solid #222 !important;
+        align-items: end !important;
+    }
+
+    .section-heading h2 {
+        margin: 0 !important;
+        font-size: 10.5pt !important;
+        line-height: 1.05;
+        letter-spacing: 0.035em !important;
+    }
+
+    .section-kicker {
+        margin: 0 0 0.3mm !important;
+        font-size: 5.8pt !important;
+        color: #651521 !important;
+    }
+
     label > span,
     .standalone-field > span,
     .field-label {
         color: #444 !important;
+        font-size: 6pt !important;
+        letter-spacing: 0.025em !important;
     }
 
-    .sheet-shell {
-        width: 100%;
-        margin: 0;
-        display: block;
+    /*
+     * Page plan:
+     * 1 — identity, attributes, blood resources and humanity
+     * 2 — skills, resources and disciplines
+     * 3 — clan/merits, lifepaths, inventory, XP and notes
+     */
+    #section-skills {
+        break-before: page;
+        page-break-before: always;
     }
 
-    .sheet-card,
-    .attribute-group,
-    .discipline-card {
-        break-inside: avoid;
-        background: white !important;
-        border-color: #aaa !important;
-        color: #111 !important;
-        box-shadow: none !important;
+    #section-vampiric {
+        break-before: page;
+        page-break-before: always;
     }
 
-    .sheet-card {
-        margin-bottom: 3mm;
-        padding: 3mm;
-        border-radius: 0;
+    #notes-print:not([hidden]) {
+        margin-top: 2.5mm !important;
+        padding-top: 1.5mm !important;
+        border-top: 1pt solid #777 !important;
     }
 
-    .primary-grid {
-        display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
-        gap: 3mm;
+    #notes-print h3 {
+        margin: 1.5mm 0 0.5mm !important;
+        font-size: 8.5pt !important;
     }
 
+    #notes-print p {
+        margin: 0 0 1.5mm !important;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        line-height: 1.3;
+    }
+
+    /* Fixed desktop grids for print; do not let responsive rules collapse them. */
     .identity-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 1.2mm 3mm !important;
     }
 
     .attribute-groups {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0 !important;
+        border-bottom: 0.7pt solid #777;
+    }
+
+    .core-resources-grid {
+        display: grid !important;
+        grid-template-columns: 1.2fr 1fr 0.75fr !important;
+        gap: 0 !important;
+        border-top: 0.7pt solid #777;
+        border-bottom: 0.7pt solid #777;
+    }
+
+    .humanity-layout {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 1.8mm !important;
+    }
+
+    .humanity-center {
+        grid-column: 1 / -1 !important;
     }
 
     .skills-grid,
     .two-column-fields {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0 3mm !important;
     }
 
+    .primary-grid,
+    .wide-left,
+    #section-history {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 3mm !important;
+        align-items: start !important;
+    }
+
+    .advancement-grid {
+        display: grid !important;
+        grid-template-columns: 0.55fr 1.45fr !important;
+        gap: 2mm 3mm !important;
+    }
+
+    /* Compact controls into paper-like ruled values. */
     input,
     select,
     textarea {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0.3mm 0 0.45mm !important;
         border: 0 !important;
-        border-bottom: 1px solid #777 !important;
+        border-bottom: 0.6pt solid #777 !important;
         border-radius: 0 !important;
         background: transparent !important;
         color: #111 !important;
-        padding: 1mm 0 !important;
-        min-height: 0;
+        font-size: 7.3pt !important;
+        line-height: 1.15 !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
     }
 
     textarea {
-        resize: none;
-        overflow: hidden;
+        resize: none !important;
+        overflow: hidden !important;
+    }
+
+    input[readonly] {
+        color: #333 !important;
+    }
+
+    .identity-card > .section-heading {
+        margin-bottom: 1mm !important;
+    }
+
+    .clan-icon-slot {
+        max-width: 18mm !important;
+    }
+
+    .clan-icon-preview {
+        width: 14mm !important;
+        height: 14mm !important;
+        flex-basis: 14mm !important;
+        border: 0.7pt solid #777 !important;
+    }
+
+    .auto-info-panel {
+        margin-top: 1.5mm !important;
+        padding-top: 1mm !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 2mm !important;
+        border-top: 0.7pt solid #888 !important;
+    }
+
+    .auto-info-panel > div {
+        padding: 0 1.5mm !important;
+        border: 0 !important;
+        border-left: 1.5pt solid #444 !important;
+        background: transparent !important;
+        break-inside: avoid;
+    }
+
+    .auto-info-panel p {
+        margin: 0.6mm 0 0 !important;
+        font-size: 6.7pt !important;
+        line-height: 1.25 !important;
+    }
+
+    .attribute-group,
+    .resource-panel,
+    .humanity-side,
+    .humanity-center {
+        background: transparent !important;
+        color: #111 !important;
+        border-color: #888 !important;
+    }
+
+    .attribute-group {
+        padding: 0 2mm 1mm !important;
+        border: 0 !important;
+        break-inside: avoid;
+    }
+
+    .attribute-group + .attribute-group {
+        border-left: 0.7pt solid #999 !important;
+    }
+
+    .attribute-group h3 {
+        margin: 0 -2mm 0.8mm !important;
+        padding: 0.7mm 1mm !important;
+        background: #222 !important;
+        color: #fff !important;
+        font-size: 6.8pt !important;
+        line-height: 1 !important;
+    }
+
+    .dot-row {
+        padding: 0.35mm 0 !important;
+        gap: 1.2mm !important;
+    }
+
+    .dot-row + .dot-row,
+    .skill-row,
+    .resource-row-detailed {
+        border-color: #bbb !important;
+    }
+
+    .dot-label {
+        font-size: 7.2pt !important;
+    }
+
+    .dots,
+    .tracker {
+        gap: 0 !important;
     }
 
     .dot,
     .tracker-dot {
+        position: relative;
+        width: 4.2mm !important;
+        min-width: 4.2mm !important;
+        height: 4.2mm !important;
+        min-height: 4.2mm !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
         print-color-adjust: exact;
         -webkit-print-color-adjust: exact;
-        width: 4mm;
-        height: 4mm;
-        min-height: 4mm;
-        border-color: #111 !important;
     }
 
-    .dot.filled,
-    .tracker-dot.filled {
-        background: #111 !important;
-        border-color: #111 !important;
+    .dot::before,
+    .tracker-dot::before {
+        content: "";
+        position: absolute;
+        inset: 1.05mm !important;
+        border: 0.6pt solid #333 !important;
+        border-radius: 50%;
+        background: #fff !important;
     }
 
-    .section-heading {
-        margin-bottom: 2mm;
-        padding-bottom: 1mm;
-        border-color: #999;
+    .dot.filled::before,
+    .tracker-dot.filled::before {
+        background: #222 !important;
+        border-color: #222 !important;
     }
 
-    .section-heading h2 {
-        font-size: 14pt;
+    .resource-panel {
+        padding: 1.2mm 2mm !important;
+        border: 0 !important;
+        break-inside: avoid;
+    }
+
+    .resource-panel + .resource-panel {
+        border-left: 0.7pt solid #999 !important;
+    }
+
+    .resource-meta-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 1mm !important;
+        margin-top: 1mm !important;
+    }
+
+    .readout,
+    .state-readout {
+        padding: 1mm !important;
+        border: 0.6pt solid #aaa !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    .readout span,
+    .state-readout span {
+        font-size: 5.8pt !important;
+        color: #555 !important;
+    }
+
+    .effect-box {
+        margin-top: 1mm !important;
+        padding: 1mm 1.5mm !important;
+        border-left: 1.5pt solid #777 !important;
+        background: transparent !important;
+    }
+
+    .effect-box > span {
+        font-size: 5.7pt !important;
+        color: #444 !important;
+    }
+
+    .effect-box p,
+    .muted-copy {
+        margin: 0.4mm 0 0 !important;
+        font-size: 6.3pt !important;
+        color: #555 !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Hide long instructional text. The paper version is a character sheet, not the rulebook. */
+    .rule-details,
+    .lifepath-rules,
+    .lifepath-details,
+    .lifepath-allocation-panel,
+    .humanity-guidance,
+    .humanity-intro,
+    #humanity-start-help,
+    #skills-creation-help,
+    #clan-trait-advancement-help,
+    .power-description,
+    .source-links {
+        display: none !important;
+    }
+
+    .humanity-side,
+    .humanity-center {
+        padding: 1.5mm !important;
+        border: 0.7pt solid #aaa !important;
+        border-radius: 0 !important;
+        break-inside: avoid;
+    }
+
+    .humanity-center {
+        padding-bottom: 1mm !important;
+    }
+
+    .humanity-scale {
+        gap: 0.7mm !important;
+    }
+
+    .humanity-dot {
+        width: 5mm !important;
+        height: 5mm !important;
+        min-height: 5mm !important;
+    }
+
+    .humanity-dot::before {
+        width: 2.5mm !important;
+        height: 2.5mm !important;
+    }
+
+    .humanity-axis {
+        font-size: 5.8pt !important;
+    }
+
+    .humanity-stage-info {
+        font-size: 6.5pt !important;
+        line-height: 1.2 !important;
+    }
+
+    .humanity-stage-info p {
+        margin: 0.6mm 0 !important;
+        line-height: 1.2 !important;
+    }
+
+    .nature-guide {
+        margin-bottom: 1mm !important;
+        font-size: 6.5pt !important;
+        line-height: 1.25 !important;
+    }
+
+    .humanity-resolution {
+        padding: 0.7mm 0 !important;
+    }
+
+    .humanity-resolution[data-phase="full"],
+    .humanity-resolution[data-phase="episode"] {
+        margin: 0.7mm 0 !important;
+        padding-left: 1mm !important;
+    }
+
+    .skill-row {
+        grid-template-columns: minmax(24mm, 0.65fr) auto minmax(30mm, 1fr) !important;
+        gap: 1.2mm !important;
+        padding: 0.55mm 0 !important;
+        break-inside: avoid;
+    }
+
+    .skill-focuses {
+        gap: 0.4mm !important;
+    }
+
+    .resource-table-head {
+        display: none !important;
+    }
+
+    .resource-row-detailed {
+        display: grid !important;
+        grid-template-columns: minmax(22mm, 0.9fr) auto minmax(32mm, 1.3fr) !important;
+        gap: 1.3mm !important;
+        padding: 0.45mm 0 !important;
+        break-inside: avoid;
+    }
+
+    .resource-row-detailed > .icon-button {
+        display: none !important;
+    }
+
+    .discipline-card {
+        margin: 0 !important;
+        padding: 1mm 0 !important;
+        border: 0 !important;
+        border-bottom: 0.7pt solid #aaa !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: #111 !important;
+        break-inside: auto !important;
+    }
+
+    .discipline-head {
+        display: grid !important;
+        grid-template-columns: minmax(25mm, 1fr) auto !important;
+        gap: 1.5mm !important;
+        align-items: center !important;
+        break-inside: avoid;
+    }
+
+    .discipline-head > .icon-button,
+    .discipline-card > .small-button {
+        display: none !important;
+    }
+
+    .power-list {
+        gap: 0 !important;
+    }
+
+    .power-row {
+        display: grid !important;
+        grid-template-columns: minmax(34mm, 1.1fr) minmax(18mm, 0.55fr) minmax(22mm, 0.65fr) !important;
+        gap: 1mm !important;
+        padding: 0.45mm 0 !important;
+        border-top: 0.4pt solid #ddd;
+        break-inside: avoid;
+    }
+
+    .power-row > .icon-button {
+        display: none !important;
+    }
+
+    .power-activation,
+    .power-cost {
+        font-size: 6.5pt !important;
+        line-height: 1.15 !important;
+    }
+
+    .two-column-fields > *,
+    .lifepath-card {
+        break-inside: avoid;
+    }
+
+    .lifepath-card {
+        padding: 1.2mm !important;
+        gap: 0.8mm !important;
+        border: 0.6pt solid #aaa !important;
+        border-radius: 0 !important;
+    }
+
+    /*
+     * Filled personal note panels are opened by notes.js during beforeprint.
+     * Hide their summaries so only the actual character text occupies paper.
+     * Empty panels remain closed and therefore consume no space.
+     */
+    .note-panel {
+        margin: 0 !important;
+        break-inside: avoid;
+    }
+
+    .note-panel > summary {
+        display: none !important;
+    }
+
+    .note-panel[open] {
+        padding: 0 !important;
+    }
+
+    .note-panel[open] label {
+        margin: 0 0 1mm !important;
+    }
+
+    #section-advancement {
+        margin-top: 1.5mm !important;
+    }
+
+    #section-advancement .xp-entry,
+    #section-advancement .xp-history-panel,
+    #section-advancement .rule-details,
+    #section-advancement .xp-actions,
+    #section-advancement #xp-status {
+        display: none !important;
+    }
+
+    .xp-balance {
+        justify-items: start !important;
+    }
+
+    .xp-balance strong {
+        font-size: 9pt !important;
+    }
+
+    a {
+        color: #111 !important;
+        text-decoration: none !important;
+    }
+
+    p,
+    li,
+    td,
+    th {
+        orphans: 2;
+        widows: 2;
     }
 }
