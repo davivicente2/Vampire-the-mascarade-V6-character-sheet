@@ -42,6 +42,12 @@ export function assertCharacter(value) {
         throw new Error("Versão de ficha não suportada: " + value.version + ".");
     }
     fields(value.identity, ["generation", "generationModifier"]);
+    if (value.mode !== undefined && !["creation", "play"].includes(value.mode)) fail();
+    if (value.notes !== undefined) fields(value.notes);
+    if (value.clanIcons !== undefined) {
+        fields(value.clanIcons);
+        if (Object.values(value.clanIcons).some((icon) => icon.length > 350000 || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(icon))) fail();
+    }
     if (value.attributes !== undefined) {
         if (!object(value.attributes) || !Object.values(value.attributes).every(number)) fail();
     }
@@ -54,7 +60,7 @@ export function assertCharacter(value) {
             if (focuses !== undefined && (!Array.isArray(focuses) || !focuses.every(text))) fail();
         });
     }
-    for (const key of ["resources", "disciplines", "lifepaths", "lifepathAllocations", "clanTraits", "merits"]) {
+    for (const key of ["resources", "disciplines", "lifepaths", "lifepathAllocations", "clanTraits", "advancementClanTraits", "merits"]) {
         if (value[key] !== undefined && !Array.isArray(value[key])) fail();
     }
     value.lifepathAllocations?.forEach((allocation) => {
@@ -70,7 +76,7 @@ export function assertCharacter(value) {
         if (powers !== undefined && !Array.isArray(powers)) fail();
         powers?.forEach((power) => { if (!text(power)) fields(power); });
     });
-    for (const key of ["lifepaths", "clanTraits", "merits"]) {
+    for (const key of ["lifepaths", "clanTraits", "advancementClanTraits", "merits"]) {
         if (value[key] && !value[key].every(text)) fail();
     }
     for (const key of ["merit", "flaw", "nature", "beast", "items", "frenzyTrigger", "outburstTrigger", "beastEpisode", "natureEpisode", "humanityFate"]) {

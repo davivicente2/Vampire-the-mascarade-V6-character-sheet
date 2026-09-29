@@ -1,4 +1,5 @@
 import { getClanByName, resolveClanDisciplines } from "../../data/clans.js";
+import { sireDisciplines } from "./selection-limits.js";
 
 export function normalizeTraitSelection(savedValue, clan) {
     const raw = String(savedValue || "").trim();
@@ -19,7 +20,7 @@ export function syncDisciplinesToIdentity(character, {resetExtras = true} = {}) 
 
     const desired = resolveClanDisciplines(clan, character.identity.clanDisciplineChoice);
     const sireDiscipline = character.identity.sireDiscipline;
-    if (sireDiscipline && !desired.includes(sireDiscipline)) {
+    if (sireDisciplines(character).includes(sireDiscipline) && !desired.includes(sireDiscipline)) {
         desired.push(sireDiscipline);
     }
 

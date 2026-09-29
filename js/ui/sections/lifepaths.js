@@ -2,7 +2,9 @@ import { changeLifepathSkills, canAddLifepathSkill, skillForLifepathChoice } fro
 import { creationFor, creationRules } from "../../../data/tiers.js";
 import { emptyLifepathAllocation, visibleSlotCount } from "../../model/creation.js";
 import { lifepaths, getLifepath, lifepathRequirement } from "../../../data/lifepaths.js";
-import { populateSelect } from "../controls.js";
+import { populateEligibleSelect } from "../eligible-select.js";
+import { missingRequirements } from "../../model/eligibility.js";
+import { notePanel } from "../notes.js";
 
 export function createLifepaths({ character, saveNow, onSkillsChange }) {
     const panelStates = new Map();
@@ -13,7 +15,7 @@ export function createLifepaths({ character, saveNow, onSkillsChange }) {
         for (const refresh of refreshCounters) refresh();
     }
 
-    function renderLifepathPointGroup({title, kind, options, values, count, slot}) {
+    function renderLifepathPointGroup({title, kind, options, values, count, slot, editable}) {
         const panelKey = slot + ":" + kind;
         const panel = document.createElement("details");
         panel.className = "lifepath-allocation-panel";
@@ -57,7 +59,7 @@ export function createLifepaths({ character, saveNow, onSkillsChange }) {
                 button.setAttribute("aria-label", (action === "plus" ? "Adicionar ponto: " : "Retirar ponto: ") + choice);
                 button.addEventListener("click", () => {
                     const wasComplete = complete();
-                    if (action === "plus" && (values.filter(Boolean).length >= count || !options.includes(choice) ||
+                    if (action === "plus" && (!editable || values.filter(Boolean).length >= count || !options.includes(choice) ||
                         (kind === "skills" && !canAddLifepathSkill(character, choice)))) return;
                     const edit = () => {
                         if (action === "plus") {
@@ -99,9 +101,10 @@ export function createLifepaths({ character, saveNow, onSkillsChange }) {
                 control.amount.textContent = dots;
                 control.minus.disabled = dots === 0;
                 const skillBlocked = kind === "skills" && !canAddLifepathSkill(character, control.choice);
-                control.plus.disabled = spent >= count || !options.includes(control.choice) || skillBlocked;
-                control.plus.title = skillBlocked ? (skillForLifepathChoice(control.choice)
-                    ? "Esta Habilidade já atingiu o limite de criação. Distribua o ponto em outra opção."
+                control.plus.disabled = !editable || spent >= count || !options.includes(control.choice) || skillBlocked;
+                control.plus.title = !editable ? "Caminho incompatível com o tier ou com a quantidade de espaços de criação; retire os pontos ou ajuste a escolha."
+                    : skillBlocked ? (skillForLifepathChoice(control.choice)
+                    ? "Ponto indisponível: confira o limite da Habilidade e o orçamento de pontos no modo atual."
                     : "Habilidade salva não reconhecida; confira a distribuição.") : "";
             }
         }
@@ -130,10 +133,10 @@ export function createLifepaths({ character, saveNow, onSkillsChange }) {
             select.id = "lifepath-" + index;
             const selected = getLifepath(value);
             const custom = customSlots.has(index) || Boolean(value && !selected);
-            populateSelect(select, [
-                ...lifepaths.map((path) => ({ value: path.name, label: path.name + " · " + ({ mortal: "Mortal", neonate: "Neonate+", ancilla: "Ancilla+" }[path.tier]) })),
+            populateEligibleSelect(select, [
+                ...lifepaths.filter((path) => !missingRequirements(character, path).length).map((path) => ({ value: path.name, label: path.name + " · " + ({ mortal: "Mortal", neonate: "Neonate+", ancilla: "Ancilla+" }[path.tier]) })),
                 { value: "__custom__", label: "Personalizado" }
-            ], custom ? "__custom__" : selected?.name || "", "Selecione um Caminho");
+            ], custom ? "__custom__" : selected?.name || "", "Selecione um Caminho", selected ? missingRequirements(character, selected).join(" ") : "");
             label.append(caption, select);
 
             const help = document.createElement("small");
@@ -147,6 +150,8 @@ export function createLifepaths({ character, saveNow, onSkillsChange }) {
             notes.setAttribute("aria-label", "Caminho de Vida personalizado " + (index + 1));
             notes.placeholder = "Nome, história, cinco Habilidades e três Recursos";
             notes.value = custom ? value : "";
+            const notesPanel = notePanel("Caminho personalizado — história e benefícios", notes);
+            notesPanel.open = custom && !notes.value;
 
             const allocationRoot = document.createElement("div");
             allocationRoot.id = "lifepath-allocation-" + index;
@@ -166,7 +171,9 @@ export function createLifepaths({ character, saveNow, onSkillsChange }) {
                 const allocation = character.lifepathAllocations[index] || emptyLifepathAllocation();
                 character.lifepathAllocations[index] = allocation;
                 const hasSavedAllocation = [...allocation.skills, ...allocation.resources].some(Boolean);
+                const editable = path && !missingRequirements(character, path).length && (character.mode === "play" || index < normalCount);
                 notes.hidden = !isCustom;
+                notesPanel.hidden = !isCustom;
                 allocationRoot.hidden = !path && !hasSavedAllocation;
                 details.hidden = !path;
 
@@ -179,9 +186,9 @@ export function createLifepaths({ character, saveNow, onSkillsChange }) {
 
                 if (path || hasSavedAllocation) allocationRoot.append(
                     renderLifepathPointGroup({title: "Habilidades", kind: "skills", options: path?.skills || [],
-                        values: allocation.skills, count: creationRules.lifepathSkillDots, slot: index}),
+                        values: allocation.skills, count: creationRules.lifepathSkillDots, slot: index, editable}),
                     renderLifepathPointGroup({title: "Recursos", kind: "resources", options: path?.resources || [],
-                        values: allocation.resources, count: creationRules.lifepathResourceDots, slot: index})
+                        values: allocation.resources, count: creationRules.lifepathResourceDots, slot: index, editable})
                 );
                 if (!path) return;
 
@@ -194,6 +201,8 @@ export function createLifepaths({ character, saveNow, onSkillsChange }) {
             };
 
             select.addEventListener("change", () => {
+                const next = getLifepath(select.value);
+                if (next && missingRequirements(character, next).length) return;
                 if (select.value === "__custom__") customSlots.add(index);
                 else customSlots.delete(index);
                 changeLifepathSkills(character, () => {
@@ -217,7 +226,7 @@ export function createLifepaths({ character, saveNow, onSkillsChange }) {
             });
 
             renderDetails();
-            card.append(label, help, allocationRoot, details, notes);
+            card.append(label, help, allocationRoot, details, notesPanel);
             root.appendChild(card);
         });
     }

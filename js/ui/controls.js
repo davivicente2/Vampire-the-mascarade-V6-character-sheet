@@ -11,7 +11,7 @@ export function bindInput(id, getter, setter, options = {}) {
     });
 }
 
-export function createDots(value, max, onChange, label, className = "dot") {
+export function createDots(value, max, onChange, label, className = "dot", canSelect = () => true) {
     const wrapper = document.createElement("div");
     wrapper.className = "dots";
     wrapper.setAttribute("role", "group");
@@ -22,7 +22,10 @@ export function createDots(value, max, onChange, label, className = "dot") {
         button.type = "button";
         button.className = className + (index <= value ? " filled" : "");
         button.setAttribute("aria-label", label + ": " + index);
-        button.addEventListener("click", () => onChange(index === value ? index - 1 : index));
+        const next = index === value ? index - 1 : index;
+        button.disabled = !canSelect(next);
+        if (button.disabled) button.title = "Este valor não está disponível: confira o modo, os limites e os pontos já distribuídos.";
+        button.addEventListener("click", () => { if (canSelect(next)) onChange(next); });
         wrapper.appendChild(button);
     }
 

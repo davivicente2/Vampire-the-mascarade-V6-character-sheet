@@ -1,5 +1,5 @@
 import { SKILL_LABELS } from "../../data/skills.js";
-import { creationRules } from "../../data/tiers.js";
+import { canSetRating } from "./selection-limits.js";
 
 const normalizeLabel = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 const skillKeys = new Map(Object.entries(SKILL_LABELS).map(([key, label]) => [normalizeLabel(label), key]));
@@ -41,7 +41,7 @@ export function changeLifepathSkills(character, changeAllocation) {
 
 export function canAddLifepathSkill(character, choice) {
     const key = skillForLifepathChoice(choice);
-    return Boolean(key && character.skills[key].dots < creationRules.maxSkillDots);
+    return Boolean(key && canSetRating(character, "skills", key, character.skills[key].dots + 1));
 }
 
 export function setSkillTotal(character, key, dots) {

@@ -3,10 +3,14 @@ import { CURRENT_SCHEMA_VERSION } from "../schema.js";
 
 export const EMPTY_CHARACTER = {
     version: CURRENT_SCHEMA_VERSION,
+    mode: "creation",
+    notes: { backstory: "", appearance: "", relationships: "", chronicle: "", general: "" },
+    clanIcons: {},
+    advancementClanTraits: [],
     identity: {
         name: "", clan: "", apparentAge: "", actualAge: "", embraceDate: "",
         nostalgicDecade: "", generation: 0, generationModifier: 0,
-        playLevel: "", archetype: "", sire: "", sireDiscipline: "", clanDisciplineChoice: "", curse: ""
+        playLevel: "", archetype: "", sire: "", sireClan: "", sireDiscipline: "", clanDisciplineChoice: "", curse: ""
     },
     attributes: {
         strength: 1, dexterity: 1, stamina: 1,

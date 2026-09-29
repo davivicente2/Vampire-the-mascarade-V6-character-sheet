@@ -17,6 +17,7 @@
         </div>
 
         <div class="toolbar no-print" aria-label="Ações da ficha">
+            <button id="notes-button" type="button" aria-haspopup="dialog">Anotações</button>
             <button id="export-button" type="button">Exportar JSON</button>
             <label class="button-like" for="import-file">Importar JSON</label>
             <input id="import-file" type="file" accept=".json,application/json" hidden>
@@ -32,6 +33,7 @@
                 <span id="save-detail">Qualquer alteração é salva neste navegador automaticamente.</span>
             </div>
             <div id="validation-summary"></div>
+            <label class="sheet-mode"><span>Modo da ficha</span><select id="sheet-mode"><option value="creation">Criação</option><option value="play">Em jogo</option></select></label>
         </section>
 
         <section class="sheet-card identity-card">
@@ -39,6 +41,15 @@
                 <div>
                     <p class="section-kicker">Personagem</p>
                     <h2>Identidade</h2>
+                </div>
+                <div class="clan-icon-slot">
+                    <div class="clan-icon-preview"><img id="clan-icon" alt="" hidden><span id="clan-icon-placeholder" aria-hidden="true">Clã</span></div>
+                    <div class="no-print">
+                        <button id="clan-icon-button" type="button" class="small-button">Adicionar ícone</button>
+                        <button id="clan-icon-remove" type="button" class="small-button" hidden>Remover</button>
+                        <input id="clan-icon-file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                        <small id="clan-icon-status" role="status"></small>
+                    </div>
                 </div>
             </div>
 
@@ -72,6 +83,7 @@
                         <option value="">Selecione um Sire</option>
                     </select>
                 </label>
+                <label id="sire-clan-field" hidden><span>Clã do Sire / irmão de ninhada</span><select id="sire-clan"></select></label>
                 <label id="sire-discipline-field">
                     <span>Disciplina do Sire (+1)</span>
                     <select id="sire-discipline">
@@ -214,10 +226,10 @@
                         <p id="beast-clan-description"></p>
 
                     </div>
-                    <label>
+                    <details class="note-panel"><summary>Besta — anotações pessoais</summary><label>
                         <span>Besta — anotações pessoais</span>
                         <textarea id="beast" rows="2"></textarea>
-                    </label>
+                    </label></details>
                     <div class="tracker-header compact">
                         <span>Agitação da Besta</span>
                         <strong id="beast-points-label"></strong>
@@ -242,10 +254,10 @@
                         <p><strong>Ao terminar: </strong>conclua o episódio para mover 1 passo para o lado Monstruoso. Se cedeu voluntariamente, também recupera 2 Vontade, até o máximo.</p>
                         <p class="field-help">Se agir de acordo com este Frenesi piorar a situação de você ou da coterie, ganhe 1 Quickening, no máximo uma vez por cena. Registre esse ganho e os modificadores do Clã manualmente. Frenesis de fome, medo e fúria têm outros gatilhos.</p>
                     </details>
-                    <label>
+                    <details class="note-panel"><summary>Frenesi — anotações e gatilhos</summary><label>
                         <span>Frenesi — anotações e gatilhos pessoais</span>
                         <textarea id="frenzy-trigger" rows="3" aria-describedby="beast-clan-frenzy"></textarea>
-                    </label>
+                    </label></details>
                 </article>
 
 
@@ -278,10 +290,10 @@
                             <button id="nature-finish" type="button">Concluir Explosão da Natureza</button>
                         </div>
                     </div>
-                    <label>
+                    <details class="note-panel"><summary>Explosão — anotações e gatilhos</summary><label>
                         <span>Explosão — anotações e gatilhos pessoais</span>
                         <textarea id="outburst-trigger" rows="3"></textarea>
-                    </label>
+                    </label></details>
                 </article>
             </div>
             <details class="rule-details"><summary>Marcas, alívio e movimento da escala</summary><div class="humanity-guidance">
@@ -298,7 +310,7 @@
                     <h2>Habilidades</h2>
                 </div>
             </div>
-            <p class="field-help">Ganhe um foco em 1, 3 e 5 pontos de Habilidade. Um foco relevante concede +1 dado ao teste.</p>
+            <p id="skills-creation-help" class="field-help"></p>
             <div id="skills" class="skills-grid"></div>
         </section>
 
@@ -343,7 +355,12 @@
             <div class="two-column-fields">
                 <div id="clan-traits" class="stack-list"></div>
                 <div id="merits" class="stack-list"></div>
-                <label><span>Falha</span><textarea id="flaw" rows="4"></textarea></label>
+                <div><button id="add-clan-trait" class="small-button no-print" type="button" hidden>+ Traço adquirido</button>
+                    <small id="clan-trait-advancement-help" class="field-help">Traços adicionais podem ser adquiridos com XP no modo Em jogo.</small>
+                    <div id="advancement-clan-traits" class="stack-list"></div>
+                </div>
+                <div><button id="add-merit" class="small-button no-print" type="button" hidden>+ Mérito adquirido</button></div>
+                <details class="note-panel"><summary>Falha</summary><label><span>Falha e complicações</span><textarea id="flaw" rows="4"></textarea></label></details>
             </div>
         </section>
 
@@ -373,7 +390,7 @@
                         <h2>Itens / Equipamentos</h2>
                     </div>
                 </div>
-                <textarea id="items" rows="8"></textarea>
+                <details class="note-panel"><summary>Equipamentos e objetos pessoais</summary><label><span>Inventário</span><textarea id="items" rows="8"></textarea></label></details>
             </section>
         </div>
 
@@ -426,6 +443,12 @@
 
     <noscript>Ative o JavaScript no navegador para editar a ficha.</noscript>
     <script src="js/local-file-warning.js"></script>
+    <dialog id="notes-dialog" aria-labelledby="notes-title">
+        <div class="notes-dialog-heading"><h2 id="notes-title">Anotações do personagem</h2><button id="notes-close" type="button" aria-label="Fechar anotações">Fechar</button></div>
+        <p class="field-help">Salvamento automático. Estas anotações acompanham o backup JSON e a impressão.</p>
+        <div id="character-notes" class="stack-list"></div>
+    </dialog>
+    <section id="notes-print" class="sheet-card print-only" hidden></section>
     <script type="module" src="js/app.js"></script>
 </body>
 </html>

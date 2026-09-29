@@ -1,3 +1,4 @@
+import { CURRENT_SCHEMA_VERSION } from "../data/schema.js";
 import { normalizeCharacter } from '../js/model/character.js';
 import { changeLifepathSkills, lifepathSkillContributions, skillForLifepathChoice, canAddLifepathSkill, setSkillTotal } from '../js/model/lifepath-skills.js';
 import { assertCharacter } from '../js/storage.js';
@@ -26,7 +27,7 @@ export async function runTests() {
     setSkillTotal(floor,'athletics',3);
     check(!canAddLifepathSkill(floor,'Atletismo'),'Allocation cannot push a Skill past creation maximum');
     assertCharacter(old);
-    check(old.version===3,'Synchronization keeps the existing schema and export shape');
+    check(old.version===CURRENT_SCHEMA_VERSION,'Synchronization uses the current schema and preserves allocation shape');
     const excess=normalizeCharacter({version:3,identity:{playLevel:'neonate'},skills:{athletics:{dots:8}},
         lifepaths:['Military','Military','Military'],lifepathAllocations:Array.from({length:3},()=>({skills:['Atletismo','Atletismo'],resources:[]}))});
     check(excess.skills.athletics.dots===8 && lifepathSkillContributions(excess).athletics===6,'Imported high dots and contributions from excess paths are preserved');

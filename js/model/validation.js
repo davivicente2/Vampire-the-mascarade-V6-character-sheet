@@ -1,7 +1,9 @@
+import { traitIssues, meritIssues, powerIssues } from "./eligibility.js";
+import { ratingLimit, disciplineChoices, sireDisciplines } from "./selection-limits.js";
 import { ATTRIBUTE_GROUPS } from "../../data/attributes.js";
 import { getMerit } from "../../data/merits.js";
 import { normalizeTraitSelection } from "./identity.js";
-import { tierRules, tierLevels, creationRules } from "../../data/tiers.js";
+import { tierRules, creationRules } from "../../data/tiers.js";
 import { getLifepath, lifepathRequirement } from "../../data/lifepaths.js";
 import { getClanByName } from "../../data/clans.js";
 import { getSireByName } from "../../data/sires.js";
@@ -21,13 +23,12 @@ export function validateCharacter(character) {
         warnings.push("O Clã salvo não está entre os sete Clãs disponíveis nesta campanha.");
     }
 
-    if (sire?.disciplines?.length &&
-        character.identity.sireDiscipline &&
-        !sire.disciplines.includes(character.identity.sireDiscipline)) {
+    if (character.identity.sireDiscipline && !sireDisciplines(character).includes(character.identity.sireDiscipline)) {
         warnings.push(
             "A Disciplina escolhida para o Sire não está entre as opções concedidas por esse tipo de Sire."
         );
     }
+    if (sire?.mode === "custom-clan" && !getClanByName(character.identity.sireClan)) warnings.push("Defina o Clã relacionado ao Sire para conferir a Disciplina concedida.");
 
     if (sire && character.identity.sireDiscipline) {
         const sireDiscipline = character.disciplines.find(
@@ -66,7 +67,7 @@ export function validateCharacter(character) {
     }
     const filled = (values) => values.filter((value) => value?.trim());
     const count = (values) => filled(values).length;
-    if (tierRule) {
+    if (tierRule && character.mode === "creation") {
         const rules = tierRule.creation;
         const paths = count(character.lifepaths);
         const totals = (items) => items.reduce((sum, item) => sum + Number(item.dots || 0), 0);
@@ -108,30 +109,30 @@ export function validateCharacter(character) {
     const chosenMerits = filled(character.merits).map((value) => getMerit(value)?.name || value);
     if (new Set(chosenMerits).size !== chosenMerits.length) warnings.push("Méritos repetidos: confirme a escolha com o Narrador.");
 
-    if (clan) {
-        const selectedTraits = character.clanTraits.filter(Boolean).map((value) => normalizeTraitSelection(value, clan) || value);
-
-        if (new Set(selectedTraits).size !== selectedTraits.length) {
-            warnings.push("Os Traços de Clã devem ser escolhas diferentes.");
-        }
-
-        selectedTraits.forEach((traitName) => {
-            const trait = clan.traits.find((item) => item.name === traitName);
-            if (!trait) {
-                warnings.push(traitName + " não pertence ao Clã " + clan.name + ".");
-                return;
-            }
-
-            if (tierLevels[trait.tier] > (tierRule?.level || 0)) {
-                warnings.push(
-                    trait.name + " requer " + (tierRules[trait.tier]?.label || trait.tier) + " ou mais forte. Mantenha apenas se o Narrador autorizou uma exceção."
-                );
-            }
+    for (const list of ["clanTraits", "advancementClanTraits"]) {
+        (character[list] || []).forEach((value, index) => {
+            if (!value) return;
+            const name = normalizeTraitSelection(value, clan) || value;
+            const trait = clan?.traits.find((item) => item.name === name);
+            if (!trait) warnings.push(name + " não pertence ao Clã selecionado; escolha salva preservada.");
+            else for (const issue of traitIssues(character, trait, list, index)) warnings.push(name + ": " + issue);
         });
+    }
+    character.merits.forEach((value, index) => {
+        const merit = getMerit(value);
+        if (merit) for (const issue of meritIssues(character, merit, index)) warnings.push(merit.name + ": " + issue);
+        else if (value) warnings.push(value.split(" — ")[0] + ": Mérito salvo não catalogado; confirme a regra com o Narrador.");
+    });
+    if (character.mode === "creation" && character.advancementClanTraits.some(Boolean)) warnings.push("Traços adquiridos em jogo foram preservados; eles não contam nos espaços iniciais da criação.");
+    if (character.mode === "play") {
+        for (const [key, skill] of Object.entries(character.skills)) if (skill.dots > 5) warnings.push("Habilidade " + key + ": máximo de 5 em jogo; valor salvo preservado.");
     }
 
     character.disciplines.forEach((discipline) => {
-        (discipline.powers || []).forEach((power) => {
+        if (discipline.name && !disciplineChoices(character, discipline).includes(discipline.name)) warnings.push(discipline.name + ": Disciplina indisponível ou repetida nas escolhas atuais; valor salvo preservado.");
+        const limit = ratingLimit(character, "disciplines", discipline);
+        if (discipline.dots > limit) warnings.push(discipline.name + ": " + discipline.dots + " pontos; limite " + limit + " no modo " + (character.mode === "play" ? "Em jogo" : "Criação") + ".");
+        (discipline.powers || []).forEach((power, index) => {
             const name = typeof power === "string" ? power : power?.name;
             if (!name) return;
 
@@ -141,12 +142,7 @@ export function validateCharacter(character) {
                 return;
             }
 
-            if (sourcePower.rank > Number(discipline.dots || 0)) {
-                warnings.push(
-                    name + " requer " + sourcePower.rank + " dots em " + discipline.name +
-                    ", mas a ficha tem " + Number(discipline.dots || 0) + "."
-                );
-            }
+            for (const issue of powerIssues(character, discipline, sourcePower, index)) warnings.push(name + ": " + issue);
         });
     });
 

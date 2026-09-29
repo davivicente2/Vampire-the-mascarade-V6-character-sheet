@@ -1,15 +1,23 @@
 export const HELP = {
     'character-name': 'Nome pelo qual seu personagem é conhecido. As alterações são salvas neste navegador.',
-    clan: 'Define as Disciplinas, a Maldição e os Traços disponíveis. Trocar o Clã limpa os Traços selecionados; Disciplinas já preenchidas são preservadas.',
+    clan: 'Define Disciplinas, Maldição, Besta e Traços. Trocar o Clã atualiza as opções; escolhas antigas incompatíveis são preservadas com aviso para você revisar.',
+    'sheet-mode': 'Criação aplica os orçamentos iniciais, Habilidades até 3 e Disciplinas do Clã/Sire. Em jogo libera avanços, Habilidades até 5 e Traços/Méritos adicionais. Trocar de modo preserva os pontos e escolhas.',
+    'notes-button': 'Abre história, aparência, relações, sessões e anotações livres. O texto é salvo automaticamente e acompanha o JSON e a impressão. Escape fecha a janela.',
+    'notes-close': 'Fecha a janela. As anotações digitadas já foram salvas automaticamente.',
+    'clan-icon-button': 'Escolha uma imagem PNG, JPEG ou WebP de até 5 MB. Ela será reduzida para um ícone e guardada no navegador e no backup JSON, associada a este Clã.',
+    'clan-icon-remove': 'Remove somente o ícone guardado para o Clã atual.',
+    'add-clan-trait': 'Adiciona um Traço adquirido entre sessões. Custo: Neonate 5 XP, Ancilla 10 XP, Elder 15 XP. Registre o gasto na mesa. A lista exige o Clã, o tier e as Disciplinas do Traço.',
+    'add-merit': 'Adiciona um Mérito adquirido entre sessões por 5 XP. A ficha confere os pré-requisitos; registre o gasto de XP na mesa.',
     'age-apparent': 'Idade que seu corpo aparenta, normalmente a idade do Abraço.',
     'age-actual': 'Idade total do personagem, incluindo seus anos como vampiro.',
     'embrace-date': 'Quando o personagem foi transformado em vampiro.',
     'nostalgic-decade': 'Época com a qual seu personagem mantém uma ligação emocional.',
     generation: 'Posição na linhagem vampírica. Neonatos: 11ª–13ª; Ancillae: 9ª–10ª; Elders: 6ª–8ª. O modificador é preenchido separadamente.',
     'generation-modifier': 'Neonato: 1; Ancilla: 2; Elder: 3. Reduz dano comum em Vitae (mínimo de 1 dano) e entra em várias dificuldades e efeitos. Não reduz Dano Nefasto.',
-    'play-level': 'Tier da campanha. A ficha usa esse valor nos avisos de criação e requisitos de Traços. Não distribui pontos automaticamente.',
+    'play-level': 'Define os orçamentos de criação, os requisitos de Traços/Caminhos e os limites de Disciplina em jogo. Reduzir o tier preserva os dados e sinaliza escolhas incompatíveis.',
     archetype: 'Campo narrativo opcional para resumir o conceito do personagem. Não é uma escolha mecânica da criação de personagem no material V6 fornecido.',
     sire: 'Quem criou ou ensinou seu personagem. A seleção define as opções de Disciplina do Sire.',
+    'sire-clan': 'Para Adoptive Sire ou Brood Child, indique o Clã do Sire adotivo ou do irmão de ninhada. A Disciplina concedida deve pertencer a esse Clã.',
     'sire-discipline': 'Disciplina concedida pelo tipo de Sire. Escolhê-la inclui a Disciplina na ficha; distribua seu ponto manualmente.',
     'clan-special-discipline': 'Escolha entre as alternativas de Disciplina oferecidas pelo seu Clã.',
     'nefarious-damage': 'Bloqueia caixas de Vitae da direita para a esquerda e reduz o máximo efetivo. Todas bloqueadas: Morte Final. Cura: 5 Vitae + 1 Vontade, uma vez por noite, a partir da noite seguinte ao dano.',
@@ -28,10 +36,10 @@ export const HELP = {
     'humanity-losses': 'Ultrapassar o estágio 3 remove um círculo do lado oposto. Para recuperar, alcance o último círculo restante desse lado e cumpra uma nova condição de avanço; o círculo volta sem mover a posição.',
     'frenzy-trigger': 'Anotações pessoais sobre seu Frenesi. O nome e os efeitos oficiais já aparecem acima, conforme o Clã; não é necessário copiá-los aqui.',
     'outburst-trigger': 'Anote os gatilhos e comportamentos da Explosão ligada à sua Natureza.',
-    'clan-trait-1': 'Traço de Clã; a quantidade depende do tier. Confira os pré-requisitos na descrição abaixo.',
-    'clan-trait-2': 'Escolha um Traço diferente do primeiro. Traços de Ancilla geram aviso se o tier for Neonate.',
-    merit: 'Escolha seu Mérito. Abra “Descrição e ativação” para consultar a regra disponível. Usar a ativação o deixa inativo até a próxima noite; registre esse uso na mesa.',
-    flaw: 'Anote sua Falha e como ela complica a vida do personagem.',
+    'clan-trait-1': 'A lista mostra Traços do seu Clã cujos requisitos de tier e Disciplinas foram cumpridos. Os já escolhidos não aparecem em outro espaço. A regra completa está em “Regra do Traço”.',
+    'clan-trait-2': 'Escolha outro Traço disponível. Aumentar Disciplinas ou o tier atualiza as opções automaticamente.',
+    merit: 'A lista mostra os Méritos para os quais você cumpre os pré-requisitos. A regra fica em “Descrição e ativação”. Usar a ativação deixa todos os efeitos do Mérito inativos até a próxima noite; registre o uso na mesa.',
+    flaw: 'Falha é uma complicação narrativa, sem bônus ou penalidade mecânica fixa. Quando ela complicar bastante a situação, o Narrador pode conceder 1 XP adicional ao fim da sessão. Recolher este campo preserva o texto.',
     items: 'Equipamento, objetos pessoais e outras anotações de inventário.',
     'add-resource': 'Adiciona uma linha para um Recurso, seu nível e os detalhes de quem ou do que ele representa.',
     'add-discipline': 'Adiciona uma Disciplina. Defina os pontos e escolha os poderes; os pontos não são distribuídos automaticamente.',
@@ -43,6 +51,34 @@ export const HELP = {
     'import-file': 'Carrega um JSON de ficha e substitui o salvamento local após validar o arquivo. Exporte antes se quiser guardar a ficha atual.',
     'print-button': 'Abre a impressão do navegador; escolha salvar como PDF se quiser uma cópia digital.',
     'reset-button': 'Após confirmação, substitui a ficha local por uma nova: Atributos em 1 e demais valores iniciais. Exporte antes para guardar o personagem atual.'
+};
+
+// Interface explanations; examples do not add mechanical bonuses or restrictions.
+export const ATTRIBUTE_HELP = {
+    strength: 'Força física: erguer, quebrar, agarrar e aplicar potência muscular.',
+    dexterity: 'Coordenação e precisão física: equilíbrio, agilidade e movimentos delicados.',
+    stamina: 'Resistência física. O máximo de Vitae é 10 + Vigor; alterar este valor atualiza esse máximo.',
+    charisma: 'Presença social e capacidade de inspirar, encantar e criar afinidade.',
+    manipulation: 'Influenciar indiretamente, conduzir negociações e induzir outras pessoas a agir.',
+    composure: 'Manter a calma e controlar impulsos. Entra na resistência ao Frenesi e no máximo de Vontade.',
+    intelligence: 'Raciocínio deliberado, aprendizado, memória e análise de informações.',
+    wits: 'Perceber oportunidades e reagir rapidamente a situações inesperadas.',
+    resolve: 'Persistência e concentração. O máximo de Vontade é 5 + Autocontrole + Determinação.'
+};
+export const SKILL_HELP = {
+    athletics: 'Atletismo: correr, saltar, escalar e nadar.',
+    awareness: 'Percepção: notar ameaças, detalhes e sinais no comportamento alheio.',
+    craft: 'Ofício: construir, reparar e trabalhar com materiais e ferramentas.',
+    expression: 'Expressão: comunicar e criar por meio de arte, atuação e oratória.',
+    fighting: 'Briga: lutar desarmado ou com armas corpo a corpo.',
+    investigation: 'Investigação: procurar pistas, examinar evidências e descobrir conexões.',
+    knowledge: 'Conhecimento: aplicar estudo sobre uma área, como política, negócios ou religião.',
+    medicine: 'Medicina: avaliar e tratar ferimentos e problemas de saúde.',
+    persuasion: 'Persuasão: convencer, negociar, intimidar ou mudar a opinião de alguém.',
+    shooting: 'Tiro: usar armas à distância e acertar alvos.',
+    sabotage: 'Sabotagem: invadir, contornar ou inutilizar fechaduras e sistemas de segurança.',
+    subterfuge: 'Subterfúgio: enganar, ocultar intenções e agir sem ser percebido.',
+    survival: 'Sobrevivência: orientar-se, rastrear e lidar com ambientes hostis.'
 };
 
 for (const side of ['beast', 'nature']) {

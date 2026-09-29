@@ -1,8 +1,9 @@
 import { lifepathSkillContributions, setSkillTotal } from "../../model/lifepath-skills.js";
-import { creationRules } from "../../../data/tiers.js";
 import { SKILL_LABELS } from "../../../data/skills.js";
 import { skillFocusCount } from "../../model/skills.js";
 import { createDots } from "../controls.js";
+import { selectionTrackMaximum, canSetRating } from "../../model/selection-limits.js";
+import { SKILL_HELP } from "../help-text.js";
 
 export function createSkills({ character, saveNow, renderCalculator, onSkillsChange }) {
     function renderSkills() {
@@ -17,6 +18,8 @@ export function createSkills({ character, saveNow, renderCalculator, onSkillsCha
 
             const name = document.createElement("span");
             name.textContent = label;
+            name.tabIndex = 0;
+            name.dataset.help = SKILL_HELP[key] + " Focos em 1, 3 e 5 pontos; foco relevante concede +1 dado. Os pontos dos Caminhos já estão incluídos no total; edite sua distribuição para retirá-los.";
             const origin = document.createElement("small");
             origin.className = "field-help skill-origin";
             origin.textContent = contributions[key] + " dos Caminhos + " + Math.max(0, skill.dots - contributions[key]) + " adicionais";
@@ -51,17 +54,13 @@ export function createSkills({ character, saveNow, renderCalculator, onSkillsCha
                 focuses.appendChild(note);
             }
 
-            const dots = createDots(skill.dots, creationRules.skillTrackDots, (next) => {
+            const dots = createDots(skill.dots, selectionTrackMaximum(character, "skills", skill.dots), (next) => {
                 setSkillTotal(character, key, next);
                 renderSkills();
                 renderCalculator();
                 onSkillsChange();
                 saveNow("Pontos adicionais de Habilidade salvos.");
-            }, label);
-            [...dots.children].forEach((button, index) => {
-                const next = index + 1 === skill.dots ? index : index + 1;
-                button.disabled = next < contributions[key];
-            });
+            }, label, "dot", (next) => next >= contributions[key] && canSetRating(character, "skills", key, next));
             if (contributions[key]) origin.title = "Para retirar pontos vindos dos Caminhos, edite a distribuição do Caminho correspondente.";
             row.append(name, dots, focuses);
 

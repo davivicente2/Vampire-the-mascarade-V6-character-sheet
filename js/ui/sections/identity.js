@@ -1,15 +1,18 @@
+import { traitIssues } from "../../model/eligibility.js";
+import { clanTraitXp } from "../../../data/advancement.js";
+import { populateEligibleSelect } from "../eligible-select.js";
+import { sireDisciplines } from "../../model/selection-limits.js";
 import { visibleSlotCount } from "../../model/creation.js";
 import { createChoiceField } from "../choice-field.js";
 import { HELP } from "../help-text.js";
-import { tierLevels as levels, creationFor } from "../../../data/tiers.js";
-import { clans, getClanByName, getAvailableTraits } from "../../../data/clans.js";
+import { creationFor } from "../../../data/tiers.js";
+import { clans, getClanByName } from "../../../data/clans.js";
 import { sires, getSireByName } from "../../../data/sires.js";
-import { disciplines } from "../../../data/disciplines.js";
 import { normalizeTraitSelection, syncDisciplinesToIdentity } from "../../model/identity.js";
 import { populateSelect } from "../controls.js";
 import { rulePreview } from "../disclosure.js";
 
-export function createIdentity({ character, saveNow, renderBeastIdentity, renderDisciplines, renderCoreResources }) {
+export function createIdentity({ character, saveNow, renderBeastIdentity, renderDisciplines, renderCoreResources, refreshEligibility, renderClanIcon }) {
     function currentClan() {
         return getClanByName(character.identity.clan);
     }
@@ -18,53 +21,58 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
         return getSireByName(character.identity.sire);
     }
 
-    function renderClanTraitSelect(index) {
-        const clan = currentClan();
-        const select = document.getElementById("clan-trait-" + (index + 1));
-        const help = document.getElementById("clan-trait-" + (index + 1) + "-description");
-        const traits = getAvailableTraits(clan);
-        const saved = normalizeTraitSelection(character.clanTraits[index], clan) || character.clanTraits[index] || "";
-
-        populateSelect(
-            select,
-            traits.map((trait) => ({
-                value: trait.name,
-                label: (trait.tier === "ancilla" ? "⚠ Ancilla — " : "") + trait.name
-            })),
-            saved,
-            "Selecione um Traço"
-        );
-
-        if (saved && !traits.some((trait) => trait.name === saved)) {
-            select.add(new Option(saved + " (salvo)", saved, true, true));
-        }
-        select.dataset.help = HELP["clan-trait-1"];
-        const selected = traits.find((trait) => trait.name === saved);
-        const warning = selected && levels[selected.tier] > (levels[character.identity.playLevel] || 0)
-            ? "⚠ Requer " + selected.tier + " ou superior. " : "";
-        const excess = index >= creationFor(character.identity.playLevel).clanTraits && saved ? "⚠ Traço excedente para este tier; preservado. " : "";
-        help.textContent = excess + (selected
-            ? warning + [selected.prerequisites, rulePreview(selected.description)].filter(Boolean).join(" — ")
-            : saved ? "Traço salvo não catalogado neste Clã." : "Os Traços disponíveis dependem do Clã.");
-        const rule = document.getElementById("clan-trait-" + (index + 1) + "-rule");
-        rule.textContent = selected?.description || "";
-        rule.closest("details").hidden = !selected;
-    }
-
     function renderClanTraits() {
-        const root = document.getElementById("clan-traits");
-        root.replaceChildren();
-        const count = visibleSlotCount(character.clanTraits, creationFor(character.identity.playLevel).clanTraits);
-        for (let index = 0; index < count; index++) {
-            const field = createChoiceField("clan-trait-" + (index + 1), "Traço de Clã " + (index + 1), "Regra do Traço");
-            root.append(field.root);
-            renderClanTraitSelect(index);
-            field.select.addEventListener("change", () => {
-                character.clanTraits[index] = field.select.value;
-                renderClanTraitSelect(index);
-                saveNow("Traço de Clã atualizado.");
-            });
+        const clan = currentClan();
+        const normal = creationFor(character.identity.playLevel).clanTraits;
+        for (const [list, rootId] of [["clanTraits", "clan-traits"], ["advancementClanTraits", "advancement-clan-traits"]]) {
+            const acquired = list === "advancementClanTraits";
+            const root = document.getElementById(rootId);
+            root.replaceChildren();
+            const count = acquired ? character[list].length : visibleSlotCount(character[list], normal);
+            for (let index = 0; index < count; index++) {
+                const id = (acquired ? "acquired-trait-" : "clan-trait-") + (index + 1);
+                const field = createChoiceField(id, (acquired ? "Traço adquirido " : "Traço de Clã ") + (index + 1), "Regra do Traço");
+                const raw = character[list][index] || "";
+                const saved = normalizeTraitSelection(raw, clan) || raw;
+                const selected = clan?.traits.find((trait) => trait.name === saved);
+                const writable = character.mode === "play" || (!acquired && index < normal);
+                const available = writable ? (clan?.traits || []).filter((trait) => !traitIssues(character, trait, list, index).length) : [];
+                const issues = selected ? traitIssues(character, selected, list, index) : saved ? ["Traço salvo não catalogado neste Clã."] : [];
+                populateEligibleSelect(field.select, available.map((trait) => ({value:trait.name, label:trait.name})), saved, "Selecione um Traço", issues.join(" "));
+                field.select.dataset.help = selected
+                    ? selected.name + ": " + rulePreview(selected.description) + " Requisitos: " + selected.prerequisites + ". Abra a regra para detalhes."
+                    : HELP["clan-trait-1"];
+                const extra = !acquired && index >= normal && saved ? "Traço acima dos espaços iniciais deste tier; preservado. " : "";
+                const cost = acquired && selected ? "Aquisição: " + clanTraitXp[selected.tier] + " XP. " : "";
+                field.help.textContent = extra + cost + (issues.length ? "⚠ " + issues.join(" ") + " " : "") + (selected
+                    ? [selected.prerequisites, rulePreview(selected.description)].filter(Boolean).join(" — ")
+                    : "As opções exigem Clã, tier e pontos de Disciplina compatíveis.");
+                field.rule.textContent = selected ? selected.description + (selected.description.includes("Activation.")
+                    ? "\n\nAtivação: depois de ativar o Traço, seus efeitos ficam inativos até a próxima noite, conforme a regra compartilhada com Méritos." : "") : "";
+                field.details.hidden = !selected;
+                field.select.addEventListener("change", () => {
+                    const next = clan?.traits.find((trait) => trait.name === field.select.value);
+                    if (field.select.value && (!writable || !next || traitIssues(character, next, list, index).length)) return;
+                    character[list][index] = field.select.value;
+                    renderClanTraits();
+                    document.getElementById(id)?.focus();
+                    saveNow("Traço de Clã atualizado.");
+                });
+                if (acquired && character.mode === "play") {
+                    const remove = document.createElement("button");
+                    remove.type = "button"; remove.className = "small-button no-print"; remove.textContent = "Remover Traço adquirido";
+                    remove.addEventListener("click", () => { character[list].splice(index, 1); renderClanTraits(); saveNow("Traço adquirido removido."); });
+                    field.root.append(remove);
+                }
+                root.append(field.root);
+            }
         }
+        const add = document.getElementById("add-clan-trait");
+        add.hidden = character.mode !== "play";
+        add.disabled = character.advancementClanTraits.includes("") || !(clan?.traits || []).some((trait) => !traitIssues(character, trait).length);
+        document.getElementById("clan-trait-advancement-help").textContent = character.mode === "play"
+            ? "Novos Traços: Neonate 5 XP · Ancilla 10 XP · Elder 15 XP. Registre o gasto na mesa, entre sessões; os pré-requisitos continuam valendo."
+            : "Na criação: " + normal + " Traços. Traços adicionais podem ser comprados no modo Em jogo: 5/10/15 XP conforme o tier do Traço.";
     }
 
     function renderIdentityAutomation() {
@@ -109,11 +117,13 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
             specialSelect.replaceChildren();
         }
 
-        const sireOptions = sire?.disciplines?.length
-            ? sire.disciplines
-            : Object.keys(disciplines);
+        const related = document.getElementById("sire-clan");
+        document.getElementById("sire-clan-field").hidden = sire?.mode !== "custom-clan";
+        populateEligibleSelect(related, clans.map((item) => ({value:item.name,label:item.name})), character.identity.sireClan, "Selecione o Clã relacionado");
+        document.getElementById("sire-discipline-field").hidden = !sire && !character.identity.sireDiscipline;
+        const sireOptions = sireDisciplines(character);
 
-        populateSelect(
+        populateEligibleSelect(
             sireDisciplineSelect,
             sireOptions.map((name) => ({value:name,label:name})),
             character.identity.sireDiscipline,
@@ -121,6 +131,7 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
                 ? "Escolha a Disciplina do clã relacionado"
                 : "Selecione a Disciplina"
         );
+        sireDisciplineSelect.disabled = !sire;
 
         document.getElementById("sire-description").textContent = sire?.description || "";
         document.getElementById("sire-description").closest("details").hidden = !sire;
@@ -133,10 +144,17 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
 
 
         renderClanTraits();
+        renderClanIcon();
         renderBeastIdentity();
     }
 
     function installIdentityAutomation() {
+        document.getElementById("add-clan-trait").addEventListener("click", () => {
+            if (character.mode !== "play" || character.advancementClanTraits.includes("")) return;
+            const clan = currentClan();
+            if (!(clan?.traits || []).some((trait) => !traitIssues(character, trait).length)) return;
+            character.advancementClanTraits.push(""); renderClanTraits(); saveNow("Espaço para Traço adquirido adicionado.");
+        });
         document.getElementById("clan").addEventListener("change", (event) => {
             const clan = clans.find((item) => item.id === event.target.value) || null;
             character.identity.clan = clan?.name || "";
@@ -145,11 +163,11 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
             const variableSlot = clan?.disciplineSlots.find((slot) => slot.length > 1);
             character.identity.clanDisciplineChoice = variableSlot?.[0] || "";
 
-            character.clanTraits = Array(creationFor(character.identity.playLevel).clanTraits).fill("");
             syncDisciplinesToIdentity(character, {resetExtras:false});
             renderIdentityAutomation();
             renderDisciplines();
             renderCoreResources();
+            refreshEligibility();
             saveNow("Clã e opções relacionadas atualizados.");
         });
 
@@ -158,26 +176,37 @@ export function createIdentity({ character, saveNow, renderBeastIdentity, render
             character.identity.sire = sire?.name || "";
             // Keep a still-valid choice (and all invested Discipline dots/powers).
             const previous = character.identity.sireDiscipline;
-            character.identity.sireDiscipline = sire && (sire.disciplines.includes(previous) ||
-                (sire.mode === "custom-clan" && disciplines[previous]))
-                ? previous : sire?.disciplines?.[0] || "";
+            const options = sireDisciplines(character);
+            character.identity.sireDiscipline = options.includes(previous) ? previous : options[0] || "";
             syncDisciplinesToIdentity(character, {resetExtras:false});
             renderIdentityAutomation();
             renderDisciplines();
+            refreshEligibility();
             saveNow("Sire e opções relacionadas atualizados.");
         });
 
         document.getElementById("sire-discipline").addEventListener("change", (event) => {
+            if (event.target.value && !sireDisciplines(character).includes(event.target.value)) return;
             character.identity.sireDiscipline = event.target.value;
             syncDisciplinesToIdentity(character, {resetExtras:false});
             renderDisciplines();
+            refreshEligibility();
             saveNow("Disciplina do Sire atualizada.");
+        });
+
+        document.getElementById("sire-clan").addEventListener("change", (event) => {
+            character.identity.sireClan = event.target.value;
+            if (!sireDisciplines(character).includes(character.identity.sireDiscipline)) character.identity.sireDiscipline = "";
+            syncDisciplinesToIdentity(character, {resetExtras:false});
+            renderIdentityAutomation(); renderDisciplines(); refreshEligibility();
+            saveNow("Clã relacionado ao Sire atualizado; pontos existentes preservados.");
         });
 
         document.getElementById("clan-special-discipline").addEventListener("change", (event) => {
             character.identity.clanDisciplineChoice = event.target.value;
             syncDisciplinesToIdentity(character, {resetExtras:false});
             renderDisciplines();
+            refreshEligibility();
             saveNow("Disciplina variável do Clã atualizada.");
         });
     }

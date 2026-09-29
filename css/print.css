@@ -18,6 +18,10 @@
         display: none !important;
     }
 
+    #notes-dialog { display: none !important; }
+    .print-only:not([hidden]) { display: block; }
+    #notes-print p { white-space: pre-wrap; overflow-wrap: anywhere; }
+
     .app-header {
         width: 100%;
         padding: 0 0 4mm;

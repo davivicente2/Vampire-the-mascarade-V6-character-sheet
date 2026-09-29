@@ -10,9 +10,10 @@ function helpTarget(element) {
     if (row) return { element: control, text: control.matches('input')
         ? 'Especialização desta Habilidade: +1 dado quando for relevante ao teste. Foco 1 é liberado em 1 ponto, Foco 2 em 3 e Foco 3 em 5. Diminuir os pontos preserva os focos ocultos.'
         : 'Ajuste os pontos adicionais da Habilidade. Os pontos dos Caminhos já estão incluídos; para retirá-los, edite a distribuição no Caminho. Em 1, 3 e 5 pontos, um novo campo de Foco aparece. Clique no último ponto preenchido para reduzir 1.' };
-    if (control.closest('#attributes')) return { element: control, text: 'Ajuste este Atributo, com mínimo de 1. Vigor altera o máximo de Vitae; Autocontrole e Determinação alteram o máximo de Vontade.' };
+    if (control.closest('#attributes')) return { element: control, text: control.title || control.closest('.dot-row').querySelector('.dot-label').dataset.help };
     if (control.closest('#resources')) return { element: control, text: control.title || (control.matches('button')
         ? 'Ajuste o nível deste Recurso; clicar no último ponto preenchido reduz 1.'
+        : control.matches('select') ? 'Escolha o tipo de Recurso. Abra os detalhes para registrar a pessoa, lugar ou bem representado. Recursos dos Caminhos continuam sendo preenchidos aqui manualmente.'
         : 'Descreva o Recurso ou seus detalhes: nome do contato, localização do refúgio, identidade da máscara etc.') };
     if (control.closest('#disciplines')) return { element: control, text: control.title || (control.matches('select')
         ? 'Escolha a Disciplina ou um poder disponível nos pontos atuais. Escolher um poder preenche o custo; o gasto é manual. Abra “Efeito e anotações” para consultar os detalhes.'
@@ -77,6 +78,8 @@ export function installTooltips() {
             previousDescription = active.getAttribute('aria-describedby');
             active.setAttribute('aria-describedby', [previousDescription, tooltip.id].filter(Boolean).join(' '));
         }
+        const container = active.closest('dialog[open]') || document.body;
+        if (tooltip.parentElement !== container) container.appendChild(tooltip);
         tooltip.textContent = target.text;
         tooltip.hidden = false;
         const rect = active.getBoundingClientRect();

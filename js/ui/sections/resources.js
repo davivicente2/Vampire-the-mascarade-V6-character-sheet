@@ -1,5 +1,6 @@
 import { RESOURCE_PRESETS } from "../../../data/resources.js";
-import { ratingTrackMaximum } from "../../model/creation.js";
+import { selectionTrackMaximum, canSetRating } from "../../model/selection-limits.js";
+import { notePanel } from "../notes.js";
 import { createDots, populateSelect } from "../controls.js";
 
 export function createResources({ character, saveNow }) {
@@ -43,11 +44,11 @@ export function createResources({ character, saveNow }) {
                 saveNow("Detalhes do recurso salvos.");
             });
 
-            const dots = createDots(resource.dots, ratingTrackMaximum(character, resource.dots), (next) => {
+            const dots = createDots(resource.dots, selectionTrackMaximum(character, "resources", resource.dots), (next) => {
                 resource.dots = next;
                 renderResources();
                 saveNow("Nível do recurso salvo.");
-            }, "Nível de " + (resource.name || "recurso"));
+            }, "Nível de " + (resource.name || "recurso"), "dot", (next) => canSetRating(character, "resources", index, next));
 
             const remove = document.createElement("button");
             remove.type = "button";
@@ -60,7 +61,7 @@ export function createResources({ character, saveNow }) {
                 saveNow("Recurso removido.");
             });
 
-            row.append(nameField, dots, details, remove);
+            row.append(nameField, dots, notePanel("Detalhes do Recurso", details), remove);
             root.appendChild(row);
         });
     }

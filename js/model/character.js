@@ -27,6 +27,10 @@ export function normalizeCharacter(value) {
     const incoming = migrateCharacter(value);
 
     base.version = incoming.version;
+    base.mode = incoming.mode === "play" ? "play" : "creation";
+    for (const key of Object.keys(base.notes)) base.notes[key] = String(incoming.notes?.[key] || "");
+    base.clanIcons = {...incoming.clanIcons};
+    base.advancementClanTraits = [...(incoming.advancementClanTraits || [])];
     base.identity = {...base.identity, ...(incoming.identity || {})};
     base.attributes = {...base.attributes, ...(incoming.attributes || {})};
 

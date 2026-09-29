@@ -15,23 +15,40 @@ import { createCoreResources } from "./ui/sections/core-resources.js";
 import { createCalculator } from "./ui/sections/calculator.js";
 import { createValidation } from "./ui/sections/validation.js";
 import { createMerit } from "./ui/sections/merit.js";
+import { createClanIcon } from "./ui/clan-icon.js";
+import { installNotes } from "./ui/notes.js";
 
 // Builds each section once; rerenders replace controls without reinstalling static listeners.
 export function mountSheet(character) {
     const { renderValidation } = createValidation({character});
     const { renderCalculator } = createCalculator({character});
     const { renderResources, addResource } = createResources({character, saveNow});
-    const { renderDisciplines, addDiscipline } = createDisciplines({character, saveNow});
+    const { renderDisciplines, addDiscipline } = createDisciplines({character, saveNow, refreshEligibility});
+    const { renderClanIcon } = createClanIcon({character, saveNow});
     const { renderLifepaths, refreshLifepathSkills } = createLifepaths({character, saveNow,
         onSkillsChange: () => { renderSkills(); renderCalculator(); }});
     const humanity = createHumanity({character, saveNow, renderCoreResources: () => renderCoreResources()});
     const { renderHumanity, renderBeastIdentity, installNatureSelection, renderHumanityDetails, installHumanityActions } = humanity;
     const { renderCoreResources, installCoreResourceActions } = createCoreResources({character, saveNow, renderHumanity});
-    const { renderAttributes } = createAttributes({character, saveNow, renderCoreResources, renderCalculator});
+    const { renderAttributes } = createAttributes({character, saveNow, renderCoreResources, renderCalculator, refreshEligibility});
     const { renderSkills } = createSkills({character, saveNow, renderCalculator, onSkillsChange: refreshLifepathSkills});
-    const { renderClanTraits, renderIdentityAutomation, installIdentityAutomation } = createIdentity({character, saveNow, renderBeastIdentity, renderDisciplines, renderCoreResources});
-    const { renderMerits } = createMerit({character, saveNow});
+    const { renderClanTraits, renderIdentityAutomation, installIdentityAutomation } = createIdentity({character, saveNow, renderBeastIdentity, renderDisciplines, renderCoreResources, refreshEligibility, renderClanIcon});
+    const { renderMerits, installMeritActions } = createMerit({character, saveNow});
     const bindInput = (id, getter, setter, options) => bindControl(id, getter, setter, {...options, save: saveNow});
+
+    function refreshEligibility() {
+        renderMerits();
+        renderClanTraits();
+    }
+
+    function renderModeAndTier() {
+        ensureCreationSlots(character);
+        renderAttributes(); renderSkills(); renderResources(); renderDisciplines();
+        refreshEligibility(); renderHumanityDetails(); renderLifepaths(); renderValidation();
+        document.getElementById("skills-creation-help").textContent = character.mode === "creation"
+            ? "Na criação, máximo de 3 pontos por Habilidade. Focos em 1 e 3; o terceiro foco fica disponível em 5 pontos durante o jogo."
+            : "Em jogo, Habilidades podem chegar a 5. Focos em 1, 3 e 5 pontos; um foco relevante concede +1 dado ao teste.";
+    }
 
     function saveNow(message = "Alteração salva automaticamente.") {
         try {
@@ -48,6 +65,7 @@ export function mountSheet(character) {
     }
 
     function bindStaticFields() {
+        bindInput("sheet-mode", () => character.mode, (value) => { character.mode = value; }, {after: renderModeAndTier});
         const identityBindings = [
             ["character-name","name"],["age-apparent","apparentAge"],["age-actual","actualAge"],
             ["embrace-date","embraceDate"],["nostalgic-decade","nostalgicDecade"],["generation","generation"],
@@ -57,17 +75,8 @@ export function mountSheet(character) {
         for (const [id,key] of identityBindings) {
             bindInput(id, () => character.identity[key], (value) => { character.identity[key]=value; }, {
                 number:["generation","generationModifier"].includes(key),
-                after:key === "playLevel" ? () => {
-                    ensureCreationSlots(character);
-                    renderAttributes();
-                    renderResources();
-                    renderDisciplines();
-                    renderMerits();
-                    renderClanTraits();
-                    renderHumanityDetails();
-                    renderLifepaths();
-                    renderValidation();
-                } : key === "generationModifier" ? renderCoreResources : undefined
+                after:key === "playLevel" ? renderModeAndTier
+                    : key === "generationModifier" ? () => { renderCoreResources(); refreshEligibility(); } : undefined
             });
         }
 
@@ -88,6 +97,7 @@ export function mountSheet(character) {
         }
 
         installCoreResourceActions();
+        installMeritActions();
         installFileActions(character);
     }
 
@@ -108,6 +118,8 @@ export function mountSheet(character) {
     installActions();
     installHumanityActions();
     renderRulesReference();
+    installNotes({character, saveNow});
+    renderModeAndTier();
     installTooltips();
     document.getElementById("beast-rules-link").addEventListener("click", () => {
         const panel = document.getElementById("beast-rules");

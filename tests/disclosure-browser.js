@@ -16,6 +16,7 @@ export async function runTests() {
     const loaded = () => new Promise((resolve) => frame.addEventListener('load', resolve, {once:true}));
     const source = getPower('Corruption', 'Nightmare Glimpses');
     const fixture = {
+        mode: "play",
         identity: {name:'UX fixture', clan:'Ministry', sire:'Cruel Sire', sireDiscipline:'Obfuscate', playLevel:'neonate', generation:11, generationModifier:1},
         skills: {persuasion:{dots:3, focus:'negotiating, intimidation'}},
         resources:[{name:'Contact',dots:2,details:'Contact note'}],
@@ -38,7 +39,7 @@ export async function runTests() {
         let waiting = loaded(); document.body.appendChild(frame); await waiting;
         check(byId('nature').value === 'Survivor', 'Old partial sheet loads without new character fields');
         check(doc().querySelectorAll('.skill-focus').length === 2, 'Old focus text normalizes on load');
-        check([...doc().querySelectorAll('details:not(.lifepath-allocation-panel)')].every((panel) => !panel.open), 'All rule panels start collapsed');
+        check([...doc().querySelectorAll('details:not(.lifepath-allocation-panel)')].filter(panel=>!panel.closest('#notes-dialog')).every((panel) => !panel.open), 'All rule panels start collapsed');
         check(!byId('curse') && byId('clan-curse-description').closest('details'), 'Curse has one full description and no duplicate form field');
         check(byId('nature-outburst-effect').closest('details') && !byId('nature-outburst-name').closest('details'), 'Nature keeps Outburst name visible and effect collapsed');
         check(byId('merit-description').textContent.includes('Animalism 1+') && byId('merit-rule').closest('details'), 'Merit prerequisites remain visible with full description collapsed');
@@ -67,10 +68,13 @@ export async function runTests() {
         check(saved().identity.clanDisciplineChoice === 'Oblivion', 'Dependent Clan selection persists');
         change('clan', 'brujah');
         check(byId('clan-special-discipline-field').hidden && saved().disciplines.some((d) => d.name === 'Oblivion'), 'Clan change clears unavailable slot but preserves independent Disciplines');
-        change('clan-trait-1', 'Combat Reflexes');
-        check(byId('clan-trait-1-description').textContent.includes('Requer ancilla'), 'Higher-tier trait warning is visible outside details');
+        check(![...byId('clan-trait-1').options].some(o=>o.value==='Combat Reflexes'), 'Higher-tier trait cannot be selected by a Neonate');
         change('play-level', 'ancilla');
-        check(!byId('clan-trait-1-description').textContent.includes('Requer ancilla'), 'Tier change refreshes trait eligibility');
+        const disciplineCard = name=>[...byId('disciplines').children].find(card=>card.querySelector('.discipline-head select').value===name);
+        disciplineCard('Celerity').querySelectorAll('.dots button')[2].click();
+        change('clan-trait-1','Combat Reflexes');
+        check(byId('clan-trait-1').value==='Combat Reflexes', 'Tier and Discipline changes refresh trait eligibility');
+        disciplineCard('Potence').querySelectorAll('.dots button')[1].click();
         change('nature', 'Scientist');
         const skillRow = [...byId('lifepath-allocation-0').querySelectorAll('[data-kind=skills] .allocation-row')].find((row) => row.dataset.choice === 'Subterfúgio');
         skillRow.querySelector('[data-action=plus]').click();

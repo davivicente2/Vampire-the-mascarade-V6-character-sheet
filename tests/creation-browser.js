@@ -15,7 +15,7 @@ import { assertCharacter } from '../js/storage.js';
 function fixture(tier, dots) {
     return {version:2, identity:{name:'Creation fixture',clan:'Brujah',playLevel:tier,generationModifier:2},
         attributes:{strength:dots}, resources:[{name:'Contact',dots,details:'Keep contact details'}],
-        disciplines:[{name:'Potence',dots,powers:[{name:'Custom power',cost:'1',reminder:'Keep notes'}]}],
+        disciplines:[{name:'Potence',dots,powers:[{name:'Custom power',cost:'1',reminder:'Keep notes'}]},{name:'Celerity',dots:1,powers:[]}],
         lifepaths:['Criminal','Military','Diplomat','Harpy'],
         clanTraits:['Prowess','Spark of Rage','Wrestler','Combat Reflexes'],
         merit:'Bond Resistant — original legacy text', beast:'Keep Beast notes', currentVitae:4,

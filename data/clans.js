@@ -1,3 +1,4 @@
+import { clanTraitRules } from "./clan-trait-rules.js";
 export const clans = [
     {
         id: "brujah",
@@ -7,11 +8,11 @@ export const clans = [
         frenzy: {"name": "Rebellion", "description": "Aja contra quem ou o que considera autoridade na cena: recuse a tarefa recebida ou sabote a figura de poder. Todas as outras ações sofrem uma penalidade de dados igual ao modificador de geração."},
         beast: {"name": "Anti-Authority", "description": "Sua Besta exige desafiar autoridades e romper as regras que prendem você.", "indulging": "Desafie líderes, desobedeça ordens, destrua símbolos de autoridade ou sabote estruturas de poder e hierarquia."},
         traits: [
-            { name: "Prowess", tier: "neonate", prerequisites: "Potence 2+", description: "Improves damage from unarmed attacks and light melee weapons." },
-            { name: "Spark of Rage", tier: "neonate", prerequisites: "Potence 1+; Presence 1+", description: "Improves attempts to incite anger and violence." },
-            { name: "Wrestler", tier: "neonate", prerequisites: "Potence 1+", description: "Improves tussle attacks and crush damage." },
-            { name: "Combat Reflexes", tier: "ancilla", prerequisites: "Celerity 3+", description: "Improves reactions and recovery from prone/surprise." },
-            { name: "Living Weapon", tier: "ancilla", prerequisites: "Potence 3+", description: "Lets a grappled creature be used as an improvised weapon." }
+            { name: "Prowess", tier: "neonate", prerequisites: "Potence 2+", requirements: [{"discipline": "Potence", "dots": 2}], description: clanTraitRules["Prowess"] },
+            { name: "Spark of Rage", tier: "neonate", prerequisites: "Potence 1+; Presence 1+", requirements: [{"discipline": "Potence", "dots": 1}, {"discipline": "Presence", "dots": 1}], description: clanTraitRules["Spark of Rage"] },
+            { name: "Wrestler", tier: "neonate", prerequisites: "Potence 1+", requirements: [{"discipline": "Potence", "dots": 1}], description: clanTraitRules["Wrestler"] },
+            { name: "Combat Reflexes", tier: "ancilla", prerequisites: "Celerity 3+", requirements: [{"discipline": "Celerity", "dots": 3}], description: clanTraitRules["Combat Reflexes"] },
+            { name: "Living Weapon", tier: "ancilla", prerequisites: "Potence 3+", requirements: [{"discipline": "Potence", "dots": 3}], description: clanTraitRules["Living Weapon"] }
         ]
     },
     {
@@ -22,11 +23,11 @@ export const clans = [
         frenzy: {"name": "Feral Impulses", "description": "Aja por impulso, como um animal, resolvendo obstáculos da forma mais direta possível. Testes em que não age como um animal sofrem uma penalidade igual ao modificador de geração. A penalidade é dobrada em testes de Inteligência ou Manipulação, exceto quando feitos contra animais."},
         beast: {"name": "Animalistic", "description": "Sua Besta quer viver por instinto e sentir a emoção da caça.", "indulging": "Comporte-se como um animal, corra com lobos, persiga presas como um predador e reaja instintivamente a ameaças e oportunidades."},
         traits: [
-            { name: "Enduring Beasts", tier: "neonate", prerequisites: "Animalism 1+; Fortitude 1+", description: "Animals influenced through Animalism can become tougher." },
-            { name: "Feral Whispers", tier: "neonate", prerequisites: "Animalism 1+", description: "Allows communication with animals without immediately disturbing them." },
-            { name: "Safety of the Earth", tier: "neonate", prerequisites: "None", description: "Allows the vampire to shelter within natural earth, grass, or stone." },
-            { name: "Quick and Tough", tier: "ancilla", prerequisites: "Celerity 2+; Fortitude 1+", description: "Combines active Celerity with faster Fortitude use." },
-            { name: "Surrounded Prey", tier: "ancilla", prerequisites: "Animalism 3+", description: "Improves attacks while supported by an animal ally." }
+            { name: "Enduring Beasts", tier: "neonate", prerequisites: "Animalism 1+; Fortitude 1+", requirements: [{"discipline": "Animalism", "dots": 1}, {"discipline": "Fortitude", "dots": 1}], description: clanTraitRules["Enduring Beasts"] },
+            { name: "Feral Whispers", tier: "neonate", prerequisites: "Animalism 1+", requirements: [{"discipline": "Animalism", "dots": 1}], description: clanTraitRules["Feral Whispers"] },
+            { name: "Safety of the Earth", tier: "neonate", prerequisites: "None", requirements: [], description: clanTraitRules["Safety of the Earth"] },
+            { name: "Quick and Tough", tier: "ancilla", prerequisites: "Celerity 2+; Fortitude 1+", requirements: [{"discipline": "Celerity", "dots": 2}, {"discipline": "Fortitude", "dots": 1}], description: clanTraitRules["Quick and Tough"] },
+            { name: "Surrounded Prey", tier: "ancilla", prerequisites: "Animalism 3+", requirements: [{"discipline": "Animalism", "dots": 3}], description: clanTraitRules["Surrounded Prey"] }
         ]
     },
     {
@@ -37,11 +38,11 @@ export const clans = [
         frenzy: {"name": "Ruthlessness", "description": "Não tolera erros ou incompetência. Ao falhar em um teste, sofre uma penalidade igual ao modificador de geração em todos os testes até obter sucesso em um teste posterior ou terminar o frenesi. Uma falha dolorosa de um aliado em distância Curta também pode impor essa penalidade; nesse caso, ela dura até você ou o aliado ter sucesso em outra tentativa da mesma ação, ou até o frenesi terminar."},
         beast: {"name": "Punisher", "description": "Sua Besta despreza o fracasso e exige punir e humilhar quem falha com você.", "indulging": "Puna quem falha nas tarefas recebidas, humilhe quem considera inferior ou castigue a si mesmo quando o erro for seu."},
         traits: [
-            { name: "Eyes of the Night", tier: "neonate", prerequisites: "Oblivion 1+", description: "Improves perception through darkness created with Oblivion." },
-            { name: "Shadow Cloak", tier: "neonate", prerequisites: "Oblivion 2+", description: "Improves stealth and intimidation in darkness." },
-            { name: "Tenebrous Reach", tier: "neonate", prerequisites: "Oblivion 1+", description: "Commands nearby shadows to perform simple tasks." },
-            { name: "Night Blood", tier: "ancilla", prerequisites: "Oblivion 3+", description: "Enhances ghouls with night-adapted traits." },
-            { name: "Oppressing Dominance", tier: "ancilla", prerequisites: "Dominate 2+; Oblivion or Corruption 1+", description: "Strengthens Dominate under the clan's corruption/shadow conditions." }
+            { name: "Eyes of the Night", tier: "neonate", prerequisites: "Oblivion 1+", requirements: [{"discipline": "Oblivion", "dots": 1}], description: clanTraitRules["Eyes of the Night"] },
+            { name: "Shadow Cloak", tier: "neonate", prerequisites: "Oblivion 2+", requirements: [{"discipline": "Oblivion", "dots": 2}], description: clanTraitRules["Shadow Cloak"] },
+            { name: "Tenebrous Reach", tier: "neonate", prerequisites: "Oblivion 1+", requirements: [{"discipline": "Oblivion", "dots": 1}], description: clanTraitRules["Tenebrous Reach"] },
+            { name: "Night Blood", tier: "ancilla", prerequisites: "Oblivion 3+", requirements: [{"discipline": "Oblivion", "dots": 3}], description: clanTraitRules["Night Blood"] },
+            { name: "Oppressing Dominance", tier: "ancilla", prerequisites: "Dominate 2+; Oblivion or Corruption 1+", requirements: [{"discipline": "Dominate", "dots": 2}, {"any": [{"discipline": "Oblivion", "dots": 1}, {"discipline": "Corruption", "dots": 1}]}], description: clanTraitRules["Oppressing Dominance"] }
         ]
     },
     {
@@ -52,11 +53,11 @@ export const clans = [
         frenzy: {"name": "Transgression", "description": "Sinta a necessidade incontrolável de levar outros a desejos degradantes, vícios, egoísmo ou prazeres hedonistas. Todos os testes que não busquem corromper alguém dessa forma sofrem uma penalidade igual ao modificador de geração."},
         beast: {"name": "Enticer", "description": "Sua Besta se satisfaz corrompendo outros e despertando desejos reprimidos.", "indulging": "Entregue-se a prazeres hedonistas, incentive outras pessoas a fazer o mesmo e ajude-as a descobrir seus desejos secretos."},
         traits: [
-            { name: "Beguiling Words", tier: "neonate", prerequisites: "Corruption 1+", description: "Improves deception, obscuring truth, and detecting withheld information." },
-            { name: "Eyes of the Serpent", tier: "neonate", prerequisites: "Presence 1+", description: "Serpentine eyes help captivate mortals and tempt them toward risky behavior." },
-            { name: "Serpent Speech", tier: "neonate", prerequisites: "Corruption 1+", description: "Allows communication with serpents and reptiles and improves influence over them." },
-            { name: "Heart of Darkness", tier: "ancilla", prerequisites: "Ancilla or stronger", description: "A rite removes and stores the heart, protecting against staking and improving frenzy resistance." },
-            { name: "Divine Image", tier: "ancilla", prerequisites: "Corruption 1+; Presence 1+", description: "Once each night, assume a divine form for a scene and gain generation-based bonuses." }
+            { name: "Beguiling Words", tier: "neonate", prerequisites: "Corruption 1+", requirements: [{"discipline": "Corruption", "dots": 1}], description: clanTraitRules["Beguiling Words"] },
+            { name: "Eyes of the Serpent", tier: "neonate", prerequisites: "Presence 1+", requirements: [{"discipline": "Presence", "dots": 1}], description: clanTraitRules["Eyes of the Serpent"] },
+            { name: "Serpent Speech", tier: "neonate", prerequisites: "Corruption 1+", requirements: [{"discipline": "Corruption", "dots": 1}], description: clanTraitRules["Serpent Speech"] },
+            { name: "Heart of Darkness", tier: "ancilla", prerequisites: "Ancilla or stronger", requirements: [], description: clanTraitRules["Heart of Darkness"] },
+            { name: "Divine Image", tier: "ancilla", prerequisites: "Corruption 1+; Presence 1+", requirements: [{"discipline": "Corruption", "dots": 1}, {"discipline": "Presence", "dots": 1}], description: clanTraitRules["Divine Image"] }
         ]
     },
     {
@@ -67,11 +68,11 @@ export const clans = [
         frenzy: {"name": "Cryptophilia", "description": "Busque desesperadamente segredos e conhecimento, por menores que sejam. Todas as outras ações sofrem uma penalidade igual ao dobro do modificador de geração. O frenesi pode terminar antes se descobrir um segredo importante para a cena, como uma informação que dê vantagem sobre alguém presente."},
         beast: {"name": "Secretive", "description": "Sua Besta deseja acumular segredos e conhecimento para usá-los quando precisar.", "indulging": "Descubra segredos alheios, esconda informações e use o que sabe contra os outros."},
         traits: [
-            { name: "Feral Whispers", tier: "neonate", prerequisites: "Animalism 1+", description: "Allows communication with animals without immediately disturbing them." },
-            { name: "Ghost in the Machine", tier: "neonate", prerequisites: "Obfuscate 1+", description: "Extends Obfuscate concealment to electronic observation." },
-            { name: "Lingering Obscurement", tier: "neonate", prerequisites: "Obfuscate 2+", description: "Lets an Obfuscate effect remain after you leave its target or area." },
-            { name: "Obscured Power", tier: "ancilla", prerequisites: "Obfuscate 2+; Potence 2+", description: "Trades an Obfuscate effect for a Potence-related bonus." },
-            { name: "Shared Shadows", tier: "ancilla", prerequisites: "Obfuscate 3+", description: "Extends self-targeting Obfuscate effects to controlled animals." }
+            { name: "Feral Whispers", tier: "neonate", prerequisites: "Animalism 1+", requirements: [{"discipline": "Animalism", "dots": 1}], description: clanTraitRules["Feral Whispers"] },
+            { name: "Ghost in the Machine", tier: "neonate", prerequisites: "Obfuscate 1+", requirements: [{"discipline": "Obfuscate", "dots": 1}], description: clanTraitRules["Ghost in the Machine"] },
+            { name: "Lingering Obscurement", tier: "neonate", prerequisites: "Obfuscate 2+", requirements: [{"discipline": "Obfuscate", "dots": 2}], description: clanTraitRules["Lingering Obscurement"] },
+            { name: "Obscured Power", tier: "ancilla", prerequisites: "Obfuscate 2+; Potence 2+", requirements: [{"discipline": "Obfuscate", "dots": 2}, {"discipline": "Potence", "dots": 2}], description: clanTraitRules["Obscured Power"] },
+            { name: "Shared Shadows", tier: "ancilla", prerequisites: "Obfuscate 3+", requirements: [{"discipline": "Obfuscate", "dots": 3}], description: clanTraitRules["Shared Shadows"] }
         ]
     },
     {
@@ -82,11 +83,11 @@ export const clans = [
         frenzy: {"name": "Obsession", "description": "Escolha algo belo da cena, como uma pessoa, música, obra de arte ou um padrão de sangue. Quase não consegue desviar o olhar e só fala desse assunto. Testes que não envolvam apreciar, elogiar ou proteger o objeto sofrem uma penalidade igual ao modificador de geração. O frenesi pode terminar antes se o objeto for destruído ou sair da cena e da sua percepção."},
         beast: {"name": "Idol", "description": "Sua Besta exige adoração e quer que os outros se encantem com sua presença.", "indulging": "Seduza outras pessoas, faça-as implorar por sua atenção e deleite-se com sua bajulação."},
         traits: [
-            { name: "Addictive Kiss", tier: "neonate", prerequisites: "None", description: "Feeding can become intensely pleasurable and addictive." },
-            { name: "Star Magnetism", tier: "neonate", prerequisites: "Presence 2+", description: "Allows Presence to be transmitted through a live electronic feed." },
-            { name: "Throw Voice", tier: "neonate", prerequisites: "Presence 1+; Auspex 1+", description: "Projects the vampire's voice and can serve as a point for Presence." },
-            { name: "Entrancing Object", tier: "ancilla", prerequisites: "Presence 3+; Auspex 1+", description: "Imbues an object with a low-rank Presence power." },
-            { name: "Powerful Presence", tier: "ancilla", prerequisites: "Presence 3+", description: "Improves Presence range and number of affected targets." }
+            { name: "Addictive Kiss", tier: "neonate", prerequisites: "None", requirements: [], description: clanTraitRules["Addictive Kiss"] },
+            { name: "Star Magnetism", tier: "neonate", prerequisites: "Presence 2+", requirements: [{"discipline": "Presence", "dots": 2}], description: clanTraitRules["Star Magnetism"] },
+            { name: "Throw Voice", tier: "neonate", prerequisites: "Presence 1+; Auspex 1+", requirements: [{"discipline": "Presence", "dots": 1}, {"discipline": "Auspex", "dots": 1}], description: clanTraitRules["Throw Voice"] },
+            { name: "Entrancing Object", tier: "ancilla", prerequisites: "Presence 3+; Auspex 1+", requirements: [{"discipline": "Presence", "dots": 3}, {"discipline": "Auspex", "dots": 1}], description: clanTraitRules["Entrancing Object"] },
+            { name: "Powerful Presence", tier: "ancilla", prerequisites: "Presence 3+", requirements: [{"discipline": "Presence", "dots": 3}], description: clanTraitRules["Powerful Presence"] }
         ]
     },
     {
@@ -97,11 +98,11 @@ export const clans = [
         frenzy: {"name": "Arrogance", "description": "Busque assumir o comando e fazer alguém obedecer a uma ordem sua, sem imposição sobrenatural como Dominate. Todas as outras ações sofrem uma penalidade igual ao dobro do modificador de geração. O frenesi pode terminar antes se alguém que não seja seu aliado obedecer sem influência sobrenatural."},
         beast: {"name": "Superior", "description": "Sua Besta considera seu sangue superior e exige lealdade e submissão.", "indulging": "Aja com superioridade, faça os outros obedecerem e estabeleça uma hierarquia em que sua voz comanda."},
         traits: [
-            { name: "Obedience", tier: "neonate", prerequisites: "Dominate 1+", description: "Broadens how Dominate can be delivered." },
-            { name: "Rationalize", tier: "neonate", prerequisites: "Dominate 2+", description: "Victims rationalize actions taken under Dominate." },
-            { name: "Unwavering Devotion", tier: "neonate", prerequisites: "Dominate 1+; Presence 1+", description: "Helps subjects resist similar coercion from others." },
-            { name: "Commanding Leader", tier: "ancilla", prerequisites: "Fortitude 2+; Presence 2+", description: "Extends certain Fortitude effects to followers." },
-            { name: "Imposing Physique", tier: "ancilla", prerequisites: "Fortitude 2+; Dominate or Presence 1+", description: "Converts Fortitude into a bonus for Presence-related tests." }
+            { name: "Obedience", tier: "neonate", prerequisites: "Dominate 1+", requirements: [{"discipline": "Dominate", "dots": 1}], description: clanTraitRules["Obedience"] },
+            { name: "Rationalize", tier: "neonate", prerequisites: "Dominate 2+", requirements: [{"discipline": "Dominate", "dots": 2}], description: clanTraitRules["Rationalize"] },
+            { name: "Unwavering Devotion", tier: "neonate", prerequisites: "Dominate 1+; Presence 1+", requirements: [{"discipline": "Dominate", "dots": 1}, {"discipline": "Presence", "dots": 1}], description: clanTraitRules["Unwavering Devotion"] },
+            { name: "Commanding Leader", tier: "ancilla", prerequisites: "Fortitude 2+; Presence 2+", requirements: [{"discipline": "Fortitude", "dots": 2}, {"discipline": "Presence", "dots": 2}], description: clanTraitRules["Commanding Leader"] },
+            { name: "Imposing Physique", tier: "ancilla", prerequisites: "Fortitude 2+; Dominate or Presence 1+", requirements: [{"discipline": "Fortitude", "dots": 2}, {"any": [{"discipline": "Dominate", "dots": 1}, {"discipline": "Presence", "dots": 1}]}], description: clanTraitRules["Imposing Physique"] }
         ]
     }
 ];

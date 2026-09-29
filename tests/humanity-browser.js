@@ -51,8 +51,10 @@ export function runTests() {
         byId(id).value = value;
         byId(id).dispatchEvent(new Event('input', { bubbles: true }));
     };
+    byId('sheet-mode').value = 'play';
+    byId('sheet-mode').dispatchEvent(new Event('change', { bubbles: true }));
     check(byId('rules-reference').children.length === 9, 'Reference renders nine sections');
-    check(byId('merit').options.length >= 17, 'Merits still render');
+    check([...byId('merit').options].some(o=>o.value==='Subdued Hunger') && ![...byId('merit').options].some(o=>o.value==='Bond Famulus'), 'Merits render only eligible choices plus the saved selection');
     check(natures.length === 8 && byId('nature').options.length === 9, 'All eight Natures available');
     check(byId('nature').value === 'Survivor' && getNature('Survivor — old description').name === 'Survivor', 'Legacy Nature recognized');
     const oldPosition = stage();
@@ -178,6 +180,8 @@ export function runTests() {
             clan.name + ' updates Beast, indulgence and frenzy');
     }
     check(byId('beast').value === beastNotes, 'Changing clan preserves personal Beast notes');
+    byId('play-level').value = 'elder';
+    byId('play-level').dispatchEvent(new Event('change', { bubbles: true }));
     check(lifepaths.length === 14 && byId('lifepath-0').options.length === 16, 'Fourteen lifepaths plus empty and custom options');
     check(byId('lifepath-0').value === 'Criminal' && byId('lifepath-1').value === 'Military', 'Legacy lifepaths recognized');
     const extras = () => { const c=saved(), fromPaths=lifepathSkillContributions(c); return JSON.stringify(Object.fromEntries(Object.entries(c.skills).map(([key,skill])=>[key,skill.dots-fromPaths[key]]))); };
@@ -199,6 +203,8 @@ export function runTests() {
     check(saved().lifepathAllocations[0].skills.includes('Percepção'), 'Lifepath skill choice persists');
     byId('lifepath-0').value = 'Diplomat';
     byId('lifepath-0').dispatchEvent(new Event('change', { bubbles: true }));
+    byId('play-level').value = 'neonate';
+    byId('play-level').dispatchEvent(new Event('change', { bubbles: true }));
     check(byId('lifepath-help-0').textContent.includes('não está disponível para Neonate'), 'Ancilla lifepath warns at Neonate tier');
     byId('play-level').value = 'ancilla';
     byId('play-level').dispatchEvent(new Event('change', { bubbles: true }));
