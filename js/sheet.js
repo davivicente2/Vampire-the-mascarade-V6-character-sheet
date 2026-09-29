@@ -17,6 +17,7 @@ import { createValidation } from "./ui/sections/validation.js";
 import { createMerit } from "./ui/sections/merit.js";
 import { createClanIcon } from "./ui/clan-icon.js";
 import { installNotes } from "./ui/notes.js";
+import { createAdvancement } from "./ui/sections/advancement.js";
 
 // Builds each section once; rerenders replace controls without reinstalling static listeners.
 export function mountSheet(character) {
@@ -34,6 +35,7 @@ export function mountSheet(character) {
     const { renderSkills } = createSkills({character, saveNow, renderCalculator, onSkillsChange: refreshLifepathSkills});
     const { renderClanTraits, renderIdentityAutomation, installIdentityAutomation } = createIdentity({character, saveNow, renderBeastIdentity, renderDisciplines, renderCoreResources, refreshEligibility, renderClanIcon});
     const { renderMerits, installMeritActions } = createMerit({character, saveNow});
+    const { renderAdvancement } = createAdvancement({character, saveNow});
     const bindInput = (id, getter, setter, options) => bindControl(id, getter, setter, {...options, save: saveNow});
 
     function refreshEligibility() {
@@ -55,6 +57,7 @@ export function mountSheet(character) {
             document.getElementById("willpower-label").textContent || "0 / 0";
         document.getElementById("session-quickening").textContent =
             document.getElementById("quickening-label").textContent || "0 / 5";
+        document.getElementById("session-xp").textContent = character.experience.available + " XP";
         document.getElementById("session-humanity").textContent =
             document.getElementById("humanity-stage").textContent || "Neutro";
     }
@@ -139,6 +142,7 @@ export function mountSheet(character) {
     installHumanityActions();
     renderRulesReference();
     installNotes({character, saveNow});
+    renderAdvancement();
     renderModeAndTier();
     installTooltips();
     document.getElementById("beast-rules-link").addEventListener("click", () => {

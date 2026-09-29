@@ -68,7 +68,7 @@ export async function runTests() {
         check(saved().identity.clanDisciplineChoice === 'Oblivion', 'Dependent Clan selection persists');
         change('clan', 'brujah');
         check(byId('clan-special-discipline-field').hidden && saved().disciplines.some((d) => d.name === 'Oblivion'), 'Clan change clears unavailable slot but preserves independent Disciplines');
-        check(![...byId('clan-trait-1').options].some(o=>o.value==='Combat Reflexes'), 'Higher-tier trait cannot be selected by a Neonate');
+        check([...byId('clan-trait-1').options].some(o=>o.value==='Combat Reflexes'), 'Higher-tier catalog trait remains visible because Traits are table-authoritative');
         change('play-level', 'ancilla');
         const disciplineCard = name=>[...byId('disciplines').children].find(card=>card.querySelector('.discipline-head select').value===name);
         disciplineCard('Celerity').querySelectorAll('.dots button')[2].click();

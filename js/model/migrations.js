@@ -5,7 +5,9 @@ const migrations = {
     2: (sheet) => ({...sheet, version: 3,
         merits: Array.isArray(sheet.merits) ? [...sheet.merits] : sheet.merit ? [sheet.merit] : []}),
     3: (sheet) => ({...sheet, version: 4, mode: sheet.mode || "creation",
-        notes: sheet.notes || {}, clanIcons: sheet.clanIcons || {}, advancementClanTraits: sheet.advancementClanTraits || []})
+        notes: sheet.notes || {}, clanIcons: sheet.clanIcons || {}, advancementClanTraits: sheet.advancementClanTraits || []}),
+    4: (sheet) => ({...sheet, version: 5,
+        experience: sheet.experience || {available: 0, history: []}})
 };
 
 export function migrateCharacter(value) {

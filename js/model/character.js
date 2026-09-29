@@ -31,6 +31,15 @@ export function normalizeCharacter(value) {
     for (const key of Object.keys(base.notes)) base.notes[key] = String(incoming.notes?.[key] || "");
     base.clanIcons = {...incoming.clanIcons};
     base.advancementClanTraits = [...(incoming.advancementClanTraits || [])];
+    base.experience = {
+        available: Math.max(0, Math.trunc(Number(incoming.experience?.available) || 0)),
+        history: Array.isArray(incoming.experience?.history)
+            ? incoming.experience.history.map((entry) => ({
+                delta: Math.trunc(Number(entry?.delta) || 0),
+                note: String(entry?.note || "")
+            })).filter((entry) => entry.delta !== 0)
+            : []
+    };
     base.identity = {...base.identity, ...(incoming.identity || {})};
     base.attributes = {...base.attributes, ...(incoming.attributes || {})};
 

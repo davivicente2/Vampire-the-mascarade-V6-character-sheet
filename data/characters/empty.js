@@ -7,6 +7,7 @@ export const EMPTY_CHARACTER = {
     notes: { backstory: "", appearance: "", relationships: "", chronicle: "", general: "" },
     clanIcons: {},
     advancementClanTraits: [],
+    experience: { available: 0, history: [] },
     identity: {
         name: "", clan: "", apparentAge: "", actualAge: "", embraceDate: "",
         nostalgicDecade: "", generation: 0, generationModifier: 0,

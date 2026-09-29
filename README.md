@@ -26,6 +26,12 @@ Distribuir pontos de Habilidade em um Caminho atualiza os pontos finais e a calc
 
 Fichas antigas são carregadas considerando que os pontos finais já incluem a distribuição registrada. Totais menores que a contribuição dos Caminhos são completados, sem duplicar pontos ao recarregar ou importar.
 
+## Progressão e experiência
+
+No modo **Em jogo**, a seção **Experiência** mantém um saldo manual de XP e um histórico opcional de ganhos/gastos. A tabela de custos e as seis condições de ganho aparecem como referência do playtest atual; a ficha não compra dots automaticamente nem bloqueia decisões da mesa.
+
+O saldo acompanha o JSON. Ajustar o valor diretamente não cria uma entrada de histórico; os botões **Ganhar XP** e **Gastar XP** registram a alteração e uma anotação opcional.
+
 ## Regras da Noite e Humanidade
 
 A ficha mostra os efeitos dos sete estágios de Humanidade. Marcar Besta/Natureza não move a escala. Com cinco marcas, registre o resultado do teste: sucesso apaga uma marca; falha, falha dolorosa ou aceitação inicia um episódio. Concluir o episódio move a escala uma vez; aceitar voluntariamente também recupera 2 Vontade ao final.
@@ -93,4 +99,11 @@ Para testar sincronização dos Caminhos com Habilidades, recolhimento e preserv
 ```js
 const sync = await import('./tests/lifepath-sync-browser.js');
 console.table(await sync.runTests());
+```
+
+Para testar progressão/XP e a correção visual da calculadora:
+
+```js
+const advancement = await import('./tests/advancement-browser.js');
+console.table(await advancement.runTests());
 ```

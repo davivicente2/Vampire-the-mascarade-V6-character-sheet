@@ -29,18 +29,18 @@ Contadores dos Caminhos editam as ocorrências em `lifepathAllocations`, mantend
 - Na seção Habilidades, os controles editam o total respeitando o mínimo já concedido pelos Caminhos. Para retirar pontos dessa origem, edite o Caminho correspondente. A origem aparece junto do nome da Habilidade.
 - Novas alocações respeitam o limite de 3 na criação, considerando o total de todos os Caminhos e os pontos adicionais. Valores importados maiores não são reduzidos.
 - Em fichas antigas, os valores finais são considerados como já incluindo as alocações. Se o total estiver abaixo da contribuição dos Caminhos, ele é completado até essa contribuição; pontos existentes não são somados novamente. Essa convenção evita duplicação, pois o formato antigo não indicava se a distribuição já havia sido aplicada.
-- A normalização é idempotente: recarregar ou importar novamente não reaplica pontos. O schema continua 3, sem novos campos persistidos.
+- A normalização é idempotente: recarregar ou importar novamente não reaplica pontos.
 - As opções do catálogo são associadas às Habilidades pelo nome, separando a indicação de foco entre parênteses. Focos não são preenchidos automaticamente. Opções desconhecidas são preservadas, sem atribuir pontos a uma Habilidade presumida.
 - Alocações importadas sem um Caminho reconhecido continuam visíveis para correção, inclusive para retirar pontos que já contribuam para Habilidades.
 - Distribuições completas se recolhem, mostrando total e escolhas no resumo; podem ser reabertas para edição. Distribuições incompletas ou incompatíveis abrem por padrão. O estado de abertura é apenas de interface, não é exportado no JSON.
 
 A exceção de personagem jovem continua possível deixando os demais Caminhos vazios. Os bônus opcionais de compensação dependem da decisão do Narrador; não são aplicados nem presumidos na validação dos totais.
 
-## Schema 3
+## Schema e migrações
 
 - `data/schema.js` declara `CURRENT_SCHEMA_VERSION`.
 - `js/model/migrations.js` aplica as migrações sequenciais sobre uma cópia do objeto.
-- Fichas sem versão são tratadas como versão 1; seguem por 1 → 2 → 3.
+- Fichas sem versão são tratadas como versão 1; as migrações seguem sequencialmente até o schema atual.
 - Na migração 2 → 3, `merit: "X"` cria `merits: ["X"]`. O campo singular original continua no JSON. Se o primeiro Mérito for editado, o campo singular acompanha essa escolha para compatibilidade.
 - `merits[]` passa a ser a fonte da interface. A normalização completa slots vazios conforme o tier, sem truncar listas maiores.
 - Versões futuras e estruturas inválidas de `merits` são rejeitadas antes de substituir o salvamento na importação.
@@ -51,7 +51,7 @@ Abrir a ficha sem salvamento usa `EMPTY_CHARACTER`, sem Recursos iniciais. O exe
 
 `js/model/frenzy.js` centraliza a dificuldade: Brujah soma o modificador de geração à dificuldade base de qualquer Frenesi. A função é usada na resistência da Besta e nos lembretes calculados de fome e fúria. Explosão da Natureza usa seu cálculo próprio e não recebe Boiling Passion.
 
-Não foi criado um modo de avanço separado nesta rodada; a referência explica os limites em jogo e a validação continua sendo de criação. Méritos repetidos geram aviso para conferência na mesa, sem bloquear ou apagar a escolha. Bônus opcionais de personagem jovem continuam manuais. O Chapter 5 completo permanece ausente, sem alterações nos poderes catalogados.
+O modo Em jogo possui um registro manual de XP. O schema 5 adiciona `experience.available` e `experience.history`; fichas anteriores recebem saldo 0 sem perder campos. A referência de custos não compra avanços automaticamente e não substitui decisões da mesa. Méritos repetidos geram aviso para conferência na mesa, sem bloquear ou apagar a escolha. Bônus opcionais de personagem jovem continuam manuais. O Chapter 5 completo permanece ausente, sem alterações nos poderes catalogados.
 
 ## Testes
 

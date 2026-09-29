@@ -48,6 +48,12 @@ export function assertCharacter(value) {
         fields(value.clanIcons);
         if (Object.values(value.clanIcons).some((icon) => icon.length > 350000 || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(icon))) fail();
     }
+    if (value.experience !== undefined) {
+        if (!object(value.experience) || !number(value.experience.available) || !Array.isArray(value.experience.history)) fail();
+        value.experience.history.forEach((entry) => {
+            if (!object(entry) || !number(entry.delta) || !text(entry.note)) fail();
+        });
+    }
     if (value.attributes !== undefined) {
         if (!object(value.attributes) || !Object.values(value.attributes).every(number)) fail();
     }

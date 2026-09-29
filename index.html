@@ -45,6 +45,7 @@
                 <span><small>Vitae</small><strong id="session-vitae">0 / 0</strong></span>
                 <span><small>Vontade</small><strong id="session-willpower">0 / 0</strong></span>
                 <span><small>Quickening</small><strong id="session-quickening">0 / 5</strong></span>
+                <span><small>XP</small><strong id="session-xp">0 XP</strong></span>
                 <span><small>Humanidade</small><strong id="session-humanity">Neutro</strong></span>
             </div>
             <nav class="session-nav" aria-label="Navegação rápida da ficha">
@@ -53,6 +54,7 @@
                 <a href="#section-disciplines">Disciplinas</a>
                 <a href="#section-skills">Habilidades</a>
                 <a href="#section-resources">Recursos</a>
+                <a href="#section-advancement">XP</a>
                 <a href="#section-identity">Identidade</a>
             </nav>
         </aside>
@@ -415,6 +417,48 @@
                 <details class="note-panel"><summary>Equipamentos e objetos pessoais</summary><label><span>Inventário</span><textarea id="items" rows="8"></textarea></label></details>
             </section>
         </div>
+
+        <section id="section-advancement" class="sheet-card play-only">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">Progressão</p>
+                    <h2>Experiência</h2>
+                </div>
+                <div class="xp-balance"><span>Disponível</span><strong id="xp-balance">0 XP</strong></div>
+            </div>
+            <div class="advancement-grid">
+                <label>
+                    <span>XP disponível</span>
+                    <input id="xp-available" type="number" min="0" step="1" value="0">
+                    <small class="field-help">Pode ser ajustado manualmente sem alterar o histórico.</small>
+                </label>
+                <div class="xp-entry">
+                    <label><span>Quantidade</span><input id="xp-change" type="number" min="1" step="1" value="1"></label>
+                    <label><span>Motivo / avanço</span><input id="xp-note" type="text" placeholder="Ex.: Sessão 5 ou Persuasão 3"></label>
+                    <div class="xp-actions no-print">
+                        <button id="xp-gain" type="button">+ Ganhar XP</button>
+                        <button id="xp-spend" type="button">− Gastar XP</button>
+                    </div>
+                    <small id="xp-status" class="field-help" role="status"></small>
+                </div>
+                <details class="xp-history-panel">
+                    <summary>Histórico de XP</summary>
+                    <div id="xp-history" class="xp-history"></div>
+                    <button id="xp-clear-history" class="small-button no-print" type="button">Limpar histórico</button>
+                </details>
+                <details class="rule-details">
+                    <summary>Referência de XP do playtest atual</summary>
+                    <p class="field-help">A ficha registra o saldo manualmente. Estes custos e condições são apenas uma referência e não bloqueiam decisões da mesa.</p>
+                    <p>O material indica 1 XP para cada condição cumprida, até 1–6 XP por sessão:</p>
+                    <ul id="xp-awards"></ul>
+                    <table class="xp-cost-table">
+                        <thead><tr><th>Avanço</th><th>Custo de referência</th></tr></thead>
+                        <tbody id="xp-costs"></tbody>
+                    </table>
+                    <p class="field-help">Aumentos por dots são comprados rank a rank. Confirme sempre a regra usada pela mesa.</p>
+                </details>
+            </div>
+        </section>
 
         <section id="section-calculator" class="sheet-card no-print">
             <div class="section-heading">

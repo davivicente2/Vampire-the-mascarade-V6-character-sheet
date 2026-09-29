@@ -399,3 +399,14 @@ body[data-sheet-mode="play"] .session-dashboard {
         font-size: 1rem;
     }
 }
+
+/* Keep the calculator consistent with the paper theme. */
+.calculator-result {
+    border: 1px solid #8f887e;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+}
+.calculator-result strong { color: var(--text); }
+.calculator-result small,
+.calculator-result span { color: #5e5751; }
